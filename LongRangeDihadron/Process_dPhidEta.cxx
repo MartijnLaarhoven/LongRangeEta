@@ -39,10 +39,60 @@ struct InputUnit {
 void printAxesInfo(THnSparseF* sparseHist);
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc);
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc);
+TFile* OpenAnalysisResultsFile(const std::string& fileNameSuffix);
 
 // global variables
 std::string collisionSystemName = "peripheral PbPb";
 std::string additionalSuffix = "";
+
+TFile* OpenAnalysisResultsFile(const std::string& fileNameSuffix) {
+    std::string tokenRaw = fileNameSuffix;
+    if (tokenRaw.size() > 5 && tokenRaw.substr(tokenRaw.size() - 5) == ".root") {
+        tokenRaw = tokenRaw.substr(0, tokenRaw.size() - 5);
+    }
+
+    std::string tokenDataset = tokenRaw;
+    const std::string prefix = "AnalysisResults_";
+    if (tokenDataset.rfind(prefix, 0) == 0) {
+        tokenDataset = tokenDataset.substr(prefix.size());
+    }
+
+    std::vector<std::string> fileNameCandidates = {
+        Form("AnalysisResults_%s.root", tokenDataset.c_str()),
+        Form("%s.root", tokenRaw.c_str())
+    };
+
+    std::vector<std::string> dirCandidates = {
+        "../AnalysisResultsROOTFiles/longRangeDihadronCorr",
+        "../../AnalysisResultsROOTFiles/longRangeDihadronCorr",
+        "../../../AnalysisResultsROOTFiles/longRangeDihadronCorr",
+        "../AnalysisResultsROOTFiles/LongRangeEta",
+        "../../AnalysisResultsROOTFiles/LongRangeEta",
+        "../../../AnalysisResultsROOTFiles/LongRangeEta",
+        "../AnalysisResulatsROOTFiles/longRangeDihadronCorr",
+        "../../AnalysisResulatsROOTFiles/longRangeDihadronCorr",
+        "../../../AnalysisResulatsROOTFiles/longRangeDihadronCorr",
+        "../AnalysisResulatsROOTFiles/LongRangeEta",
+        "../../AnalysisResulatsROOTFiles/LongRangeEta",
+        "../../../AnalysisResulatsROOTFiles/LongRangeEta"
+    };
+
+    for (const auto& dir : dirCandidates) {
+        for (const auto& fileName : fileNameCandidates) {
+            std::string path = dir + "/" + fileName;
+        TFile* file = TFile::Open(path.c_str(), "READ");
+        if (file && !file->IsZombie()) {
+            std::cout << "Reading input from: " << path << std::endl;
+            return file;
+        }
+        if (file) {
+            file->Close();
+            delete file;
+        }
+        }
+    }
+    return nullptr;
+}
 
 void Process_dPhidEta() {
     // 不显示窗口
@@ -124,9 +174,9 @@ void printAxesInfo(THnSparseF* sparseHist) {
 }
 
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc=false) {
-    TFile *file = TFile::Open(Form("../AnalysisResultsROOTFiles/longRangeDihadronCorr/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
+    TFile *file = OpenAnalysisResultsFile(fileNameSuffix);
     if (!file || file->IsZombie()) {
-        std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
+        std::cout << "Error: Cannot open file " << fileNameSuffix << " from known input directories" << std::endl;
         return;
     }
 
@@ -406,9 +456,9 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 }
 
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc=false) {
-    TFile *file = TFile::Open(Form("../AnalysisResultsROOTFiles/longRangeDihadronCorr/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
+    TFile *file = OpenAnalysisResultsFile(fileNameSuffix);
     if (!file || file->IsZombie()) {
-        std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
+        std::cout << "Error: Cannot open file " << fileNameSuffix << " from known input directories" << std::endl;
         return;
     }
 
