@@ -5,6 +5,8 @@
 #include <complex>
 #include <vector>
 #include <cmath>
+#include <map>
+#include <string>
 
 enum {corrAxis_kSample, corrAxis_kVz, corrAxis_kPt_TPC_trig, corrAxis_kPt_TPC_asso, corrAxis_kdPhiTPCTPC, corrAxis_kdEtaTPCTPC};
 enum {trigAxis_sample, trigAxis_Vz, trigAxis_pT};
@@ -85,64 +87,72 @@ double MaxpT = 10.;
 
 enum kObservable{
     kV22,
-    kEtaDiffv22,
-    kEtaDiffv32,
-    kEtaDiffv42,
     kV32,
     kV42,
     kpTDiffv22,
     kpTDiffv32,
     kpTDiffv42,
+    kEtaDiffv22,
+    kEtaDiffv32,
+    kEtaDiffv42,
     kNObservable
 };
 
 std::map<int, std::string> ObservableFilesMap = {
     {kV22, "Vn"},
     {kV32, "Vn"},
-    {kV42, "Vn"},,
+    {kV42, "Vn"},
+    {kpTDiffv22, "PtDiff/Vn"},
+    {kpTDiffv32, "PtDiff/Vn"},
+    {kpTDiffv42, "PtDiff/Vn"},
     {kEtaDiffv22, "EtaDiff/Vn"},
     {kEtaDiffv32, "EtaDiff/Vn"},
     {kEtaDiffv42, "EtaDiff/Vn"}
-    {kpTDiffv22, "PtDiff/Vn"},
-    {kpTDiffv32, "PtDiff/Vn"},
-    {kpTDiffv42, "PtDiff/Vn"}
 };
 
-std::map<int, std::vector,
-    {kEtaDiffv22, {"hV2"}},
-    {kEtaDiffv32, {"hV3"}},
-    {kEtaDiffv42, {"hV4"}}<std::string>> ObservableNamesMap = {
+std::map<int, std::vector<std::string>> ObservableNamesMap = {
     {kV22, {"hV2"}},
     {kV32, {"hV3"}},
     {kV42, {"hV4"}},
     {kpTDiffv22, {"hV2"}},
     {kpTDiffv32, {"hV3"}},
-    {kpTDiffv42, {"hV4"}}
+    {kpTDiffv42, {"hV4"}},
+    {kEtaDiffv22, {"hV2"}},
+    {kEtaDiffv32, {"hV3"}},
+    {kEtaDiffv42, {"hV4"}}
 };
 
-std::map<int, std::vector<std::,
-    {kEtaDiffv22, {"etaDiffv22"}},
-    {kEtaDiffv32, {"etaDiffv32"}},
-    {kEtaDiffv42, {"etaDiffv42"}}string>> ObservableOutputNamesMap = {
+std::map<int, std::vector<std::string>> ObservableOutputNamesMap = {
     {kV22, {"v22"}},
     {kV32, {"v32"}},
     {kV42, {"v42"}},
     {kpTDiffv22, {"pTDiffv22"}},
     {kpTDiffv32, {"pTDiffv32"}},
-    {kpTDiffv42, {"pTDiffv42"}}
+    {kpTDiffv42, {"pTDiffv42"}},
+    {kEtaDiffv22, {"etaDiffv22"}},
+    {kEtaDiffv32, {"etaDiffv32"}},
+    {kEtaDiffv42, {"etaDiffv42"}}
 };
 
-std::map<int, std::vector<std::string>>,
-    {kEtaDiffv22, {"v_2\\{2\\}(#eta)"}},
-    {kEtaDiffv32, {"v_3\\{2\\}(#eta)"}},
-    {kEtaDiffv42, {"v_4\\{2\\}(#eta)"}} ObservablePrintNamesMap = {
+std::map<int, std::vector<std::string>> ObservablePrintNamesMap = {
     {kV22, {"v_2\\{2\\}"}},
     {kV32, {"v_3\\{2\\}"}},
     {kV42, {"v_4\\{2\\}"}},
     {kpTDiffv22, {"v_2\\{2\\}(p_{T})"}},
     {kpTDiffv32, {"v_3\\{2\\}(p_{T})"}},
-    {kpTDiffv42, {"v_4\\{2\\}(p_{T})"}}
+    {kpTDiffv42, {"v_4\\{2\\}(p_{T})"}},
+    {kEtaDiffv22, {"v_2\\{2\\}(#eta)"}},
+    {kEtaDiffv32, {"v_3\\{2\\}(#eta)"}},
+    {kEtaDiffv42, {"v_4\\{2\\}(#eta)"}}
 };
+
+inline std::string GetCollisionSystemNameFromDataset(const std::string& fileNameSuffix) {
+    if (fileNameSuffix.rfind("LHC25ae", 0) == 0) return "O-O";
+    if (fileNameSuffix.rfind("LHC25af", 0) == 0) return "Ne-Ne";
+    if (fileNameSuffix.rfind("LHC25ad", 0) == 0) return "p-O";
+    if (fileNameSuffix.rfind("LHC25ac", 0) == 0) return "pp";
+    return "Unknown";
+}
 
 void HistFFT(TH1* hist, std::vector<double>& Coeff) {
     if (!hist) return;

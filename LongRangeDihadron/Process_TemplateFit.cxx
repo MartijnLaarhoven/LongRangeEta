@@ -111,7 +111,7 @@ void Process_TemplateFit() {
     // gROOT->SetBatch(kTRUE);
     std::vector<ConfigUnit> configList;
 
-    collisionSystemName = "Ne-Ne";
+    collisionSystemName = "Unknown";
     kOutputVnDelta = true;
     // configList.push_back(ConfigUnit(kCent, kPtDiffOn, InputUnit("LHC25af_pass1_521668", kTPCFT0A, 80, 100), 
     // {InputUnit("LHC25af_pass1_521669", kTPCFT0A, 0, 5), InputUnit("LHC25af_pass1_521669", kTPCFT0A, 5, 10)}, 
@@ -128,11 +128,12 @@ void Process_TemplateFit() {
     configList.push_back(ConfigUnit(kCent, kPtDiffOff, InputUnit("LHC25af_pass1_537548", kFT0AFT0C, 80, 100), 
     {InputUnit("LHC25af_pass1_537547", kFT0AFT0C, 0, 20)}, 
     "LHC25af_pass1_537548"));
-EtaDiff) {
-            ProcessConfig_EtaDiff(config.isNch, config.templ, config.dataList, config.outputFileName);
-        } else if (config.is
+
     for (auto config : configList) {
-        if (config.isPtDiff) {
+        collisionSystemName = GetCollisionSystemNameFromDataset(config.templ.fileNameSuffix);
+        if (config.isEtaDiff) {
+            ProcessConfig_EtaDiff(config.isNch, config.templ, config.dataList, config.outputFileName);
+        } else if (config.isPtDiff) {
             ProcessConfig_PtDiff(config.isNch, config.templ, config.dataList, config.outputFileName);
         } else {
             ProcessConfig(config.isNch, config.templ, config.dataList, config.outputFileName);

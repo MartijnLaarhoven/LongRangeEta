@@ -50,8 +50,8 @@ void Process_dPhidEta() {
 
     std::vector<InputUnit> inputList;
     additionalSuffix = "";
-    
-    collisionSystemName = "Ne-Ne";
+
+    collisionSystemName = "Unknown";
     // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0A, kCent, kPtDiffOff, 0, 10));
     // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0A, kCent, kPtDiffOff, 80, 100));
     // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0C, kCent, kPtDiffOff, 0, 10));
@@ -70,6 +70,7 @@ void Process_dPhidEta() {
     
 
     for (auto input : inputList) {
+            collisionSystemName = GetCollisionSystemNameFromDataset(input.fileNameSuffix);
         if (input.isEtadiff) {
             for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
                 double etaMin = etaBins[iEta];

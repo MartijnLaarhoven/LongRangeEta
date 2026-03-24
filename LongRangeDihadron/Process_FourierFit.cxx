@@ -107,7 +107,7 @@ void Process_FourierFit() {
     gROOT->SetBatch(kTRUE);
     std::vector<ConfigUnit> configList;
 
-    collisionSystemName = "Ne-Ne";
+    collisionSystemName = "Unknown";
     kOutputVnDelta = true;
     
     // configList.push_back(ConfigUnit(kCent, kPtDiffOff,
@@ -127,6 +127,9 @@ void Process_FourierFit() {
     "LHC25af_pass1_532067"));
 
     for (auto config : configList) {
+        if (!config.dataList.empty()) {
+            collisionSystemName = GetCollisionSystemNameFromDataset(config.dataList[0].fileNameSuffix);
+        }
         if (config.isEtaDiff) {
             ProcessConfig_EtaDiff(config.isNch, config.dataList, config.outputFileName);
         } else if (config.isPtDiff) {
