@@ -43,10 +43,13 @@ struct InputUnit {
 struct ConfigUnit {
     Bool_t isNch;
     Bool_t isPtDiff;
+    Bool_t isEtaDiff;
     std::vector<InputUnit> dataList;
     std::string outputFileName;
     ConfigUnit(Bool_t _isNch, Bool_t _isPtDiff, std::vector<InputUnit> _dataList, std::string _outputFileName) :
-        isNch(_isNch), isPtDiff(_isPtDiff), dataList(_dataList), outputFileName(_outputFileName) {}
+        isNch(_isNch), isPtDiff(_isPtDiff), isEtaDiff(false), dataList(_dataList), outputFileName(_outputFileName) {}
+    ConfigUnit(Bool_t _isNch, Bool_t _isPtDiff, Bool_t _isEtaDiff, std::vector<InputUnit> _dataList, std::string _outputFileName) :
+        isNch(_isNch), isPtDiff(_isPtDiff), isEtaDiff(_isEtaDiff), dataList(_dataList), outputFileName(_outputFileName) {}
 };
 
 struct VnUnit {
@@ -124,7 +127,9 @@ void Process_FourierFit() {
     "LHC25af_pass1_532067"));
 
     for (auto config : configList) {
-        if (config.isPtDiff) {
+        if (config.isEtaDiff) {
+            ProcessConfig_EtaDiff(config.isNch, config.dataList, config.outputFileName);
+        } else if (config.isPtDiff) {
             ProcessConfig_PtDiff(config.isNch, config.dataList, config.outputFileName);
         } else {
             ProcessConfig(config.isNch, config.dataList, config.outputFileName);

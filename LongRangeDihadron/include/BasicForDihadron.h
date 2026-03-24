@@ -13,7 +13,9 @@ double maxPt = 3.0;
 double minPt = 0.2;
 Int_t maxSample = 10;
 
-std::vector<float> pTBins = {0.2,0.6,1,1.5,2,3,4,5,6,10};
+// Eta bins with 0.1 steps from -0.8 to 0.8
+std::vector<float> etaBins = {-0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
+std::vector<float> pTBins = {0.2,0.6,1,1.5,2,3,4,5,6,10}; // Kept for backward compatibility
 
 enum {
     kCent = 0,
@@ -28,6 +30,11 @@ enum {
 enum {
     kPtDiffOff = 0,
     kPtDiffOn = 1
+};
+
+enum {
+    kEtaDiffOff = 0,
+    kEtaDiffOn = 1
 };
 
 enum kDihadronMethod{
@@ -78,6 +85,9 @@ double MaxpT = 10.;
 
 enum kObservable{
     kV22,
+    kEtaDiffv22,
+    kEtaDiffv32,
+    kEtaDiffv42,
     kV32,
     kV42,
     kpTDiffv22,
@@ -89,13 +99,19 @@ enum kObservable{
 std::map<int, std::string> ObservableFilesMap = {
     {kV22, "Vn"},
     {kV32, "Vn"},
-    {kV42, "Vn"},
+    {kV42, "Vn"},,
+    {kEtaDiffv22, "EtaDiff/Vn"},
+    {kEtaDiffv32, "EtaDiff/Vn"},
+    {kEtaDiffv42, "EtaDiff/Vn"}
     {kpTDiffv22, "PtDiff/Vn"},
     {kpTDiffv32, "PtDiff/Vn"},
     {kpTDiffv42, "PtDiff/Vn"}
 };
 
-std::map<int, std::vector<std::string>> ObservableNamesMap = {
+std::map<int, std::vector,
+    {kEtaDiffv22, {"hV2"}},
+    {kEtaDiffv32, {"hV3"}},
+    {kEtaDiffv42, {"hV4"}}<std::string>> ObservableNamesMap = {
     {kV22, {"hV2"}},
     {kV32, {"hV3"}},
     {kV42, {"hV4"}},
@@ -104,7 +120,10 @@ std::map<int, std::vector<std::string>> ObservableNamesMap = {
     {kpTDiffv42, {"hV4"}}
 };
 
-std::map<int, std::vector<std::string>> ObservableOutputNamesMap = {
+std::map<int, std::vector<std::,
+    {kEtaDiffv22, {"etaDiffv22"}},
+    {kEtaDiffv32, {"etaDiffv32"}},
+    {kEtaDiffv42, {"etaDiffv42"}}string>> ObservableOutputNamesMap = {
     {kV22, {"v22"}},
     {kV32, {"v32"}},
     {kV42, {"v42"}},
@@ -113,7 +132,10 @@ std::map<int, std::vector<std::string>> ObservableOutputNamesMap = {
     {kpTDiffv42, {"pTDiffv42"}}
 };
 
-std::map<int, std::vector<std::string>> ObservablePrintNamesMap = {
+std::map<int, std::vector<std::string>>,
+    {kEtaDiffv22, {"v_2\\{2\\}(#eta)"}},
+    {kEtaDiffv32, {"v_3\\{2\\}(#eta)"}},
+    {kEtaDiffv42, {"v_4\\{2\\}(#eta)"}} ObservablePrintNamesMap = {
     {kV22, {"v_2\\{2\\}"}},
     {kV32, {"v_3\\{2\\}"}},
     {kV42, {"v_4\\{2\\}"}},

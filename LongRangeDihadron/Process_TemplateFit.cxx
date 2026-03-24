@@ -44,11 +44,14 @@ struct InputUnit {
 struct ConfigUnit {
     Bool_t isNch;
     Bool_t isPtDiff;
+    Bool_t isEtaDiff;
     InputUnit templ;
     std::vector<InputUnit> dataList;
     std::string outputFileName;
     ConfigUnit(Bool_t _isNch, Bool_t _isPtDiff, InputUnit _template, std::vector<InputUnit> _dataList, std::string _outputFileName) :
-        isNch(_isNch), isPtDiff(_isPtDiff), templ(_template), dataList(_dataList), outputFileName(_outputFileName) {}
+        isNch(_isNch), isPtDiff(_isPtDiff), isEtaDiff(false), templ(_template), dataList(_dataList), outputFileName(_outputFileName) {}
+    ConfigUnit(Bool_t _isNch, Bool_t _isPtDiff, Bool_t _isEtaDiff, InputUnit _template, std::vector<InputUnit> _dataList, std::string _outputFileName) :
+        isNch(_isNch), isPtDiff(_isPtDiff), isEtaDiff(_isEtaDiff), templ(_template), dataList(_dataList), outputFileName(_outputFileName) {}
 };
 
 struct VnUnit {
@@ -91,7 +94,9 @@ struct VnUnit {
 // declare functions
 void ProcessConfig(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataList, std::string outputFileName);
 void ProcessConfig_PtDiff(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataList, std::string outputFileName);
+void ProcessConfig_EtaDiff(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataList, std::string outputFileName);
 VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin=0, Double_t pTMax=0);
+VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tovn2, Double_t etaMin=0, Double_t etaMax=0);
 std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits);
 VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* datafile, InputUnit data, int sample = -1, Double_t pTMin=0, Double_t pTMax=0);
 void RooTempFitter(TH1 *lm, TH1 *hm, std::vector<Double_t>& fParamVal, std::vector<Double_t>& fParamErr, Bool_t kRefit);
@@ -123,7 +128,9 @@ void Process_TemplateFit() {
     configList.push_back(ConfigUnit(kCent, kPtDiffOff, InputUnit("LHC25af_pass1_537548", kFT0AFT0C, 80, 100), 
     {InputUnit("LHC25af_pass1_537547", kFT0AFT0C, 0, 20)}, 
     "LHC25af_pass1_537548"));
-
+EtaDiff) {
+            ProcessConfig_EtaDiff(config.isNch, config.templ, config.dataList, config.outputFileName);
+        } else if (config.is
     for (auto config : configList) {
         if (config.isPtDiff) {
             ProcessConfig_PtDiff(config.isNch, config.templ, config.dataList, config.outputFileName);
@@ -335,6 +342,82 @@ void ProcessConfig_PtDiff(Bool_t isNch, InputUnit templ, std::vector<InputUnit> 
 
 }
 
+//==============================================================
+void ProcessConfig_EtaDiff(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataList, std::string outputFileName) {
+    // Just looping the list
+    for (const auto& data : dataList) {
+        // 执行模板拟合获取所有结果
+        std::vector<VnUnit*> vnResults;
+        for (Int_t iEta = 0; iEta < etaBins.size() - 1; iEta++) {
+            double etaMin = etaBins[iEta];
+            double etaMax = etaBins[iEta + 1];
+            vnResults.push_back(TemplateFit_EtaDiff(isNch, templ, data, kFALSE, etaMin, etaMax));
+        }
+
+        // 创建输出文件
+        std::string splitName = "Mult";
+        if (!isNch) splitName = "Cent";
+        std::string stringDelta = "";
+        if (kOutputVnDelta) stringDelta = "Delta";
+        TFile outputFile(Form("./TemplateFit/EtaDiff/Vn%s_%s_%s_%i_%i_%s.root", stringDelta.c_str(), outputFileName.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[templ.corrType].c_str()), "RECREATE");
+
+        // 初始化直方图
+        TH1D* hV2 = new TH1D("hV2", "v_{2};#eta;v_{2}", 
+                            etaBins.size()-1, etaBins.data());
+        TH1D* hV3 = new TH1D("hV3", "v_{3};#eta;v_{3}", 
+                            etaBins.size()-1, etaBins.data());
+        TH1D* hV4 = new TH1D("hV4", "v_{4};#eta;v_{4}", 
+                            etaBins.size()-1, etaBins.data());
+
+        // 填充数据
+        for (size_t i = 0; i < vnResults.size(); ++i) {
+            hV2->SetBinContent(i+1, vnResults[i]->v2);
+            hV2->SetBinError(i+1, vnResults[i]->v2_err);
+            
+            hV3->SetBinContent(i+1, vnResults[i]->v3);
+            hV3->SetBinError(i+1, vnResults[i]->v3_err);
+            
+            hV4->SetBinContent(i+1, vnResults[i]->v4);
+            hV4->SetBinError(i+1, vnResults[i]->v4_err);
+        }
+
+        // 写入文件
+        hV2->Write();
+        hV3->Write();
+        hV4->Write();
+
+        if (kOutputVnDelta) {
+            // create sub directory and write the subsample results
+            TDirectory* subsampleDir = outputFile.mkdir("Subsamples");
+            subsampleDir->cd();
+            for (Int_t sample = 0; sample < vnResults[0]->subsample_v2.size(); sample++) {
+                TH1D* hV2_sub = new TH1D(Form("hV2_subsample_%d", sample), "v_{2};#eta;v_{2}", 
+                                    etaBins.size()-1, etaBins.data());
+                TH1D* hV3_sub = new TH1D(Form("hV3_subsample_%d", sample), "v_{3};#eta;v_{3}", 
+                                    etaBins.size()-1, etaBins.data());
+                TH1D* hV4_sub = new TH1D(Form("hV4_subsample_%d", sample), "v_{4};#eta;v_{4}", 
+                                    etaBins.size()-1, etaBins.data());
+                for (size_t i = 0; i < vnResults.size(); ++i) {
+                    hV2_sub->SetBinContent(i+1, vnResults[i]->subsample_v2[sample]);
+                    hV2_sub->SetBinError(i+1, vnResults[i]->subsample_v2_err[sample]);
+                    hV3_sub->SetBinContent(i+1, vnResults[i]->subsample_v3[sample]);
+                    hV3_sub->SetBinError(i+1, vnResults[i]->subsample_v3_err[sample]);
+                    hV4_sub->SetBinContent(i+1, vnResults[i]->subsample_v4[sample]);
+                    hV4_sub->SetBinError(i+1, vnResults[i]->subsample_v4_err[sample]);
+                }
+                hV2_sub->Write();
+                hV3_sub->Write();
+                hV4_sub->Write();
+            }
+        }
+
+        std::cout << "Output file: " << Form("./TemplateFit/EtaDiff/Vn%s_%s_%s_%i_%i_%s.root", stringDelta.c_str(), outputFileName.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[templ.corrType].c_str()) << std::endl;
+        outputFile.Close();
+
+    }
+
+}
+
 void VnPtDiff(VnUnit* VnResult_PtDiff, VnUnit* VnResult_Ref) {
     if (!VnResult_PtDiff || !VnResult_Ref) {
         std::cerr << "Invalid VnUnit pointers provided." << std::endl;
@@ -532,7 +615,149 @@ VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tov
 
 
 //==============================================================
-std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits) {
+VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tovn2, Double_t etaMin=0, Double_t etaMax=0) {
+    std::string splitName = "Mult";
+    if (!isNch) splitName = "Cent";
+
+    TFile* templatefile = new TFile(Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, DihadronCorrTypeName[templ.corrType].c_str()), "READ");
+    if (!templatefile || !templatefile->IsOpen()) {
+        std::cerr << "Cannot open template file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, DihadronCorrTypeName[templ.corrType].c_str()) << std::endl;
+        exit(1);
+    }
+    TFile* templatefile_EtaDiff = nullptr;
+    if (etaMin > -0.9 && etaMax < 0.9) {
+        templatefile_EtaDiff = new TFile(Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%d_%d_Eta_%0.1f_%0.1f_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, etaMin, etaMax, DihadronCorrTypeName[templ.corrType].c_str()), "READ");
+        if (!templatefile_EtaDiff || !templatefile_EtaDiff->IsOpen()) {
+            std::cerr << "Cannot open template file: " << Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%d_%d_Eta_%0.1f_%0.1f_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, etaMin, etaMax, DihadronCorrTypeName[templ.corrType].c_str()) << std::endl;
+            exit(1);
+        }
+    }
+
+    TFile* datafile = new TFile(Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
+    if (!datafile || !datafile->IsOpen()) {
+        std::cerr << "Cannot open input file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()) << std::endl;
+        exit(1);
+    }
+    TFile* datafile_EtaDiff = nullptr;
+    if (etaMin > -0.9 && etaMax < 0.9) {
+        datafile_EtaDiff = new TFile(Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, etaMin, etaMax, DihadronCorrTypeName[data.corrType].c_str()), "READ");
+        if (!datafile_EtaDiff || !datafile_EtaDiff->IsOpen()) {
+            std::cerr << "Cannot open input file: " << Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, etaMin, etaMax, DihadronCorrTypeName[data.corrType].c_str()) << std::endl;
+            exit(1);
+        }
+    }
+
+    VnUnit* vnResult = fitSample(isNch, templatefile, templ, datafile, data, -1);
+    if (!vnResult) {
+        std::cerr << "Cannot fit sample: " << data.fileNameSuffix << std::endl;
+        exit(1);
+    }
+    VnUnit* vnResult_EtaDiff = nullptr;
+    if (etaMin > -0.9 && etaMax < 0.9) {
+        vnResult_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, -1, etaMin, etaMax);
+        if (!vnResult_EtaDiff) {
+            std::cerr << "Cannot fit eta-diff sample: " << data.fileNameSuffix << std::endl;
+            exit(1);
+        }
+    }
+
+    std::vector<std::vector<std::vector<double>>> ValueArray;
+    std::vector<std::vector<std::vector<double>>> ValueErrorArray;
+    std::vector<std::vector<double>> ErrorArray;
+    int Nobs=3;//v22,v32,v42
+    int NofSample = maxSample*maxSample;
+    int Nbin = 1;
+    ResizeValueArray(ValueArray,ValueErrorArray,ErrorArray,Nobs,NofSample,Nbin);
+    vnResult->ResizeSubsample(NofSample);
+    if (etaMin > -0.9 && etaMax < 0.9) vnResult_EtaDiff->ResizeSubsample(NofSample);
+
+    for(int sample=0;sample<NofSample;sample++) {
+        VnUnit* vnTemp = fitSample(isNch, templatefile, templ, datafile, data, sample);
+        if (!vnTemp) {
+            std::cerr << "Cannot fit sample: " << data.fileNameSuffix << " sample: " << sample << std::endl;
+            exit(1);
+        }
+        ValueArray[0][sample][0] = vnTemp->v2;
+        ValueErrorArray[0][sample][0] = vnTemp->v2_err;
+        ValueArray[1][sample][0] = vnTemp->v3;
+        ValueErrorArray[1][sample][0] = vnTemp->v3_err;
+        ValueArray[2][sample][0] = vnTemp->v4;
+        ValueErrorArray[2][sample][0] = vnTemp->v4_err;
+        vnResult->Fillsample(sample, vnTemp->v2, vnTemp->v2_err, vnTemp->v3, vnTemp->v3_err, vnTemp->v4, vnTemp->v4_err);
+        if (etaMin > -0.9 && etaMax < 0.9) {
+            VnUnit* vnTemp_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, sample, etaMin, etaMax);
+            if (!vnTemp_EtaDiff) {
+                std::cerr << "Cannot fit eta-diff sample: " << data.fileNameSuffix << std::endl;
+                exit(1);
+            }
+            ValueArray[0][sample][0] = vnTemp_EtaDiff->v2;
+            ValueErrorArray[0][sample][0] = vnTemp_EtaDiff->v2_err;
+            ValueArray[1][sample][0] = vnTemp_EtaDiff->v3;
+            ValueErrorArray[1][sample][0] = vnTemp_EtaDiff->v3_err;
+            ValueArray[2][sample][0] = vnTemp_EtaDiff->v4;
+            ValueErrorArray[2][sample][0] = vnTemp_EtaDiff->v4_err;
+            vnResult_EtaDiff->Fillsample(sample, vnTemp_EtaDiff->v2, vnTemp_EtaDiff->v2_err, vnTemp_EtaDiff->v3, vnTemp_EtaDiff->v3_err, vnTemp_EtaDiff->v4, vnTemp_EtaDiff->v4_err);
+            delete vnTemp_EtaDiff;
+        }
+        delete vnTemp;
+    }
+    for(int iobs = 0;iobs < Nobs;iobs++){
+        CalculateBootstrapError(ValueArray[iobs],ValueErrorArray[iobs],ErrorArray[iobs],1.);
+    }
+
+    vnResult->v2_err = ErrorArray[0][0];
+    vnResult->v3_err = ErrorArray[1][0];
+    vnResult->v4_err = ErrorArray[2][0];
+    if (etaMin > -0.9 && etaMax < 0.9) {
+        vnResult_EtaDiff->v2_err = ErrorArray[0][0];
+        vnResult_EtaDiff->v3_err = ErrorArray[1][0];
+        vnResult_EtaDiff->v4_err = ErrorArray[2][0];
+    }
+
+    if (cn2Tovn2) {
+        if (vnResult->v2 > 0.) {
+            vnResult->v2_err = vnResult->v2_err / (2 * sqrt(vnResult->v2));
+            vnResult->v2 = sqrt(vnResult->v2);
+        }
+        else {
+            vnResult->v2 = -1;
+            vnResult->v2_err = 10.;
+        }
+        
+        if (vnResult->v3 > 0.) {
+            vnResult->v3_err = vnResult->v3_err / (2 * sqrt(vnResult->v3));
+            vnResult->v3 = sqrt(vnResult->v3);
+        }
+        else {
+            vnResult->v3 = -1;
+            vnResult->v3_err = 10.;
+        }
+        
+        if (vnResult->v4 > 0.) {
+            vnResult->v4_err = vnResult->v4_err / (2 * sqrt(vnResult->v4));
+            vnResult->v4 = sqrt(vnResult->v4);
+        }
+        else {
+            vnResult->v4 = -1;
+            vnResult->v4_err = 10.;
+        }
+    }
+
+    // print result
+    if (etaMin > -0.9 && etaMax < 0.9) {
+        std::cout << "print result: " << data.fileNameSuffix << " eta-diff" << std::endl;
+        std::cout << "v2: " << vnResult_EtaDiff->v2 << " +/- " << vnResult_EtaDiff->v2_err << std::endl;
+        std::cout << "v3: " << vnResult_EtaDiff->v3 << " +/- " << vnResult_EtaDiff->v3_err << std::endl;
+        std::cout << "v4: " << vnResult_EtaDiff->v4 << " +/- " << vnResult_EtaDiff->v4_err << std::endl;
+        return vnResult_EtaDiff;
+    }
+    std::cout << "print result: " << data.fileNameSuffix << std::endl;
+    std::cout << "v2: " << vnResult->v2 << " +/- " << vnResult->v2_err << std::endl;
+    std::cout << "v3: " << vnResult->v3 << " +/- " << vnResult->v3_err << std::endl;
+    std::cout << "v4: " << vnResult->v4 << " +/- " << vnResult->v4_err << std::endl;
+
+    return vnResult;
+}
     std::vector<InputUnit> sortedUnits = inputUnits;
     // 按 minRange 升序排序
     std::sort(sortedUnits.begin(), sortedUnits.end(),

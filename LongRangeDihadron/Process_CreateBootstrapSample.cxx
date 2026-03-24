@@ -21,16 +21,16 @@ struct InputUnit {
     std::string fileNameSuffix;
     Int_t corrType;
     Bool_t isNch;
-    Bool_t isPtdiff;
+    Bool_t isEtadiff;
     Int_t minRange;
     Int_t maxRange;
 
-    InputUnit(std::string _fileNameSuffix, Int_t _corrType, Bool_t _isNch, Bool_t _isPtdiff, Int_t _minRange, Int_t _maxRange) :
-        fileNameSuffix(_fileNameSuffix), corrType(_corrType), isNch(_isNch), isPtdiff(_isPtdiff), minRange(_minRange), maxRange(_maxRange) {}
+    InputUnit(std::string _fileNameSuffix, Int_t _corrType, Bool_t _isNch, Bool_t _isEtadiff, Int_t _minRange, Int_t _maxRange) :
+        fileNameSuffix(_fileNameSuffix), corrType(_corrType), isNch(_isNch), isEtadiff(_isEtadiff), minRange(_minRange), maxRange(_maxRange) {}
 };
 
 void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange);
-void CreateBootstrapSample_PtDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t pTMin, Double_t pTMax);
+void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax);
 
 void Process_CreateBootstrapSample() {
 
@@ -51,12 +51,12 @@ void Process_CreateBootstrapSample() {
     inputList.push_back(InputUnit("LHC25af_pass1_537548", kFT0AFT0C, kCent, kPtDiffOff, 80, 100));
 
     for (auto input : inputList) {
-        if (input.isPtdiff) {
-            std::cout << "Processing Bootstrap Sample pT diff: " << input.fileNameSuffix << std::endl;
-            for (int iPt = 0; iPt < pTBins.size() - 1; iPt++) {
-                double pTMin = pTBins[iPt];
-                double pTMax = pTBins[iPt + 1];
-                CreateBootstrapSample_PtDiff(input.fileNameSuffix, input.corrType, input.isNch, input.minRange, input.maxRange, pTMin, pTMax);
+        if (input.isEtadiff) {
+            std::cout << "Processing Bootstrap Sample eta diff: " << input.fileNameSuffix << std::endl;
+            for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
+                double etaMin = etaBins[iEta];
+                double etaMax = etaBins[iEta + 1];
+                CreateBootstrapSample_EtaDiff(input.fileNameSuffix, input.corrType, input.isNch, input.minRange, input.maxRange, etaMin, etaMax);
             }
         } else {
             std::cout << "Processing Bootstrap Sample: " << input.fileNameSuffix << std::endl;
@@ -181,14 +181,14 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
     delete file;
 }
 
-void CreateBootstrapSample_PtDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t pTMin, Double_t pTMax) {
+void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax) {
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
     
     // 打开输入文件
     TFile* file = TFile::Open(
-        Form("./ProcessOutput/PtDiff/Mixed_%s_%s_%i_%i_Pt_%0.1f_%0.1f_%s.root", 
-             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, pTMin, pTMax, DihadronCorrTypeName[corrType].c_str()), 
+        Form("./ProcessOutput/EtaDiff/Mixed_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", 
+             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()), 
         "READ"
     );
     if (!file || file->IsZombie()) {
@@ -217,8 +217,8 @@ void CreateBootstrapSample_PtDiff(std::string fileNameSuffix, Int_t corrType, Bo
 
     // 创建输出文件
     TFile* outFile = TFile::Open(
-        Form("./ProcessOutput/PtDiff/BootstrapSample_%s_%s_%i_%i_Pt_%0.1f_%0.1f_%s.root", 
-             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, pTMin, pTMax, DihadronCorrTypeName[corrType].c_str()), 
+        Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", 
+             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()), 
         "RECREATE"
     );
     if (!outFile || outFile->IsZombie()) {

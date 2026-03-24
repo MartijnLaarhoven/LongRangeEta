@@ -27,18 +27,18 @@ struct InputUnit {
     std::string fileNameSuffix;
     Int_t corrType;
     Bool_t isNch;
-    Bool_t isPtdiff;
+    Bool_t isEtadiff;
     Int_t minRange;
     Int_t maxRange;
     Bool_t isMc;
 
-    InputUnit(std::string _fileNameSuffix, Int_t _corrType, Bool_t _isNch, Bool_t _isPtdiff, Int_t _minRange, Int_t _maxRange, Bool_t _isMc=false) :
-        fileNameSuffix(_fileNameSuffix), corrType(_corrType), isNch(_isNch), isPtdiff(_isPtdiff), minRange(_minRange), maxRange(_maxRange), isMc(_isMc) {}
+    InputUnit(std::string _fileNameSuffix, Int_t _corrType, Bool_t _isNch, Bool_t _isEtadiff, Int_t _minRange, Int_t _maxRange, Bool_t _isMc=false) :
+        fileNameSuffix(_fileNameSuffix), corrType(_corrType), isNch(_isNch), isEtadiff(_isEtadiff), minRange(_minRange), maxRange(_maxRange), isMc(_isMc) {}
 };
 
 void printAxesInfo(THnSparseF* sparseHist);
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc);
-void Read_dPhidEta_givenRange_PtDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t pTMin, Double_t pTMax, Bool_t isMc);
+void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc);
 
 // global variables
 std::string collisionSystemName = "peripheral PbPb";
@@ -70,11 +70,11 @@ void Process_dPhidEta() {
     
 
     for (auto input : inputList) {
-        if (input.isPtdiff) {
-            for (int iPt = 0; iPt < pTBins.size() - 1; iPt++) {
-                double pTMin = pTBins[iPt];
-                double pTMax = pTBins[iPt + 1];
-                Read_dPhidEta_givenRange_PtDiff(input.fileNameSuffix, input.corrType, input.isNch, input.minRange, input.maxRange, pTMin, pTMax, input.isMc);
+        if (input.isEtadiff) {
+            for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
+                double etaMin = etaBins[iEta];
+                double etaMax = etaBins[iEta + 1];
+                Read_dPhidEta_givenRange_EtaDiff(input.fileNameSuffix, input.corrType, input.isNch, input.minRange, input.maxRange, etaMin, etaMax, input.isMc);
             }
         }
         else {
@@ -404,11 +404,7 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
     std::cout << "Processing completed for all samples." << std::endl;
 }
 
-void Read_dPhidEta_givenRange_PtDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t pTMin, Double_t pTMax, Bool_t isMc=false) {
-    if (corrType == kFT0AFT0C) {
-        std::cout << "FT0A-FT0C correlation do not have pT information, return..." << std::endl;
-        return;
-    }
+void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc=false) {
     TFile *file = TFile::Open(Form("../AnalysisResultsROOTFiles/longRangeDihadronCorr/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
     if (!file || file->IsZombie()) {
         std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
@@ -465,18 +461,16 @@ void Read_dPhidEta_givenRange_PtDiff(std::string fileNameSuffix, Int_t corrType,
     trig->SetName(Form("Trig_hist_%i_%i", minRange, maxRange));
 
     // Common axis settings for all samples
-    // trigger particle: finer pT range
-    // asscoiated particle: reference pT range 0.2~3.0 GeV/c
-    sparSig->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(pTMin+0.001, pTMax-0.001);
-    sparMix->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(pTMin+0.001, pTMax-0.001);
+    // trigger particle: eta bins
+    // associated particle: reference eta range
+    sparSig->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(etaMin+0.0001, etaMax-0.0001);
+    sparMix->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(etaMin+0.0001, etaMax-0.0001);
     sparSig->GetAxis(corrAxis_kdEtaTPCTPC)->SetRangeUser(DihadrondEtaRange[corrType][0], DihadrondEtaRange[corrType][1]);
     sparMix->GetAxis(corrAxis_kdEtaTPCTPC)->SetRangeUser(DihadrondEtaRange[corrType][0], DihadrondEtaRange[corrType][1]);
-    // sparSig->GetAxis(corrAxis_kPt_TPC_asso)->SetRangeUser(minPt+0.001, maxPt-0.001);
-    // sparMix->GetAxis(corrAxis_kPt_TPC_asso)->SetRangeUser(minPt+0.001, maxPt-0.001);
-    trig->GetAxis(trigAxis_pT)->SetRangeUser(pTMin+0.001, pTMax-0.001);
+    trig->GetAxis(trigAxis_pT)->SetRangeUser(etaMin+0.0001, etaMax-0.0001);
 
     // Create output file
-    TFile* fout = TFile::Open(Form("./ProcessOutput/PtDiff/Mixed_%s%s_%s_%i_%i_Pt_%0.1f_%0.1f_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), pTMin, pTMax, DihadronCorrTypeName[corrType].c_str()), "RECREATE");
+    TFile* fout = TFile::Open(Form("./ProcessOutput/EtaDiff/Mixed_%s%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()), "RECREATE");
 
     // Process all samples: -1 (all), 0 to maxSample-1
     for (Int_t sample = -1; sample < maxSample; ++sample) {
