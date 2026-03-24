@@ -86,6 +86,8 @@ double Get3times2PC(double vnDelta_LM, double vnDelta_MR, double vnDelta_LR);
 double Get3times2PC_Error(double LM, double LM_err, double MR, double MR_err, double LR, double LR_err);
 VnUnit* Get3times2PC(VnUnit* LMvalues, VnUnit* MRvalues, VnUnit* LRvalues);
 
+std::string collisionSystemName = "Unknown";
+
 void Process_3times2PC() {
     // 不显示窗口
     gROOT->SetBatch(kTRUE);
@@ -100,6 +102,9 @@ void Process_3times2PC() {
     "LHC25af_pass1_537547_kFourierFit"));
 
     for (auto config : configList) {
+        if (!config.dataList.empty()) {
+            collisionSystemName = GetCollisionSystemNameFromDataset(config.dataList[0].fileNameSuffix);
+        }
         if (config.isEtaDiff) {
             ProcessConfig_EtaDiff(config.isNch, config.dataList, config.outputFileName);
         } else if (config.isPtDiff) {
@@ -168,6 +173,7 @@ void ProcessConfig_PtDiff(Bool_t isNch, std::vector<InputUnit> dataList, std::st
     hV3->Write();
     hV4->Write();
 
+    std::cout << "ALICE " << collisionSystemName << " 3times2PC" << std::endl;
     std::cout << "Output file: " << Form("./3times2PC/Vn_%s_%s_%i_%i.root", outputFileName.c_str(), splitName.c_str(), dataList[2].minRange, dataList[2].maxRange) << std::endl;
     outputFile.Close();
 }
