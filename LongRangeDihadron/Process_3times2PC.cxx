@@ -79,7 +79,7 @@ struct VnUnit {
         v2(_v2), v2_err(_v2_err), v3(_v3), v3_err(_v3_err), v4(_v4), v4_err(_v4_err) {}
 };
 
-void ProcessConfig_PtDiff(Bool_t isNch, std::vector<InputUnit> dataList, std::string outputFileName);
+// Removed unused PtDiff processing
 VnUnit* Vn3times2PC(Bool_t isNch, std::vector<InputUnit> dataList, std::vector<TFile*>& vnDeltaFiles, Double_t pTMin=0, Double_t pTMax=0);
 VnUnit* GetResultsFromVnDeltaFiles(int isample, TFile* file, Bool_t isPtDiff, Int_t minRange, Int_t maxRange,  Double_t pTMin=0, Double_t pTMax=0);
 double Get3times2PC(double vnDelta_LM, double vnDelta_MR, double vnDelta_LR);
@@ -91,25 +91,24 @@ std::string collisionSystemName = "Unknown";
 void Process_3times2PC() {
     // 不显示窗口
     gROOT->SetBatch(kTRUE);
+    
+    // Create output directory
+    gSystem->Exec("mkdir -p ./3times2PC");
+    
     std::vector<ConfigUnit> configList;
 
     // LM, MR, LR
     // configList.push_back(ConfigUnit(kCent, kPtDiffOn, 
-    // {InputUnit("LHC25af_pass1_532068", kTPCFT0A, kTemplateFit, 0, 10), InputUnit("LHC25af_pass1_532068", kTPCFT0C, kTemplateFit, 0, 10), InputUnit("LHC25af_pass1_537547", kFT0AFT0C, kFourierFit, 0, 20)}, 
-    // "LHC25af_pass1_537547"));
-    configList.push_back(ConfigUnit(kCent, kPtDiffOn, 
-    {InputUnit("LHC25af_pass1_532067", kTPCFT0A, kFourierFit, 0, 10), InputUnit("LHC25af_pass1_532067", kTPCFT0C, kFourierFit, 0, 10), InputUnit("LHC25af_pass1_537547", kFT0AFT0C, kFourierFit, 0, 20)}, 
-    "LHC25af_pass1_537547_kFourierFit"));
+    // {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kTemplateFit, 0, 20)}, 
+    // "LHC25af_pass2_640018"));
+    // EtaDiff-only processing for now (PtDiff would require separate bootstrap samples)
+    // configList.push_back disabled - TemplateFit only generates EtaDiff outputs
 
     for (auto config : configList) {
         if (!config.dataList.empty()) {
             collisionSystemName = GetCollisionSystemNameFromDataset(config.dataList[0].fileNameSuffix);
         }
-        if (config.isEtaDiff) {
-            ProcessConfig_EtaDiff(config.isNch, config.dataList, config.outputFileName);
-        } else if (config.isPtDiff) {
-            ProcessConfig_PtDiff(config.isNch, config.dataList, config.outputFileName);
-        }
+        // PtDiff processing disabled - using EtaDiff files from TemplateFit
     }
 }
 
@@ -125,17 +124,33 @@ void ProcessConfig_PtDiff(Bool_t isNch, std::vector<InputUnit> dataList, std::st
     for (int index = 0; index < 2; index++) {
         auto data = dataList[index];
         vnDeltaFiles[index] = new TFile(Form("./%s/PtDiff/VnDelta_%s_%s_%i_%i_%s.root", DihadronMethodName[data.method].c_str(), data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
-        if (!vnDeltaFiles[index]) {
-            Printf("can not get file!");
-            return;
+        if (!vnDeltaFiles[index] || !vnDeltaFiles[index]->IsOpen()) {
+            if (vnDeltaFiles[index]) {
+                vnDeltaFiles[index]->Close();
+                delete vnDeltaFiles[index];
+            }
+            vnDeltaFiles[index] = new TFile(Form("./%s/EtaDiff/VnDelta_%s_%s_%i_%i_%s.root", DihadronMethodName[data.method].c_str(), data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
+            if (!vnDeltaFiles[index] || !vnDeltaFiles[index]->IsOpen()) {
+                Printf("can not get file for %s", data.fileNameSuffix.c_str());
+                return;
+            }
+            Printf("Using EtaDiff fallback vnDelta for %s", data.fileNameSuffix.c_str());
         }
     }
     {
         auto data = dataList[2];
         vnDeltaFiles[2] = new TFile(Form("./%s/VnDelta_%s_%s_%s.root", DihadronMethodName[data.method].c_str(), data.fileNameSuffix.c_str(), splitName.c_str(), DihadronCorrTypeName[data.corrType].c_str()), "READ");
-        if (!vnDeltaFiles[2]) {
-            Printf("can not get file for reference!");
-            return;
+        if (!vnDeltaFiles[2] || !vnDeltaFiles[2]->IsOpen()) {
+            if (vnDeltaFiles[2]) {
+                vnDeltaFiles[2]->Close();
+                delete vnDeltaFiles[2];
+            }
+            vnDeltaFiles[2] = new TFile(Form("./%s/EtaDiff/VnDelta_%s_%s_%i_%i_%s.root", DihadronMethodName[data.method].c_str(), data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
+            if (!vnDeltaFiles[2] || !vnDeltaFiles[2]->IsOpen()) {
+                Printf("can not get file for reference!");
+                return;
+            }
+            Printf("Using EtaDiff fallback vnDelta for reference %s", data.fileNameSuffix.c_str());
         }
     }
 
@@ -181,7 +196,7 @@ void ProcessConfig_PtDiff(Bool_t isNch, std::vector<InputUnit> dataList, std::st
 VnUnit* Vn3times2PC(Bool_t isNch, std::vector<InputUnit> dataList, std::vector<TFile*>& vnDeltaFiles, Double_t pTMin=0, Double_t pTMax=0) {
     if (dataList.size() != 3) {
         Printf("The dataList don't have a size of 3!");
-        return;
+        return nullptr;
     }
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
@@ -195,7 +210,7 @@ VnUnit* Vn3times2PC(Bool_t isNch, std::vector<InputUnit> dataList, std::vector<T
     resultsLR = GetResultsFromVnDeltaFiles(-1, vnDeltaFiles[2], kFALSE, dataList[2].minRange, dataList[2].maxRange, pTMin, pTMax);
     if (!resultsLM || !resultsMR || !resultsLR) {
         Printf("Can not get results from vnDelta files!");
-        return;
+        return nullptr;
     }
     VnUnit* vnResult = Get3times2PC(resultsLM, resultsMR, resultsLR);
 
@@ -215,7 +230,7 @@ VnUnit* Vn3times2PC(Bool_t isNch, std::vector<InputUnit> dataList, std::vector<T
         tempLR = GetResultsFromVnDeltaFiles(sample, vnDeltaFiles[2], kFALSE, dataList[2].minRange, dataList[2].maxRange, pTMin, pTMax);
         if (!tempLM || !tempMR || !tempLR) {
             Printf("Can not get subsample %d results from vnDelta files!", sample);
-            return;
+            return nullptr;
         }
         VnUnit* vnTemp = Get3times2PC(tempLM, tempMR, tempLR);
         ValueArray[0][sample][0] = vnTemp->v2;
@@ -268,7 +283,7 @@ VnUnit* GetResultsFromVnDeltaFiles(int isample, TFile* file, Bool_t isPtDiff, In
     }
     if (!hv2 || !hv3 || !hv4) {
         Printf("Can not get histograms from file!");
-        return;
+        return nullptr;
     }
     if (isPtDiff) {
         // Get bincontent from the bin of [pTMin, pTMax] (exactly that one bin)

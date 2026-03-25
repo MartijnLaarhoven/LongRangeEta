@@ -610,19 +610,14 @@ void RooFourierFit(TH1 *hist, std::vector<Double_t>& fParamVal, std::vector<Doub
                           hist->GetXaxis()->GetXmax(), 
                           5);  // 4个参数
 
-    std::vector<double> Coeff;
-    HistFFT(hist, Coeff);
-    std::cout << "Coeff: " << Coeff[0] << " " << Coeff[1] << " " << Coeff[2] << " " << Coeff[3] << " " << Coeff[4] << " " << Coeff[5] << std::endl;
     // 设置初始参数（基于直方图特性）
-    // Cent
-    // fitFunc->SetParameter(0, hist->GetMean());  // 常数项初始化为平均值
-    // for (int i = 1; i < 5; ++i) {
-    //     fitFunc->SetParameter(i, 0.1 * hist->GetRMS());  // 谐波项初始值设为RMS的10%
-    // }
-    // Mult
-    fitFunc->SetParameter(0, Coeff[0]);  // 常数项初始化为平均值
+    // Use histogram statistics rather than potentially huge FFT coefficients
+    double histMean = hist->GetMean();
+    double histRMS = hist->GetRMS();
+    
+    fitFunc->SetParameter(0, histMean);  // 常数项初始化为平均值
     for (int i = 1; i < 5; ++i) {
-        fitFunc->SetParameter(i, Coeff[i]);  // 谐波项初始值设为RMS的10%
+        fitFunc->SetParameter(i, 0.1 * histRMS);  // 谐波项初始值设为RMS的10%
     }
 
     // 设置参数名称（可选）

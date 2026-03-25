@@ -35,20 +35,17 @@ void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, B
 void Process_CreateBootstrapSample() {
 
     std::vector<InputUnit> inputList;
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0A, kCent, kPtDiffOff, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0A, kCent, kPtDiffOff, 80, 100));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0C, kCent, kPtDiffOff, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0C, kCent, kPtDiffOff, 80, 100));
-    // inputList.push_back(InputUnit("LHC25af_pass1_531635", kFT0AFT0C, kCent, kPtDiffOff, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_531635", kFT0AFT0C, kCent, kPtDiffOff, 80, 100));
 
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0A, kCent, kPtDiffOn, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0A, kCent, kPtDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0C, kCent, kPtDiffOn, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0C, kCent, kPtDiffOn, 80, 100));
-
-    inputList.push_back(InputUnit("LHC25af_pass1_537547", kFT0AFT0C, kCent, kPtDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass1_537548", kFT0AFT0C, kCent, kPtDiffOff, 80, 100));
+    // Ne-Ne EtaDiff centrality-based
+    // Dataset 1: LHC25af_pass2_632504 with TPC_FT0A
+    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
+    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 80, 100));
 
     for (auto input : inputList) {
         if (input.isEtadiff) {
@@ -84,13 +81,15 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
     // 读取所有样本直方图
     std::vector<TH1D*> hists;
     for (Int_t sample = 0; sample < maxSample; ++sample) {
-        TH1D* h = dynamic_cast<TH1D*>(
+        TH1D* hIn = dynamic_cast<TH1D*>(
             file->Get(Form("hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample))
         );
-        if (!h) {
+        if (!hIn) {
             std::cerr << "Error loading histogram for sample " << sample << std::endl;
             continue;
         }
+        TH1D* h = dynamic_cast<TH1D*>(hIn->Clone(Form("tmp_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample)));
+        h->SetDirectory(nullptr);
         hists.push_back(h);
     }
 
@@ -112,15 +111,23 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
         return;
     }
 
-    TH1D* hAll = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
-    if (!hAll) {
+    TH1D* hAllIn = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+    if (!hAllIn) {
         std::cerr << "Error loading all-sample histogram!" << std::endl;
+        for (auto* h : hists) delete h;
+        outFile->Close();
+        file->Close();
+        delete outFile;
+        delete file;
         return;
     }
+    TH1D* hAll = dynamic_cast<TH1D*>(hAllIn->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+    hAll->SetDirectory(nullptr);
     hAll->SetName(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->SetTitle(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->GetXaxis()->SetTitle("#Delta#varphi");
     hAll->Write();
+    delete hAll;
 
     // 初始化随机数生成器
     TRandom3 randGen;
@@ -177,6 +184,7 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
     // 清理资源
     outFile->Close();
     file->Close();
+    for (auto* h : hists) delete h;
     delete outFile;
     delete file;
 }
