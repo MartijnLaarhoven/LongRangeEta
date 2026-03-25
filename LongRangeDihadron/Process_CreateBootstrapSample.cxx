@@ -312,6 +312,9 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
     
+    // Create output directory if it doesn't exist
+    gSystem->mkdir("./ProcessOutput", kTRUE);
+    
     // Read all EtaDiff bootstrap files and sum histograms across eta bins
     std::vector<std::string> etaDiffFiles;
     for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
