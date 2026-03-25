@@ -1,0 +1,21 @@
+# Build artifacts
+*.so
+*.d
+*.pcm
+*_cxx_ACLiC_*
+
+# ROOT output directories
+ProcessOutput/
+TemplateFit/
+BootstrapOutput/
+
+# Analysis results
+AnalysisResultsROOTFiles/
+FakeFullSamples/
+
+# System files
+.DS_Store
+*.root~
+
+# Temporary files
+root.sys.*.macros.so.tmp
