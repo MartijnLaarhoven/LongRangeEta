@@ -119,20 +119,22 @@ void Process_FourierFit() {
     // configList.push_back(ConfigUnit(kCent, kPtDiffOff,
     // {InputUnit("LHC25af_pass1_532067", kTPCFT0C, 0, 10)}, 
     // "LHC25af_pass1_532067"));
-    configList.push_back(ConfigUnit(kCent, kPtDiffOn,
-    {InputUnit("LHC25af_pass1_532067", kTPCFT0A, 0, 10)}, 
-    "LHC25af_pass1_532067"));
-    configList.push_back(ConfigUnit(kCent, kPtDiffOn,
-    {InputUnit("LHC25af_pass1_532067", kTPCFT0C, 0, 10)}, 
-    "LHC25af_pass1_532067"));
+    // Ne-Ne inner ring datasets (Cent 0-20)
+    configList.push_back(ConfigUnit(kCent, kPtDiffOff,
+    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, 0, 20)},
+    "LHC25af_pass2_632504"));
+    configList.push_back(ConfigUnit(kCent, kPtDiffOff,
+    {InputUnit("LHC25af_pass2_637596", kTPCFT0C, 0, 20)},
+    "LHC25af_pass2_637596"));
+    configList.push_back(ConfigUnit(kCent, kPtDiffOff,
+    {InputUnit("LHC25af_pass2_640018", kFT0AFT0C, 0, 20)},
+    "LHC25af_pass2_640018"));
 
     for (auto config : configList) {
         if (!config.dataList.empty()) {
             collisionSystemName = GetCollisionSystemNameFromDataset(config.dataList[0].fileNameSuffix);
         }
-        if (config.isEtaDiff) {
-            ProcessConfig_EtaDiff(config.isNch, config.dataList, config.outputFileName);
-        } else if (config.isPtDiff) {
+        if (config.isPtDiff) {
             ProcessConfig_PtDiff(config.isNch, config.dataList, config.outputFileName);
         } else {
             ProcessConfig(config.isNch, config.dataList, config.outputFileName);
@@ -386,8 +388,17 @@ VnUnit* FourierFit(Bool_t isNch, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin
 
     TFile* datafile = new TFile(Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
     if (!datafile || !datafile->IsOpen()) {
-        std::cerr << "Cannot open input file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()) << std::endl;
-        exit(1);
+        if (datafile) {
+            datafile->Close();
+            delete datafile;
+            datafile = nullptr;
+        }
+        datafile = new TFile(Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%d_%d_Eta_0.0_0.1_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
+        if (!datafile || !datafile->IsOpen()) {
+            std::cerr << "Cannot open input file (default and EtaDiff fallback both failed) for " << data.fileNameSuffix << std::endl;
+            exit(1);
+        }
+        std::cout << "Using EtaDiff fallback bootstrap file for FourierFit: " << data.fileNameSuffix << std::endl;
     }
     TFile* datafile_PtDiff = nullptr;
     if (pTMin > 0 && pTMax > 0) {
@@ -805,20 +816,20 @@ void PlotFitting(TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t minRange, 
 
     // 创建拟合曲线
     const int pointBin = (int)hm->GetNbinsX();
-    Double_t CopyPointX[pointBin];
-    Double_t CopyPointY[pointBin];
+    std::vector<Double_t> CopyPointX(pointBin);
+    std::vector<Double_t> CopyPointY(pointBin);
     for (int i=0; i<pointBin; ++i){
       CopyPointX[i] = hm->GetBinCenter(i+1);
       double x = hm->GetBinCenter(i+1);
       CopyPointY[i] = a0 + 2*a1*cos(x) + 2*a2*cos(2*x) + 2*a3*cos(3*x) + 2*a4*cos(4*x);
     };
-    TGraph* gCopy = new TGraph(pointBin,CopyPointX,CopyPointY);
+    TGraph* gCopy = new TGraph(pointBin,CopyPointX.data(),CopyPointY.data());
 
-    Double_t PeriPointY[pointBin];
+    std::vector<Double_t> PeriPointY(pointBin);
     for (int i=0; i<pointBin; ++i){
       PeriPointY[i] = a0;
     };
-    TGraph* gPeri = new TGraph(pointBin,CopyPointX,PeriPointY);
+    TGraph* gPeri = new TGraph(pointBin,CopyPointX.data(),PeriPointY.data());
 
     gCopy->SetLineColor(colors[0]);
     gCopy->SetLineWidth(2);

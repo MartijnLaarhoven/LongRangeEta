@@ -125,9 +125,18 @@ void Process_TemplateFit() {
     // configList.push_back(ConfigUnit(kCent, kPtDiffOff, InputUnit("LHC25af_pass1_531635", kFT0AFT0C, 80, 100), 
     // {InputUnit("LHC25af_pass1_531635", kFT0AFT0C, 0, 10)}, 
     // "LHC25af_pass1_531635"));
-    configList.push_back(ConfigUnit(kCent, kPtDiffOff, InputUnit("LHC25af_pass1_537548", kFT0AFT0C, 80, 100), 
-    {InputUnit("LHC25af_pass1_537547", kFT0AFT0C, 0, 20)}, 
-    "LHC25af_pass1_537548"));
+    // Ne-Ne inner ring datasets (template: 80-100, signal: 0-20)
+    configList.push_back(ConfigUnit(kCent, kPtDiffOff, kEtaDiffOn, InputUnit("LHC25af_pass2_632504", kTPCFT0A, 80, 100),
+    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, 0, 20)},
+    "LHC25af_pass2_632504"));
+
+    configList.push_back(ConfigUnit(kCent, kPtDiffOff, kEtaDiffOn, InputUnit("LHC25af_pass2_637596", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_637596", kTPCFT0C, 0, 20)},
+    "LHC25af_pass2_637596"));
+
+    configList.push_back(ConfigUnit(kCent, kPtDiffOff, kEtaDiffOn, InputUnit("LHC25af_pass2_640018", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_640018", kFT0AFT0C, 0, 20)},
+    "LHC25af_pass2_640018"));
 
     for (auto config : configList) {
         collisionSystemName = GetCollisionSystemNameFromDataset(config.templ.fileNameSuffix);
@@ -620,33 +629,24 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
 
-    TFile* templatefile = new TFile(Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, DihadronCorrTypeName[templ.corrType].c_str()), "READ");
-    if (!templatefile || !templatefile->IsOpen()) {
-        std::cerr << "Cannot open template file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, DihadronCorrTypeName[templ.corrType].c_str()) << std::endl;
-        exit(1);
-    }
     TFile* templatefile_EtaDiff = nullptr;
+    TFile* datafile_EtaDiff = nullptr;
     if (etaMin > -0.9 && etaMax < 0.9) {
         templatefile_EtaDiff = new TFile(Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%d_%d_Eta_%0.1f_%0.1f_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, etaMin, etaMax, DihadronCorrTypeName[templ.corrType].c_str()), "READ");
         if (!templatefile_EtaDiff || !templatefile_EtaDiff->IsOpen()) {
             std::cerr << "Cannot open template file: " << Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%d_%d_Eta_%0.1f_%0.1f_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, etaMin, etaMax, DihadronCorrTypeName[templ.corrType].c_str()) << std::endl;
             exit(1);
         }
-    }
 
-    TFile* datafile = new TFile(Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
-    if (!datafile || !datafile->IsOpen()) {
-        std::cerr << "Cannot open input file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()) << std::endl;
-        exit(1);
-    }
-    TFile* datafile_EtaDiff = nullptr;
-    if (etaMin > -0.9 && etaMax < 0.9) {
         datafile_EtaDiff = new TFile(Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, etaMin, etaMax, DihadronCorrTypeName[data.corrType].c_str()), "READ");
         if (!datafile_EtaDiff || !datafile_EtaDiff->IsOpen()) {
             std::cerr << "Cannot open input file: " << Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, etaMin, etaMax, DihadronCorrTypeName[data.corrType].c_str()) << std::endl;
             exit(1);
         }
     }
+
+    TFile* templatefile = templatefile_EtaDiff;
+    TFile* datafile = datafile_EtaDiff;
 
     VnUnit* vnResult = fitSample(isNch, templatefile, templ, datafile, data, -1);
     if (!vnResult) {
@@ -759,6 +759,9 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
 
     return vnResult;
 }
+
+//==============================================================
+std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits) {
     std::vector<InputUnit> sortedUnits = inputUnits;
     // 按 minRange 升序排序
     std::sort(sortedUnits.begin(), sortedUnits.end(),
@@ -970,21 +973,21 @@ void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t m
 
     // 创建拟合曲线
     const int pointBin = (int)hm->GetNbinsX();
-    Double_t CopyPointX[pointBin];
-    Double_t CopyPointY[pointBin];
+    std::vector<Double_t> CopyPointX(pointBin);
+    std::vector<Double_t> CopyPointY(pointBin);
     for (int i=0; i<pointBin; ++i){
       CopyPointX[i] = hm->GetBinCenter(i+1);
       double x = hm->GetBinCenter(i+1);
       // CopyPointY[i] = F*lm->GetBinContent(i+1)+G*(1+2*v21*cos(2*x)+2*v31*cos(3*x));
       CopyPointY[i] = F*lm->GetBinContent(i+1)+G*(1+2*v21*cos(2*x)+2*v31*cos(3*x)+2*v41*cos(4*x));
     };
-    TGraph* gCopy = new TGraph(pointBin,CopyPointX,CopyPointY);
+    TGraph* gCopy = new TGraph(pointBin,CopyPointX.data(),CopyPointY.data());
 
-    Double_t PeriPointY[pointBin];
+    std::vector<Double_t> PeriPointY(pointBin);
     for (int i=0; i<pointBin; ++i){
       PeriPointY[i] = F*lm->GetBinContent(i+1) + G;
     };
-    TGraph* gPeri = new TGraph(pointBin,CopyPointX,PeriPointY);
+    TGraph* gPeri = new TGraph(pointBin,CopyPointX.data(),PeriPointY.data());
 
     Double_t Y0Position = lm->GetXaxis()->FindBin(0.0);
     Double_t Y0 = lm->GetBinContent(Y0Position);
