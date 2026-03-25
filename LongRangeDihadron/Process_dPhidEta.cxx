@@ -17,6 +17,7 @@
 #include <TRandom3.h>
 #include "TMath.h"
 #include "THnSparse.h"
+#include "TSystem.h"
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -52,20 +53,16 @@ void Process_dPhidEta() {
     additionalSuffix = "";
     
     collisionSystemName = "Ne-Ne";
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0A, kCent, kPtDiffOff, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0A, kCent, kPtDiffOff, 80, 100));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0C, kCent, kPtDiffOff, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0C, kCent, kPtDiffOff, 80, 100));
-    // inputList.push_back(InputUnit("LHC25af_pass1_531635", kFT0AFT0C, kCent, kPtDiffOff, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_531635", kFT0AFT0C, kCent, kPtDiffOff, 80, 100));
-
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0A, kCent, kPtDiffOn, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0A, kCent, kPtDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532067", kTPCFT0C, kCent, kPtDiffOn, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass1_532068", kTPCFT0C, kCent, kPtDiffOn, 80, 100));
-
-    // inputList.push_back(InputUnit("LHC25af_pass1_537547", kFT0AFT0C, kCent, kPtDiffOff, 0, 20));
-    // inputList.push_back(InputUnit("LHC25af_pass1_537548", kFT0AFT0C, kCent, kPtDiffOff, 80, 100));
+    // Ne-Ne EtaDiff centrality-based
+    // Dataset 1: LHC25af_pass2_632504 with TPC_FT0A
+    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
+    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 80, 100));
     
     
 
@@ -153,6 +150,12 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 
     CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/sameEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
     CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/mixedEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
+    if (!same) {
+        same = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/sameEvent", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+    }
+    if (!mixed) {
+        mixed = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/mixedEvent", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+    }
     THnSparseD *trig = nullptr;
     if (!isMc) {
         trig = (THnSparseD*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/Trig_hist_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
@@ -168,8 +171,8 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         return;
     }
 
-    Int_t step = CorrelationContainer::kCFStepReconstructed;
-    if (isMc) step = CorrelationContainer::kCFStepAll;
+    Int_t step = CorrelationContainer::kCFStepAll;
+    if (!isMc && corrType != kFT0AFT0C) step = CorrelationContainer::kCFStepReconstructed;
 
     THnSparseF *sparSig = (THnSparseF*)same->getPairHist()->getTHn(step);
     THnSparseF *sparMix = (THnSparseF*)mixed->getPairHist()->getTHn(step);
@@ -405,7 +408,11 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 }
 
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc=false) {
-    TFile *file = TFile::Open(Form("../AnalysisResultsROOTFiles/longRangeDihadronCorr/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
+    // Create output directories first
+    gSystem->mkdir("./ProcessOutput", kTRUE);
+    gSystem->mkdir("./ProcessOutput/EtaDiff", kTRUE);
+
+    TFile *file = TFile::Open(Form("../../../AnalysisResultsROOTFiles/LongRangeEta/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
     if (!file || file->IsZombie()) {
         std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
         return;
@@ -416,7 +423,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
 
     // check if MCTrue folder is available
     if (isMc) {
-        if (!file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
+        if (!file->Get(Form("flow-decorrelation_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
             std::cerr << "Error: MCTrue folder not found for " << fileNameSuffix << std::endl;
             file->Close();
             delete file;
@@ -424,7 +431,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         }
     }
     else {
-        if (file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
+        if (file->Get(Form("flow-decorrelation_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
             std::cerr << "Caution! you are using Reco or Data, but MCTrue folder is found for " << fileNameSuffix << std::endl;
             file->Close();
             delete file;
@@ -433,15 +440,92 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
     }
 
 
-    CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/sameEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
-    CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/mixedEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
+    TString flowDir = Form("flow-decorrelation_%s%s_%d_%d", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange);
+
     THnSparseD *trig = nullptr;
     if (!isMc) {
-        trig = (THnSparseD*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/Trig_hist_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
+        trig = (THnSparseD*)file->Get(Form("%s/Trig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
     } else {
-        trig = (THnSparseD*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/MCTrue/MCTrig_hist_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
+        trig = (THnSparseD*)file->Get(Form("%s/MCTrue/MCTrig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
     }
-    
+
+    if (!isMc && corrType == kFT0AFT0C) {
+        TH2D* hPhiEtaS = (TH2D*)file->Get(Form("%s/deltaEta_deltaPhi_same_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        TH2D* hPhiEtaM = (TH2D*)file->Get(Form("%s/deltaEta_deltaPhi_mixed_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+
+        if (!hPhiEtaS || !hPhiEtaM || !trig) {
+            std::cerr << "Error getting FT0A_FT0C histograms for " << fileNameSuffix << " with " << splitName << " and range [" << minRange << ", " << maxRange << "]" << std::endl;
+            file->Close();
+            delete file;
+            return;
+        }
+
+        TH2D* hPhiEtaSLocal = (TH2D*)hPhiEtaS->Clone(Form("sameEvent_%i_%i", minRange, maxRange));
+        TH2D* hPhiEtaMLocal = (TH2D*)hPhiEtaM->Clone(Form("mixedEvent_%i_%i", minRange, maxRange));
+
+        Int_t binPhi1 = hPhiEtaMLocal->GetXaxis()->FindBin(-TMath::Pi()/2 + 0.0001);
+        Int_t binPhi2 = hPhiEtaMLocal->GetXaxis()->FindBin(3*TMath::Pi()/2 - 0.0001);
+        Int_t binEta1 = hPhiEtaMLocal->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]-0.001);
+        Int_t binEta2 = hPhiEtaMLocal->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]+0.001);
+        Double_t norm = hPhiEtaMLocal->Integral(binPhi1, binPhi2, binEta1, binEta2);
+        if (norm <= 0) {
+            std::cerr << "Error: invalid mixed-event normalization for FT0A_FT0C in " << fileNameSuffix << std::endl;
+            delete hPhiEtaSLocal;
+            delete hPhiEtaMLocal;
+            file->Close();
+            delete file;
+            return;
+        }
+        hPhiEtaMLocal->Scale(1./norm);
+
+        TH2D* hPhiEtaSM = (TH2D*)hPhiEtaSLocal->Clone(Form("hPhiEtaSameOverMixed_%i_%i", minRange, maxRange));
+        hPhiEtaSM->Divide(hPhiEtaMLocal);
+
+        Int_t binEtaLow = hPhiEtaSM->GetYaxis()->FindBin(DihadrondEtaRange[corrType][0] + 0.001);
+        Int_t binEtaHigh = hPhiEtaSM->GetYaxis()->FindBin(DihadrondEtaRange[corrType][1] - 0.001);
+        TH1D* hPhiSMsum = (TH1D*)hPhiEtaSM->ProjectionX(Form("hPhiSameOverMixed_%i_%i", minRange, maxRange), binEtaLow, binEtaHigh);
+        hPhiSMsum->Scale(1./(binEtaHigh - binEtaLow + 1));
+
+        gSystem->mkdir("./ProcessOutput/EtaDiff", kTRUE);
+        TFile* fout = TFile::Open(Form("./ProcessOutput/EtaDiff/Mixed_%s%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()), "RECREATE");
+        if (!fout || !fout->IsOpen()) {
+            std::cerr << "Error creating output file for eta range [" << etaMin << ", " << etaMax << "]" << std::endl;
+            if (fout) { fout->Close(); delete fout; }
+            delete hPhiEtaSM;
+            delete hPhiSMsum;
+            file->Close();
+            delete file;
+            return;
+        }
+        hPhiEtaSM->Write();
+        hPhiSMsum->Write();
+
+        for (Int_t sample = 0; sample < maxSample; ++sample) {
+            TH1D* hSample = (TH1D*)hPhiSMsum->Clone(Form("hPhiSameOverMixed_%i_%i_%d", minRange, maxRange, sample));
+            hSample->Write();
+            delete hSample;
+        }
+
+        fout->Close();
+        delete fout;
+        delete hPhiEtaSM;
+        delete hPhiSMsum;
+        delete hPhiEtaSLocal;
+        delete hPhiEtaMLocal;
+        file->Close();
+        delete file;
+        std::cout << "Saved FT0A_FT0C direct-hist result to ./ProcessOutput/EtaDiff/Mixed_" << fileNameSuffix << additionalSuffix << "_" << splitName << "_" << int(minRange) << "_" << int(maxRange) << "_Eta_" << etaMin << "_" << etaMax << "_" << DihadronCorrTypeName[corrType] << ".root" << std::endl;
+        return;
+    }
+
+    CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("%s/sameEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    if (!same) {
+        same = (CorrelationContainer*)file->Get(Form("%s/sameEvent", flowDir.Data()));
+    }
+    if (!mixed) {
+        mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent", flowDir.Data()));
+    }
 
     if (!same || !mixed || !trig) {
         std::cerr << "Error getting histograms for " << fileNameSuffix << " with " << splitName << " and range [" << minRange << ", " << maxRange << "]" << std::endl;
@@ -625,7 +709,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         latex.SetNDC();
         latex.SetTextSize(0.04);
         latex.DrawLatex(0.1, 0.90, Form("ALICE %s", collisionSystemName.c_str()));
-        latex.DrawLatex(0.1, 0.85, Form("p_{T}^{trig} #in [%0.1f, %0.1f] GeV/c, p_{T}^{asso} #in [%0.1f, %0.1f] GeV/c", pTMin, pTMax, minPt, maxPt));
+        latex.DrawLatex(0.1, 0.85, Form("#eta^{trig} #in [%0.1f, %0.1f], #eta^{asso} range", etaMin, etaMax));
 
 
         c1->cd(3);
@@ -633,7 +717,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         latex.SetNDC();
         latex.SetTextSize(0.04);
         latex.DrawLatex(0.1, 0.90, Form("ALICE %s", collisionSystemName.c_str()));
-        latex.DrawLatex(0.1, 0.85, Form("p_{T}^{trig} #in [%0.1f, %0.1f] GeV/c, p_{T}^{asso} #in [%0.1f, %0.1f] GeV/c", pTMin, pTMax, minPt, maxPt));
+        latex.DrawLatex(0.1, 0.85, Form("#eta^{trig} #in [%0.1f, %0.1f], #eta^{asso} range", etaMin, etaMax));
 
 
         c1->cd(4);
@@ -641,7 +725,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         latex.SetNDC();
         latex.SetTextSize(0.04);
         latex.DrawLatex(0.1, 0.90, Form("ALICE %s", collisionSystemName.c_str()));
-        latex.DrawLatex(0.1, 0.85, Form("p_{T}^{trig} #in [%0.1f, %0.1f] GeV/c, p_{T}^{asso} #in [%0.1f, %0.1f] GeV/c", pTMin, pTMax, minPt, maxPt));
+        latex.DrawLatex(0.1, 0.85, Form("#eta^{trig} #in [%0.1f, %0.1f], #eta^{asso} range", etaMin, etaMax));
 
         // Saving to file
         fout->cd();
@@ -679,8 +763,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
     delete file;
     delete sparSig;
     delete sparMix;
-    // End of process
-    std::cout << "Output file: " << Form("./ProcessOutput/PtDiff/Mixed_%s%s_%s_%i_%i_Pt_%0.1f_%0.1f_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), pTMin, pTMax, DihadronCorrTypeName[corrType].c_str()) << std::endl;
+    std::cout << "Output file: " << Form("./ProcessOutput/EtaDiff/Mixed_%s%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()) << std::endl;
     std::cout << "Processing completed for all samples." << std::endl;
 }
 
