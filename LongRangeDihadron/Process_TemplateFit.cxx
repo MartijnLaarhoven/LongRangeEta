@@ -816,10 +816,31 @@ VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* dat
         std::cerr << "Cannot find histogram: " << Form("bsSample_hPhiSameOverMixed_%d_%d%s", data.minRange, data.maxRange, suffix.Data()) << std::endl;
         return 0;
     }
-    RooTempFitter(lm, hm, fParamVal, fParamErr, kFALSE);
+    TH1D* lmSafe = dynamic_cast<TH1D*>(lm->Clone(Form("%s_safe", lm->GetName())));
+    TH1D* hmSafe = dynamic_cast<TH1D*>(hm->Clone(Form("%s_safe", hm->GetName())));
+    auto sanitizeHist = [](TH1D* hist) {
+        if (!hist) return;
+        for (Int_t ibin = 1; ibin <= hist->GetNbinsX(); ++ibin) {
+            const Double_t value = hist->GetBinContent(ibin);
+            Double_t error = hist->GetBinError(ibin);
+            if (!std::isfinite(value)) {
+                hist->SetBinContent(ibin, 0.0);
+            }
+            if (!std::isfinite(error) || error <= 0.0) {
+                error = 1e-6;
+                hist->SetBinError(ibin, error);
+            }
+        }
+    };
+    sanitizeHist(lmSafe);
+    sanitizeHist(hmSafe);
+
+    RooTempFitter(lmSafe, hmSafe, fParamVal, fParamErr, kFALSE);
     if (sample == -1) {
-        PlotFitting(lm, hm, isNch, data.fileNameSuffix, data.minRange, data.maxRange, fParamVal, fParamErr, data.corrType, pTMin, pTMax);
+        PlotFitting(lmSafe, hmSafe, isNch, data.fileNameSuffix, data.minRange, data.maxRange, fParamVal, fParamErr, data.corrType, pTMin, pTMax);
     }
+    delete lmSafe;
+    delete hmSafe;
     VnUnit* vnResult = new VnUnit(fParamVal[0], fParamErr[0], fParamVal[1], fParamErr[1], fParamVal[2], fParamErr[2]);
     return vnResult;
 }

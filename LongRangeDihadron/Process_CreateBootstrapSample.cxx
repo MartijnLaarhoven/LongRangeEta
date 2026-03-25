@@ -85,15 +85,13 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
     // 读取所有样本直方图
     std::vector<TH1D*> hists;
     for (Int_t sample = 0; sample < maxSample; ++sample) {
-        TH1D* hIn = dynamic_cast<TH1D*>(
+        TH1D* h = dynamic_cast<TH1D*>(
             file->Get(Form("hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample))
         );
-        if (!hIn) {
+        if (!h) {
             std::cerr << "Error loading histogram for sample " << sample << std::endl;
             continue;
         }
-        TH1D* h = dynamic_cast<TH1D*>(hIn->Clone(Form("tmp_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample)));
-        h->SetDirectory(nullptr);
         hists.push_back(h);
     }
 
@@ -115,23 +113,15 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
         return;
     }
 
-    TH1D* hAllIn = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
-    if (!hAllIn) {
+    TH1D* hAll = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+    if (!hAll) {
         std::cerr << "Error loading all-sample histogram!" << std::endl;
-        for (auto* h : hists) delete h;
-        outFile->Close();
-        file->Close();
-        delete outFile;
-        delete file;
         return;
     }
-    TH1D* hAll = dynamic_cast<TH1D*>(hAllIn->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
-    hAll->SetDirectory(nullptr);
     hAll->SetName(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->SetTitle(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->GetXaxis()->SetTitle("#Delta#varphi");
     hAll->Write();
-    delete hAll;
 
     // 初始化随机数生成器
     TRandom3 randGen;
@@ -163,12 +153,8 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
                     Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs)
                 ));
                 hmerge->SetTitle(Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs));
-                // hmerge->Scale(weight);
-                // std::cout << "bs: " << bs << " idx: " << idx << " weight: " << weight << std::endl;
                 totalWeight = weight;
             } else {       // 后续累加
-                // current->Scale(weight);
-                // hmerge->Add(current, weight);
                 hmerge->Add(current);
                 totalWeight += weight;
             }
@@ -176,12 +162,9 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
 
         // 归一化并保存
         if (hmerge && totalWeight > 0) {
-            // hmerge->Scale(1.0 / totalWeight);
             hmerge->Scale(1.0 / selectedIndices.size());
-            // Printf("size: %d", selectedIndices.size());
-            // hmerge->SetDirectory(outFile);
             hmerge->Write();
-            // delete hmerge; // 释放内存
+            delete hmerge;
         }
     }
 
@@ -196,28 +179,32 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
 void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax) {
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
+    gSystem->mkdir("./ProcessOutput/EtaDiff", kTRUE);
+    
+    TString inputPath = Form("./ProcessOutput/EtaDiff/Mixed_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", 
+             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, etaMin, etaMax, DihadronCorrTypeName[corrType].c_str());
+    
+    std::cout << "[CreateBootstrapSample_EtaDiff] Attempting to open: " << inputPath.Data() << std::endl;
     
     // 打开输入文件
-    TFile* file = TFile::Open(
-        Form("./ProcessOutput/EtaDiff/Mixed_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", 
-             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()), 
-        "READ"
-    );
+    TFile* file = TFile::Open(inputPath.Data(), "READ");
     if (!file || file->IsZombie()) {
-        std::cerr << "Error opening input file!" << std::endl;
+        std::cerr << "[CreateBootstrapSample_EtaDiff] Error opening input file!" << std::endl;
         return;
     }
 
-    // 读取所有样本直方图
+    // 读取所有样本直方图（clone后脱离输入文件，避免文件关闭后悬空指针）
     std::vector<TH1D*> hists;
     for (Int_t sample = 0; sample < maxSample; ++sample) {
-        TH1D* h = dynamic_cast<TH1D*>(
+        TH1D* hIn = dynamic_cast<TH1D*>(
             file->Get(Form("hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample))
         );
-        if (!h) {
+        if (!hIn) {
             std::cerr << "Error loading histogram for sample " << sample << std::endl;
             continue;
         }
+        TH1D* h = dynamic_cast<TH1D*>(hIn->Clone(Form("tmp_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample)));
+        h->SetDirectory(nullptr);
         hists.push_back(h);
     }
 
@@ -239,15 +226,24 @@ void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, B
         return;
     }
 
-    TH1D* hAll = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
-    if (!hAll) {
+    TH1D* hAllIn = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+    if (!hAllIn) {
         std::cerr << "Error loading all-sample histogram!" << std::endl;
+        outFile->Close();
+        file->Close();
+        for (auto* h : hists) delete h;
+        delete outFile;
+        delete file;
         return;
     }
+    TH1D* hAll = dynamic_cast<TH1D*>(hAllIn->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+    hAll->SetDirectory(nullptr);
     hAll->SetName(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->SetTitle(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->GetXaxis()->SetTitle("#Delta#varphi");
+    outFile->cd();
     hAll->Write();
+    delete hAll;
 
     // 初始化随机数生成器
     TRandom3 randGen;
@@ -304,6 +300,7 @@ void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, B
     // 清理资源
     outFile->Close();
     file->Close();
+    for (auto* h : hists) delete h;
     delete outFile;
     delete file;
 }
@@ -315,56 +312,75 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
     // Create output directory if it doesn't exist
     gSystem->mkdir("./ProcessOutput", kTRUE);
     
-    // Read all EtaDiff bootstrap files and sum histograms across eta bins
-    std::vector<std::string> etaDiffFiles;
-    for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
-        double etaMin = etaBins[iEta];
-        double etaMax = etaBins[iEta + 1];
-        etaDiffFiles.push_back(
-            Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", 
-                 fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, etaMin, etaMax, DihadronCorrTypeName[corrType].c_str())
-        );
-    }
-    
     // Create output file for aggregate bootstrap samples
-    TFile* outFile = TFile::Open(
-        Form("./ProcessOutput/BootstrapSample_%s_%s_%i_%i_%s.root", 
-             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()), 
-        "RECREATE"
-    );
+    TString outputPath = Form("./ProcessOutput/BootstrapSample_%s_%s_%i_%i_%s.root", 
+             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str());
+    
+    TFile* outFile = TFile::Open(outputPath.Data(), "RECREATE");
     if (!outFile || outFile->IsZombie()) {
         std::cerr << "Error creating aggregate output file!" << std::endl;
         return;
     }
     
+    // Helper: open eta-diff bootstrap file, tolerant to formatting variants (0 vs 0.0)
+    auto openEtaBootstrapFile = [&](double etaMin, double etaMax) -> TFile* {
+        TString pathA = Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root",
+                            fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange,
+                            etaMin, etaMax, DihadronCorrTypeName[corrType].c_str());
+        TFile* file = TFile::Open(pathA.Data(), "READ");
+        if (file && !file->IsZombie()) return file;
+        if (file) {
+            file->Close();
+            delete file;
+        }
+
+        TString pathB = Form("./ProcessOutput/EtaDiff/BootstrapSample_%s_%s_%i_%i_Eta_%g_%g_%s.root",
+                            fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange,
+                            etaMin, etaMax, DihadronCorrTypeName[corrType].c_str());
+        file = TFile::Open(pathB.Data(), "READ");
+        if (file && !file->IsZombie()) return file;
+        if (file) {
+            file->Close();
+            delete file;
+        }
+        return nullptr;
+    };
+
     // First, sum the main histogram across all eta bins
     TH1D* hAggregate = nullptr;
-    for (const auto& filePath : etaDiffFiles) {
-        TFile* etaFile = TFile::Open(filePath.c_str(), "READ");
-        if (!etaFile || etaFile->IsZombie()) {
-            std::cerr << "Cannot open eta-diff file: " << filePath << std::endl;
+    int nMainContributors = 0;
+    for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
+        double etaMin = etaBins[iEta];
+        double etaMax = etaBins[iEta + 1];
+        TFile* etaFile = openEtaBootstrapFile(etaMin, etaMax);
+        if (!etaFile) {
             continue;
         }
         
-        TH1D* h = dynamic_cast<TH1D*>(etaFile->Get(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
-        if (!h) {
-            std::cerr << "Cannot find histogram in: " << filePath << std::endl;
+        TH1D* hIn = dynamic_cast<TH1D*>(etaFile->Get(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+        if (!hIn) {
             etaFile->Close();
             delete etaFile;
             continue;
         }
+
+        TH1D* h = dynamic_cast<TH1D*>(hIn->Clone(Form("tmp_main_%d_%d_%d", minRange, maxRange, iEta)));
+        h->SetDirectory(nullptr);
         
         if (!hAggregate) {
             hAggregate = dynamic_cast<TH1D*>(h->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+            hAggregate->SetDirectory(nullptr);
         } else {
             hAggregate->Add(h);
         }
+        nMainContributors++;
+        delete h;
         
         etaFile->Close();
         delete etaFile;
     }
     
-    if (hAggregate) {
+    if (hAggregate && nMainContributors > 0) {
         outFile->cd();
         hAggregate->Write();
         delete hAggregate;
@@ -373,39 +389,47 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
     // Now sum bootstrap samples across eta bins
     for (Int_t bs = 0; bs < maxSample * maxSample; ++bs) {
         TH1D* hBsSummed = nullptr;
+        int nBsContributors = 0;
         
-        for (const auto& filePath : etaDiffFiles) {
-            TFile* etaFile = TFile::Open(filePath.c_str(), "READ");
-            if (!etaFile || etaFile->IsZombie()) {
+        for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
+            double etaMin = etaBins[iEta];
+            double etaMax = etaBins[iEta + 1];
+            TFile* etaFile = openEtaBootstrapFile(etaMin, etaMax);
+            if (!etaFile) {
                 continue;
             }
             
-            TH1D* h = dynamic_cast<TH1D*>(etaFile->Get(Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs)));
-            if (!h) {
+            TH1D* hIn = dynamic_cast<TH1D*>(etaFile->Get(Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs)));
+            if (!hIn) {
                 etaFile->Close();
                 delete etaFile;
                 continue;
             }
+
+            TH1D* h = dynamic_cast<TH1D*>(hIn->Clone(Form("tmp_bs_%d_%d_%d_%d", minRange, maxRange, bs, iEta)));
+            h->SetDirectory(nullptr);
             
             if (!hBsSummed) {
                 hBsSummed = dynamic_cast<TH1D*>(h->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs)));
+                hBsSummed->SetDirectory(nullptr);
             } else {
                 hBsSummed->Add(h);
             }
+            nBsContributors++;
+            delete h;
             
             etaFile->Close();
             delete etaFile;
         }
         
-        if (hBsSummed) {
+        if (hBsSummed && nBsContributors > 0) {
             outFile->cd();
             hBsSummed->Write();
             delete hBsSummed;
         }
     }
     
-    std::cout << "Created aggregate bootstrap file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%i_%i_%s.root", 
-        fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()) << std::endl;
+    std::cout << "Created aggregate bootstrap file: " << outputPath.Data() << std::endl;
     
     outFile->Close();
     delete outFile;

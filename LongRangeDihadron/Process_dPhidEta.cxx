@@ -242,6 +242,9 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
             Int_t binEta2 = hPhiEtaM->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]);
             Int_t nNormBins = (binEta2 - binEta1 + 1) * (binPhi2 - binPhi1 + 1);
             norm = hPhiEtaM->Integral(binPhi1, binPhi2, binEta1, binEta2) / nNormBins;
+            if (!std::isfinite(norm) || norm <= 0.0) {
+                norm = 1.0;
+            }
 
             if (!hPhiEtaMsum) {
                 hPhiEtaMsum = (TH2D*)hPhiEtaM->Clone(Form("dphideta_ME_%d_%d%s", minRange, maxRange, suffix.Data()));
@@ -253,6 +256,15 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 
             TH2D* hPhiEtaSM = (TH2D*)hPhiEtaS->Clone(Form("dphideta_SM_%d_%d_%d%s", minRange, maxRange, iz, suffix.Data()));
             hPhiEtaSM->Divide(hPhiEtaM);
+            for (Int_t ix = 1; ix <= hPhiEtaSM->GetNbinsX(); ++ix) {
+                for (Int_t iy = 1; iy <= hPhiEtaSM->GetNbinsY(); ++iy) {
+                    const Double_t value = hPhiEtaSM->GetBinContent(ix, iy);
+                    if (!std::isfinite(value)) {
+                        hPhiEtaSM->SetBinContent(ix, iy, 0.0);
+                        hPhiEtaSM->SetBinError(ix, iy, 0.0);
+                    }
+                }
+            }
 
             if (!hPhiEtaSMsum) {
                 hPhiEtaSMsum = (TH2D*)hPhiEtaSM->Clone(Form("dphideta_SM_%d_%d%s", minRange, maxRange, suffix.Data()));
@@ -382,6 +394,13 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 
         // Eta Gap processing
         TH1D* hPhiSameOverMixed_pos = hPhiEtaSMsum->ProjectionX("hPhiSameOverMixed");
+        for (Int_t ibin = 1; ibin <= hPhiSameOverMixed_pos->GetNbinsX(); ++ibin) {
+            const Double_t value = hPhiSameOverMixed_pos->GetBinContent(ibin);
+            if (!std::isfinite(value)) {
+                hPhiSameOverMixed_pos->SetBinContent(ibin, 0.0);
+                hPhiSameOverMixed_pos->SetBinError(ibin, 0.0);
+            }
+        }
         hPhiSameOverMixed_pos->SetName(Form("hPhiSameOverMixed_%d_%d%s", minRange, maxRange, suffix.Data()));
         hPhiSameOverMixed_pos->SetTitle(Form("hPhiSameOverMixed_%d_%d%s", minRange, maxRange, suffix.Data()));
         hPhiSameOverMixed_pos->GetXaxis()->SetTitle("#Delta#varphi");
