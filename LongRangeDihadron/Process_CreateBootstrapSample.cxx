@@ -356,7 +356,6 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
         
         if (!hAggregate) {
             hAggregate = dynamic_cast<TH1D*>(h->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
-            hAggregate->SetDirectory(nullptr);
         } else {
             hAggregate->Add(h);
         }
@@ -366,6 +365,7 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
     }
     
     if (hAggregate) {
+        outFile->cd();
         hAggregate->Write();
         delete hAggregate;
     }
@@ -389,7 +389,6 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
             
             if (!hBsSummed) {
                 hBsSummed = dynamic_cast<TH1D*>(h->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs)));
-                hBsSummed->SetDirectory(nullptr);
             } else {
                 hBsSummed->Add(h);
             }
@@ -399,6 +398,7 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
         }
         
         if (hBsSummed) {
+            outFile->cd();
             hBsSummed->Write();
             delete hBsSummed;
         }
