@@ -17,7 +17,6 @@
 #include <TRandom3.h>
 #include "TMath.h"
 #include "THnSparse.h"
-#include "TSystem.h"
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -408,10 +407,6 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 }
 
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc=false) {
-    // Create output directories first
-    gSystem->mkdir("./ProcessOutput", kTRUE);
-    gSystem->mkdir("./ProcessOutput/EtaDiff", kTRUE);
-
     TFile *file = TFile::Open(Form("../../../AnalysisResultsROOTFiles/LongRangeEta/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
     if (!file || file->IsZombie()) {
         std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
@@ -489,10 +484,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         gSystem->mkdir("./ProcessOutput/EtaDiff", kTRUE);
         TFile* fout = TFile::Open(Form("./ProcessOutput/EtaDiff/Mixed_%s%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()), "RECREATE");
         if (!fout || !fout->IsOpen()) {
-            std::cerr << "Error creating output file for eta range [" << etaMin << ", " << etaMax << "]" << std::endl;
-            if (fout) { fout->Close(); delete fout; }
-            delete hPhiEtaSM;
-            delete hPhiSMsum;
+            std::cerr << "Error: Cannot create output file for FT0A_FT0C case" << std::endl;
             file->Close();
             delete file;
             return;
@@ -554,7 +546,14 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
     trig->GetAxis(trigAxis_pT)->SetRangeUser(etaMin+0.0001, etaMax-0.0001);
 
     // Create output file
+    gSystem->mkdir("./ProcessOutput/EtaDiff", kTRUE);
     TFile* fout = TFile::Open(Form("./ProcessOutput/EtaDiff/Mixed_%s%s_%s_%i_%i_Eta_%0.1f_%0.1f_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), etaMin, etaMax, DihadronCorrTypeName[corrType].c_str()), "RECREATE");
+    if (!fout || !fout->IsOpen()) {
+        std::cerr << "Error: Cannot create output file for eta differential analysis" << std::endl;
+        file->Close();
+        delete file;
+        return;
+    }
 
     // Process all samples: -1 (all), 0 to maxSample-1
     for (Int_t sample = -1; sample < maxSample; ++sample) {

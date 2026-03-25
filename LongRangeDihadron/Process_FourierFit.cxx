@@ -91,7 +91,7 @@ struct VnUnit {
 
 // declare functions
 void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string outputFileName);
-void ProcessConfig_PtDiff(Bool_t isNch, std::vector<InputUnit> dataList, std::string outputFileName);
+// Removed unused PtDiff processing
 VnUnit* FourierFit(Bool_t isNch, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin=0, Double_t pTMax=0);
 std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits);
 VnUnit* fitSample(Bool_t isNch, TFile* datafile, InputUnit data, int sample = -1, Double_t pTMin=0, Double_t pTMax=0);
@@ -105,6 +105,11 @@ Bool_t kOutputVnDelta = true;
 void Process_FourierFit() {
     // 不显示窗口
     gROOT->SetBatch(kTRUE);
+    
+    // Create output directories
+    // PtDiff processing disabled - using EtaDiff only
+    gSystem->Exec("mkdir -p ./FourierFit/PDFs");
+    
     std::vector<ConfigUnit> configList;
 
     collisionSystemName = "Unknown";
@@ -134,11 +139,7 @@ void Process_FourierFit() {
         if (!config.dataList.empty()) {
             collisionSystemName = GetCollisionSystemNameFromDataset(config.dataList[0].fileNameSuffix);
         }
-        if (config.isPtDiff) {
-            ProcessConfig_PtDiff(config.isNch, config.dataList, config.outputFileName);
-        } else {
-            ProcessConfig(config.isNch, config.dataList, config.outputFileName);
-        }
+        ProcessConfig(config.isNch, config.dataList, config.outputFileName);
     }
 
 }
