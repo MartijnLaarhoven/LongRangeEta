@@ -10,6 +10,7 @@
 
 #include "TFile.h"
 #include "TList.h"
+#include "TH1.h"
 #include "TH2D.h"
 #include "TCanvas.h"
 #include "TLatex.h"
@@ -109,11 +110,13 @@ Bool_t kOutputVnDelta = true;
 void Process_TemplateFit() {
     // 不显示窗口
     // gROOT->SetBatch(kTRUE);
+    TH1::AddDirectory(kFALSE);
     
     // Create output directories
     // PtDiff processing disabled - using EtaDiff only
     gSystem->Exec("mkdir -p ./TemplateFit/EtaDiff/PDFs");
     gSystem->Exec("mkdir -p ./TemplateFit/PDFs");
+    gSystem->Exec("mkdir -p ./TemplateFit/PtDiff/PDFs");
     
     std::vector<ConfigUnit> configList;
 
@@ -948,7 +951,12 @@ void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t m
     double v41e = parerr[2];
 
 
-    TCanvas* canvas = new TCanvas(Form("Fit"), "Fit", 800, 600);
+    static int canvasCounter = 0;
+    TString canvasName = Form("Fit_%s_%d_%d_%d", fileSuffix.c_str(), minRange, maxRange, canvasCounter++);
+    if (pTMin > 0 && pTMax > 0) {
+        canvasName = Form("Fit_%s_%d_%d_Pt_%0.1f_%0.1f_%d", fileSuffix.c_str(), minRange, maxRange, pTMin, pTMax, canvasCounter++);
+    }
+    TCanvas* canvas = new TCanvas(canvasName.Data(), "Fit", 800, 600);
     canvas->Range(0,0,1,1);
     
     // 创建上下面板

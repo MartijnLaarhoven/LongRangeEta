@@ -10,6 +10,7 @@
 
 #include "TFile.h"
 #include "TList.h"
+#include "TH1.h"
 #include "TH2D.h"
 #include "TCanvas.h"
 #include "TLatex.h"
@@ -47,6 +48,7 @@ std::string additionalSuffix = "";
 void Process_dPhidEta() {
     // 不显示窗口
     gROOT->SetBatch(kTRUE);
+    TH1::AddDirectory(kFALSE);
 
     std::vector<InputUnit> inputList;
     additionalSuffix = "";

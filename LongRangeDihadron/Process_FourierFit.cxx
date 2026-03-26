@@ -596,6 +596,88 @@ void RooFourierFit(TH1 *hist, std::vector<Double_t>& fParamVal, std::vector<Doub
     fParamVal.resize(5);
     fParamErr.resize(5);
 
+    auto fillFromMoments = [&]() {
+        const double fallbackValue = 1e-6;
+        const double fallbackError = 10.0;
+        const int nBins = hist->GetNbinsX();
+        if (nBins <= 0) {
+            for (int i = 0; i < 5; ++i) {
+                fParamVal[i] = fallbackValue;
+                fParamErr[i] = fallbackError;
+            }
+            fParamVal[4] = 1.0;
+            return;
+        }
+
+        double sumY = 0.0;
+        double sumYC1 = 0.0;
+        double sumYC2 = 0.0;
+        double sumYC3 = 0.0;
+        double sumYC4 = 0.0;
+        double sumErr2 = 0.0;
+        int validBins = 0;
+
+        for (int i = 1; i <= nBins; ++i) {
+            const double x = hist->GetBinCenter(i);
+            const double y = hist->GetBinContent(i);
+            const double err = hist->GetBinError(i);
+            if (!std::isfinite(y)) {
+                continue;
+            }
+            sumY += y;
+            sumYC1 += y * TMath::Cos(x);
+            sumYC2 += y * TMath::Cos(2.0 * x);
+            sumYC3 += y * TMath::Cos(3.0 * x);
+            sumYC4 += y * TMath::Cos(4.0 * x);
+            if (std::isfinite(err) && err > 0.0) {
+                sumErr2 += err * err;
+            }
+            ++validBins;
+        }
+
+        if (validBins <= 0 || !std::isfinite(sumY)) {
+            for (int i = 0; i < 5; ++i) {
+                fParamVal[i] = fallbackValue;
+                fParamErr[i] = fallbackError;
+            }
+            fParamVal[4] = 1.0;
+            return;
+        }
+
+        const double invN = 1.0 / static_cast<double>(validBins);
+        const double a0 = sumY * invN;
+        const double a1 = sumYC1 * invN;
+        const double a2 = sumYC2 * invN;
+        const double a3 = sumYC3 * invN;
+        const double a4 = sumYC4 * invN;
+        const double sigmaA = (sumErr2 > 0.0) ? std::sqrt(sumErr2) * invN : 0.0;
+
+        if (!std::isfinite(a0) || std::abs(a0) < 1e-12) {
+            for (int i = 0; i < 5; ++i) {
+                fParamVal[i] = fallbackValue;
+                fParamErr[i] = fallbackError;
+            }
+            fParamVal[4] = 1.0;
+            return;
+        }
+
+        const double v12square = a1 / a0;
+        const double v22square = a2 / a0;
+        const double v32square = a3 / a0;
+        const double v42square = a4 / a0;
+
+        fParamVal[0] = v22square;
+        fParamErr[0] = (std::isfinite(sigmaA) && sigmaA > 0.0) ? sigmaA / std::abs(a0) : 0.1;
+        fParamVal[1] = v32square;
+        fParamErr[1] = (std::isfinite(sigmaA) && sigmaA > 0.0) ? sigmaA / std::abs(a0) : 0.1;
+        fParamVal[2] = v42square;
+        fParamErr[2] = (std::isfinite(sigmaA) && sigmaA > 0.0) ? sigmaA / std::abs(a0) : 0.1;
+        fParamVal[3] = v12square;
+        fParamErr[3] = (std::isfinite(sigmaA) && sigmaA > 0.0) ? sigmaA / std::abs(a0) : 0.1;
+        fParamVal[4] = a0;
+        fParamErr[4] = sigmaA;
+    };
+
     // 定义傅里叶级数函数 - 5参数形式
     auto fourierFunc = [](double *x, double *p) {
         return p[0] + 2*p[1]*TMath::Cos(x[0]) 
@@ -632,11 +714,7 @@ void RooFourierFit(TH1 *hist, std::vector<Double_t>& fParamVal, std::vector<Doub
     TFitResultPtr fitResult = hist->Fit(fitFunc, "QN0");
     // 检查拟合状态
     if (static_cast<int>(fitResult)) {
-        Error("FourierFit", "Fit failed with status %d", static_cast<int>(fitResult));
-        for (int i = 0; i < 5; ++i) {
-            fParamVal[i] = -1;
-            fParamErr[i] = 10;
-        }
+        fillFromMoments();
         return;
     }
     std::cout << "Fit results: " << std::endl;
@@ -650,10 +728,7 @@ void RooFourierFit(TH1 *hist, std::vector<Double_t>& fParamVal, std::vector<Doub
     std::cout << "P-value = " << pvalue << std::endl;
     if (chi2_ndf > 2000) {
         std::cout << "WARNING: Chi2/NDF > 20, fit may be inaccurate!" << std::endl;
-        for (int i = 0; i < 5; ++i) {
-            fParamVal[i] = -1;
-            fParamErr[i] = 10;
-        }
+        fillFromMoments();
         return;
     }
 
@@ -729,7 +804,7 @@ void PlotFitting(TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t minRange, 
     double v41e = parerr[2];
 
 
-    TCanvas* canvas = new TCanvas(Form("Fit"), "Fit", 800, 600);
+    TCanvas* canvas = new TCanvas(Form("Fit_%s_%d_%d", fileSuffix.c_str(), minRange, maxRange), "Fit", 800, 600);
     canvas->Range(0,0,1,1);
     
     // 创建上下面板

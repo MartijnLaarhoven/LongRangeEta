@@ -248,18 +248,19 @@ void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, B
     // 初始化随机数生成器
     TRandom3 randGen;
 
+    const Int_t availableSamples = static_cast<Int_t>(hists.size());
     // 生成 maxSample^2 个bootstrap样本
     for (Int_t bs = 0; bs < maxSample * maxSample; ++bs) {
         // 随机选择样本索引（允许重复）
         std::vector<Int_t> selectedIndices;
         selectedIndices.clear();
-        for (Int_t i = 0; i < maxSample; ++i) {
-            selectedIndices.push_back(randGen.Integer(maxSample));
+        for (Int_t i = 0; i < availableSamples; ++i) {
+            selectedIndices.push_back(randGen.Integer(availableSamples));
         }
 
         // 合并选中的直方图
         TH1D* hmerge = nullptr;
-        Double_t totalWeight = 0.0;
+        Int_t mergedCount = 0;
 
         for (Int_t idx : selectedIndices) {
             if (idx < 0 || idx >= hists.size()) {
@@ -268,30 +269,24 @@ void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, B
             }
 
             TH1D* current = hists[idx];
-            Double_t weight = current->GetEntries();
 
             if (!hmerge) { // 第一次初始化合并直方图
                 hmerge = dynamic_cast<TH1D*>(current->Clone(
                     Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs)
                 ));
                 hmerge->SetTitle(Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs));
-                // hmerge->Scale(weight);
-                // std::cout << "bs: " << bs << " idx: " << idx << " weight: " << weight << std::endl;
-                totalWeight = weight;
+                hmerge->SetDirectory(nullptr);
+                mergedCount = 1;
             } else {       // 后续累加
-                // current->Scale(weight);
-                // hmerge->Add(current, weight);
                 hmerge->Add(current);
-                totalWeight += weight;
+                ++mergedCount;
             }
         }
 
         // 归一化并保存
-        if (hmerge && totalWeight > 0) {
-            // hmerge->Scale(1.0 / totalWeight);
-            hmerge->Scale(1.0 / selectedIndices.size());
-            // Printf("size: %d", selectedIndices.size());
-            // hmerge->SetDirectory(outFile);
+        if (hmerge && mergedCount > 0) {
+            hmerge->Scale(1.0 / mergedCount);
+            outFile->cd();
             hmerge->Write();
             delete hmerge; // 释放内存
         }
