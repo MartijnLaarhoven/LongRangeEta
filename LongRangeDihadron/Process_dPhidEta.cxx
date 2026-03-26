@@ -236,16 +236,25 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
             TH2D *hPhiEtaS = (TH2D*)sparSig->Projection(corrAxis_kdEtaTPCTPC, corrAxis_kdPhiTPCTPC);
             TH2D *hPhiEtaM = (TH2D*)sparMix->Projection(corrAxis_kdEtaTPCTPC, corrAxis_kdPhiTPCTPC);
 
-            // Normalize mixed event
+            // Normalize mixed event using peak-based method
             Double_t norm = 1.;
             Int_t binPhi1 = hPhiEtaM->GetXaxis()->FindBin(-TMath::Pi()/2 + 0.0001);
             Int_t binPhi2 = hPhiEtaM->GetXaxis()->FindBin(3*TMath::Pi()/2 - 0.0001);
-            Int_t binEta1 = hPhiEtaM->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]);
-            Int_t binEta2 = hPhiEtaM->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]);
+            
+            // Find peak in eta distribution
+            TH1D* hEtaNorm = hPhiEtaM->ProjectionY("hEtaNorm_temp");
+            Int_t peakEtaBin = hEtaNorm->GetMaximumBin();
+            Int_t binEta1 = std::max(1, peakEtaBin - 1);
+            Int_t binEta2 = std::min(hPhiEtaM->GetNbinsY(), peakEtaBin + 1);
             Int_t nNormBins = (binEta2 - binEta1 + 1) * (binPhi2 - binPhi1 + 1);
             norm = hPhiEtaM->Integral(binPhi1, binPhi2, binEta1, binEta2) / nNormBins;
+            delete hEtaNorm;
+            
+            // Fallback to full histogram if peak method fails
             if (!std::isfinite(norm) || norm <= 0.0) {
-                norm = 1.0;
+                const Int_t nAllBins = hPhiEtaM->GetNbinsX() * hPhiEtaM->GetNbinsY();
+                const Double_t fullIntegral = hPhiEtaM->Integral(1, hPhiEtaM->GetNbinsX(), 1, hPhiEtaM->GetNbinsY());
+                norm = (nAllBins > 0) ? (fullIntegral / nAllBins) : 1.0;
             }
 
             if (!hPhiEtaMsum) {
@@ -620,14 +629,26 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
             TH2D *hPhiEtaS = (TH2D*)sparSig->Projection(corrAxis_kdEtaTPCTPC, corrAxis_kdPhiTPCTPC);
             TH2D *hPhiEtaM = (TH2D*)sparMix->Projection(corrAxis_kdEtaTPCTPC, corrAxis_kdPhiTPCTPC);
 
-            // Normalize mixed event
+            // Normalize mixed event using peak-based method
             Double_t norm = 1.;
             Int_t binPhi1 = hPhiEtaM->GetXaxis()->FindBin(-TMath::Pi()/2 + 0.0001);
             Int_t binPhi2 = hPhiEtaM->GetXaxis()->FindBin(3*TMath::Pi()/2 - 0.0001);
-            Int_t binEta1 = hPhiEtaM->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]);
-            Int_t binEta2 = hPhiEtaM->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]);
+            
+            // Find peak in eta distribution
+            TH1D* hEtaNorm = hPhiEtaM->ProjectionY("hEtaNorm_temp");
+            Int_t peakEtaBin = hEtaNorm->GetMaximumBin();
+            Int_t binEta1 = std::max(1, peakEtaBin - 1);
+            Int_t binEta2 = std::min(hPhiEtaM->GetNbinsY(), peakEtaBin + 1);
             Int_t nNormBins = (binEta2 - binEta1 + 1) * (binPhi2 - binPhi1 + 1);
             norm = hPhiEtaM->Integral(binPhi1, binPhi2, binEta1, binEta2) / nNormBins;
+            delete hEtaNorm;
+            
+            // Fallback to full histogram if peak method fails
+            if (!std::isfinite(norm) || norm <= 0.0) {
+                const Int_t nAllBins = hPhiEtaM->GetNbinsX() * hPhiEtaM->GetNbinsY();
+                const Double_t fullIntegral = hPhiEtaM->Integral(1, hPhiEtaM->GetNbinsX(), 1, hPhiEtaM->GetNbinsY());
+                norm = (nAllBins > 0) ? (fullIntegral / nAllBins) : 1.0;
+            }
 
             if (!hPhiEtaMsum) {
                 hPhiEtaMsum = (TH2D*)hPhiEtaM->Clone(Form("dphideta_ME_%d_%d%s", minRange, maxRange, suffix.Data()));

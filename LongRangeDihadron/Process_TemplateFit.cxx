@@ -99,9 +99,9 @@ void ProcessConfig_EtaDiff(Bool_t isNch, InputUnit templ, std::vector<InputUnit>
 VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin=0, Double_t pTMax=0);
 VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tovn2, Double_t etaMin=0, Double_t etaMax=0);
 std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits);
-VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* datafile, InputUnit data, int sample = -1, Double_t pTMin=0, Double_t pTMax=0);
+VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* datafile, InputUnit data, int sample = -1, Double_t pTMin=0, Double_t pTMax=0, Bool_t isEtaDiffRange=false);
 void RooTempFitter(TH1 *lm, TH1 *hm, std::vector<Double_t>& fParamVal, std::vector<Double_t>& fParamErr, Bool_t kRefit);
-void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t minRange, Int_t maxRange, const std::vector<Double_t>& par, const std::vector<Double_t>& parerr, Int_t corrType, Double_t pTMin=0, Double_t pTMax=0);
+void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t minRange, Int_t maxRange, const std::vector<Double_t>& par, const std::vector<Double_t>& parerr, Int_t corrType, Double_t pTMin=0, Double_t pTMax=0, Bool_t isEtaDiffRange=false);
 
 // global variables
 std::string collisionSystemName = "peripheral PbPb";
@@ -686,7 +686,7 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
     // For EtaDiff, we only process eta-differential bootstrap samples
     VnUnit* vnResult_EtaDiff = nullptr;
     if (etaMin > -0.9 && etaMax < 0.9) {
-        vnResult_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, -1, etaMin, etaMax);
+        vnResult_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, -1, etaMin, etaMax, kTRUE);
         if (!vnResult_EtaDiff) {
             std::cerr << "Cannot fit eta-diff sample: " << data.fileNameSuffix << std::endl;
             exit(1);
@@ -705,7 +705,7 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
     // For EtaDiff, bootstrap samples correspond to eta bins (samples 0-99 for 100 eta bins)
     if (etaMin > -0.9 && etaMax < 0.9 && vnResult_EtaDiff) {
         for(int sample=0; sample<NofSample; sample++) {
-            VnUnit* vnTemp_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, sample, etaMin, etaMax);
+            VnUnit* vnTemp_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, sample, etaMin, etaMax, kTRUE);
             if (!vnTemp_EtaDiff) {
                 std::cerr << "Cannot fit eta-diff sample: " << data.fileNameSuffix << " sample: " << sample << std::endl;
                 vnTemp_EtaDiff = new VnUnit(0.0, 10.0, 0.0, 10.0, 0.0, 10.0);  // Use placeholder on error
@@ -803,7 +803,7 @@ std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits)
 }
 
 //==============================================================
-VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* datafile, InputUnit data, int sample = -1, Double_t pTMin=0, Double_t pTMax=0) {
+VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* datafile, InputUnit data, int sample, Double_t pTMin, Double_t pTMax, Bool_t isEtaDiffRange) {
     std::vector<Double_t> fParamVal;
     std::vector<Double_t> fParamErr;
     TH1D* lm=0;
@@ -840,7 +840,7 @@ VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* dat
 
     RooTempFitter(lmSafe, hmSafe, fParamVal, fParamErr, kFALSE);
     if (sample == -1) {
-        PlotFitting(lmSafe, hmSafe, isNch, data.fileNameSuffix, data.minRange, data.maxRange, fParamVal, fParamErr, data.corrType, pTMin, pTMax);
+        PlotFitting(lmSafe, hmSafe, isNch, data.fileNameSuffix, data.minRange, data.maxRange, fParamVal, fParamErr, data.corrType, pTMin, pTMax, isEtaDiffRange);
     }
     delete lmSafe;
     delete hmSafe;
@@ -935,7 +935,7 @@ void DrawText(double xmin, double ymin, double textSize, TString text)
 
 }
 
-void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t minRange, Int_t maxRange, const std::vector<Double_t>& par, const std::vector<Double_t>& parerr, Int_t corrType, Double_t pTMin=0, Double_t pTMax=0) {
+void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t minRange, Int_t maxRange, const std::vector<Double_t>& par, const std::vector<Double_t>& parerr, Int_t corrType, Double_t pTMin, Double_t pTMax, Bool_t isEtaDiffRange) {
     gStyle->SetOptStat(0); 
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
@@ -953,7 +953,9 @@ void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t m
 
     static int canvasCounter = 0;
     TString canvasName = Form("Fit_%s_%d_%d_%d", fileSuffix.c_str(), minRange, maxRange, canvasCounter++);
-    if (pTMin > 0 && pTMax > 0) {
+    if (isEtaDiffRange) {
+        canvasName = Form("Fit_%s_%d_%d_Eta_%0.1f_%0.1f_%d", fileSuffix.c_str(), minRange, maxRange, pTMin, pTMax, canvasCounter++);
+    } else if (pTMin > 0 && pTMax > 0) {
         canvasName = Form("Fit_%s_%d_%d_Pt_%0.1f_%0.1f_%d", fileSuffix.c_str(), minRange, maxRange, pTMin, pTMax, canvasCounter++);
     }
     TCanvas* canvas = new TCanvas(canvasName.Data(), "Fit", 800, 600);
@@ -1085,7 +1087,9 @@ void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t m
         DrawText(0.2, 0.75, 20, Form("%d < Cent < %d", minRange, maxRange));
     }
 
-    if (pTMin > 0 && pTMax > 0)
+    if (isEtaDiffRange)
+        DrawText(0.2, 0.70, 20, Form("#eta^{trig} #in [%.1f, %.1f]", pTMin, pTMax));
+    else if (pTMin > 0 && pTMax > 0)
         DrawText(0.2, 0.70, 20, Form("%.1f < p_{T} < %.1f", pTMin, pTMax));
     DrawText(0.2, 0.65, 20, Form("V_{2#Delta} = %.5f #pm %.5f", v21, v21e));
     DrawText(0.2, 0.60, 20, Form("V_{3#Delta} = %.5f #pm %.5f", v31, v31e));
@@ -1172,7 +1176,9 @@ void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t m
     line->Draw();
 
     // 保存结果
-    if (pTMin > 0 && pTMax > 0) {
+    if (isEtaDiffRange) {
+        canvas->SaveAs(Form("./TemplateFit/EtaDiff/PDFs/TemplateFit_%s_%s_%d_%d_Eta_%0.1f_%0.1f_%s.root", fileSuffix.c_str(), splitName.c_str(), minRange, maxRange, pTMin, pTMax, DihadronCorrTypeName[corrType].c_str()));
+    } else if (pTMin > 0 && pTMax > 0) {
         canvas->SaveAs(Form("./TemplateFit/PtDiff/PDFs/TemplateFit_%s_%s_%d_%d_Pt_%0.1f_%0.1f_%s.pdf", fileSuffix.c_str(), splitName.c_str(), minRange, maxRange, pTMin, pTMax, DihadronCorrTypeName[corrType].c_str()));
     } else {
         canvas->SaveAs(Form("./TemplateFit/PDFs/TemplateFit_%s_%s_%d_%d_%s.root", fileSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
