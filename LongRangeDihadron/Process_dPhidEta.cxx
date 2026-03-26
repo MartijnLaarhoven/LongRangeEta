@@ -61,9 +61,9 @@ void Process_dPhidEta() {
     // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C (single full-range, NOT eta-differential)
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
     
     
 
@@ -121,7 +121,7 @@ void printAxesInfo(THnSparseF* sparseHist) {
 }
 
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc=false) {
-    TFile *file = TFile::Open(Form("../AnalysisResultsROOTFiles/longRangeDihadronCorr/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
+    TFile *file = TFile::Open(Form("../../../AnalysisResultsROOTFiles/LongRangeEta/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
     if (!file || file->IsZombie()) {
         std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
         return;
@@ -148,6 +148,161 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         }
     }
 
+    // Special handling for FT0A_FT0C in LongRangeEta input: direct 2D histograms
+    // Keep TPC processing untouched and only map FT0A_FT0C to the same output object names.
+    if (!isMc && corrType == kFT0AFT0C) {
+        TString flowDir = Form("flow-decorrelation_%s_%d_%d", splitName.c_str(), minRange, maxRange);
+        TH2D* hPhiEtaS = (TH2D*)file->Get(Form("%s/deltaEta_deltaPhi_same_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        TH2D* hPhiEtaM = (TH2D*)file->Get(Form("%s/deltaEta_deltaPhi_mixed_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        THnSparseD *trig = (THnSparseD*)file->Get(Form("%s/Trig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+
+        if (!hPhiEtaS || !hPhiEtaM || !trig) {
+            std::cerr << "Error getting FT0A_FT0C histograms for " << fileNameSuffix << " with " << splitName << " and range [" << minRange << ", " << maxRange << "]" << std::endl;
+            file->Close();
+            delete file;
+            return;
+        }
+
+        TH2D* hPhiEtaSsum = (TH2D*)hPhiEtaS->Clone(Form("dphideta_SE_%d_%d", minRange, maxRange));
+        TH2D* hPhiEtaMsum = (TH2D*)hPhiEtaM->Clone(Form("dphideta_ME_%d_%d", minRange, maxRange));
+
+        TH2D* hPhiEtaMSafe = (TH2D*)hPhiEtaM->Clone(Form("dphideta_ME_safe_%d_%d", minRange, maxRange));
+        Double_t minPositive = 0.0;
+        for (Int_t ix = 1; ix <= hPhiEtaMSafe->GetNbinsX(); ++ix) {
+            for (Int_t iy = 1; iy <= hPhiEtaMSafe->GetNbinsY(); ++iy) {
+                Double_t value = hPhiEtaMSafe->GetBinContent(ix, iy);
+                if (value > 0.0 && (minPositive == 0.0 || value < minPositive)) {
+                    minPositive = value;
+                }
+            }
+        }
+        if (minPositive <= 0.0) minPositive = 1e-12;
+        for (Int_t ix = 1; ix <= hPhiEtaMSafe->GetNbinsX(); ++ix) {
+            for (Int_t iy = 1; iy <= hPhiEtaMSafe->GetNbinsY(); ++iy) {
+                if (hPhiEtaMSafe->GetBinContent(ix, iy) <= 0.0) {
+                    hPhiEtaMSafe->SetBinContent(ix, iy, minPositive);
+                }
+            }
+        }
+
+        TH2D* hPhiEtaSMsum = (TH2D*)hPhiEtaS->Clone(Form("dphideta_SM_%d_%d", minRange, maxRange));
+        hPhiEtaSMsum->Divide(hPhiEtaS, hPhiEtaMSafe, 1.0, 1.0);
+
+        Double_t nTriggersS = trig->Integral(true);
+        if (nTriggersS > 0) {
+            hPhiEtaSsum->Scale(1.0 / nTriggersS);
+            hPhiEtaMsum->Scale(1.0 / nTriggersS);
+        }
+
+        hPhiEtaSsum->Scale(1.0 / hPhiEtaSsum->GetXaxis()->GetBinWidth(1));
+        hPhiEtaSsum->Scale(1.0 / hPhiEtaSsum->GetYaxis()->GetBinWidth(1));
+        hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));
+        hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetYaxis()->GetBinWidth(1));
+
+        hPhiEtaSMsum->Rebin2D(4, 1);
+        hPhiEtaSsum->Rebin2D(4, 1);
+        hPhiEtaMsum->Rebin2D(4, 1);
+
+        TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d", minRange, maxRange));
+        hEta->SetTitle("#Delta#eta");
+
+        TH1D* hPhiSameOverMixed = (TH1D*)hPhiEtaSMsum->ProjectionX(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange));
+        hPhiSameOverMixed->SetTitle(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange));
+        hPhiSameOverMixed->GetXaxis()->SetTitle("#Delta#varphi");
+
+        hPhiEtaSMsum->GetXaxis()->SetTitle("#Delta#varphi");
+        hPhiEtaSMsum->GetYaxis()->SetTitle("#Delta#eta");
+        hPhiEtaSsum->GetXaxis()->SetTitle("#Delta#varphi");
+        hPhiEtaSsum->GetYaxis()->SetTitle("#Delta#eta");
+        hPhiEtaMsum->GetXaxis()->SetTitle("#Delta#varphi");
+        hPhiEtaMsum->GetYaxis()->SetTitle("#Delta#eta");
+        if (isNch) {
+            hPhiEtaSMsum->SetTitle(Form("Correlation Function %d< N_{ch} #leq%d", minRange, maxRange));
+            hPhiEtaSsum->SetTitle(Form("Same Event %d< N_{ch} #leq%d", minRange, maxRange));
+            hPhiEtaMsum->SetTitle(Form("Mixed event %d< N_{ch} #leq%d", minRange, maxRange));
+        } else {
+            hPhiEtaSMsum->SetTitle(Form("Correlation Function %d< Centrality #leq%d", minRange, maxRange));
+            hPhiEtaSsum->SetTitle(Form("Same Event %d< Centrality #leq%d", minRange, maxRange));
+            hPhiEtaMsum->SetTitle(Form("Mixed event %d< Centrality #leq%d", minRange, maxRange));
+        }
+
+        TFile* fout = TFile::Open(Form("./ProcessOutput/Mixed_%s%s_%s_%i_%i_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), DihadronCorrTypeName[corrType].c_str()), "RECREATE");
+        if (!fout || !fout->IsOpen()) {
+            std::cerr << "Error: Cannot create output file for FT0A_FT0C case" << std::endl;
+            delete hPhiEtaSMsum;
+            delete hPhiEtaSsum;
+            delete hPhiEtaMsum;
+            delete hEta;
+            delete hPhiSameOverMixed;
+            file->Close();
+            delete file;
+            return;
+        }
+
+        TCanvas* c1 = new TCanvas("dPhidEta ", "dPhidEta ", 1200, 800);
+        c1->Divide(2, 2);
+        TLatex latex;
+        latex.SetNDC();
+        latex.SetTextSize(0.04);
+
+        c1->cd(1);
+        TH2D* hPhiEtaSMsum_draw = (TH2D*)hPhiEtaSMsum->Clone("hPhiEtaSMsum_draw");
+        hPhiEtaSMsum_draw->Draw("surf1");
+        latex.DrawLatex(0.1, 0.90, Form("ALICE %s %s", collisionSystemName.c_str(), DihadronCorrTypeName[corrType].c_str()));
+        latex.DrawLatex(0.1, 0.85, Form("p_{T}^{trig} #in [%0.1f, %0.1f] GeV/c, p_{T}^{asso} #in [%0.1f, %0.1f] GeV/c", minPt, maxPt, minPt, maxPt));
+
+        c1->cd(3);
+        hPhiEtaSsum->Draw("surf1");
+        latex.DrawLatex(0.1, 0.90, Form("ALICE %s %s", collisionSystemName.c_str(), DihadronCorrTypeName[corrType].c_str()));
+        latex.DrawLatex(0.1, 0.85, Form("p_{T}^{trig} #in [%0.1f, %0.1f] GeV/c, p_{T}^{asso} #in [%0.1f, %0.1f] GeV/c", minPt, maxPt, minPt, maxPt));
+
+        c1->cd(4);
+        hPhiEtaMsum->Draw("surf1");
+        latex.DrawLatex(0.1, 0.90, Form("ALICE %s %s", collisionSystemName.c_str(), DihadronCorrTypeName[corrType].c_str()));
+        latex.DrawLatex(0.1, 0.85, Form("p_{T}^{trig} #in [%0.1f, %0.1f] GeV/c, p_{T}^{asso} #in [%0.1f, %0.1f] GeV/c", minPt, maxPt, minPt, maxPt));
+
+        c1->Write();
+        hPhiEtaSMsum->Write();
+        hPhiEtaSsum->Write();
+        hPhiEtaMsum->Write();
+        hEta->Write();
+        hPhiSameOverMixed->Write();
+
+        UInt_t seedBase = 12345 + 1000 * minRange + 10 * maxRange;
+        TRandom3 randGen(seedBase);
+        for (Int_t sample = 0; sample < maxSample; ++sample) {
+            TH1D* hSample = (TH1D*)hPhiSameOverMixed->Clone(Form("hPhiSameOverMixed_%i_%i_%d", minRange, maxRange, sample));
+            for (Int_t ibin = 1; ibin <= hSample->GetNbinsX(); ++ibin) {
+                Double_t mean = hPhiSameOverMixed->GetBinContent(ibin);
+                Double_t sigma = hPhiSameOverMixed->GetBinError(ibin);
+                if (!std::isfinite(sigma) || sigma <= 0.0) {
+                    sigma = std::max(1e-6, 1e-3 * std::fabs(mean));
+                }
+                Double_t fluctuated = randGen.Gaus(mean, sigma);
+                if (!std::isfinite(fluctuated)) fluctuated = mean;
+                hSample->SetBinContent(ibin, fluctuated);
+                hSample->SetBinError(ibin, sigma);
+            }
+            hSample->Write();
+            delete hSample;
+        }
+
+        fout->Close();
+        delete fout;
+        delete hPhiEtaSMsum;
+        delete hPhiEtaSsum;
+        delete hPhiEtaMsum;
+        delete hPhiEtaMSafe;
+        delete hPhiEtaSMsum_draw;
+        delete c1;
+        delete hEta;
+        delete hPhiSameOverMixed;
+        file->Close();
+        delete file;
+        std::cout << "Output file: " << Form("./ProcessOutput/Mixed_%s%s_%s_%i_%i_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), DihadronCorrTypeName[corrType].c_str()) << std::endl;
+        std::cout << "Processing completed for all samples." << std::endl;
+        return;
+    }
 
     CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/sameEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
     CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/mixedEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));

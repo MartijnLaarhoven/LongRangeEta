@@ -44,9 +44,9 @@ void Process_CreateBootstrapSample() {
     // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C (single full-range, NOT eta-differential)
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
 
     for (auto input : inputList) {
         if (input.isEtadiff) {
@@ -82,16 +82,18 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
         return;
     }
 
-    // 读取所有样本直方图
+    // 读取所有样本直方图（clone后脱离输入文件，避免文件关闭后悬空指针）
     std::vector<TH1D*> hists;
     for (Int_t sample = 0; sample < maxSample; ++sample) {
-        TH1D* h = dynamic_cast<TH1D*>(
+        TH1D* hIn = dynamic_cast<TH1D*>(
             file->Get(Form("hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample))
         );
-        if (!h) {
+        if (!hIn) {
             std::cerr << "Error loading histogram for sample " << sample << std::endl;
             continue;
         }
+        TH1D* h = dynamic_cast<TH1D*>(hIn->Clone(Form("tmp_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, sample)));
+        h->SetDirectory(nullptr);
         hists.push_back(h);
     }
 
@@ -110,34 +112,46 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
     if (!outFile || outFile->IsZombie()) {
         std::cerr << "Error creating output file!" << std::endl;
         file->Close();
+        for (auto* h : hists) delete h;
+        delete file;
         return;
     }
 
-    TH1D* hAll = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
-    if (!hAll) {
+    TH1D* hAllIn = dynamic_cast<TH1D*>(file->Get(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+    if (!hAllIn) {
         std::cerr << "Error loading all-sample histogram!" << std::endl;
+        outFile->Close();
+        file->Close();
+        for (auto* h : hists) delete h;
+        delete outFile;
+        delete file;
         return;
     }
+    TH1D* hAll = dynamic_cast<TH1D*>(hAllIn->Clone(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange)));
+    hAll->SetDirectory(nullptr);
     hAll->SetName(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->SetTitle(Form("bsSample_hPhiSameOverMixed_%d_%d", minRange, maxRange));
     hAll->GetXaxis()->SetTitle("#Delta#varphi");
+    outFile->cd();
     hAll->Write();
+    delete hAll;
 
     // 初始化随机数生成器
     TRandom3 randGen;
 
+    const Int_t availableSamples = static_cast<Int_t>(hists.size());
     // 生成 maxSample^2 个bootstrap样本
     for (Int_t bs = 0; bs < maxSample * maxSample; ++bs) {
         // 随机选择样本索引（允许重复）
         std::vector<Int_t> selectedIndices;
         selectedIndices.clear();
-        for (Int_t i = 0; i < maxSample; ++i) {
-            selectedIndices.push_back(randGen.Integer(maxSample));
+        for (Int_t i = 0; i < availableSamples; ++i) {
+            selectedIndices.push_back(randGen.Integer(availableSamples));
         }
 
         // 合并选中的直方图
         TH1D* hmerge = nullptr;
-        Double_t totalWeight = 0.0;
+        Int_t mergedCount = 0;
 
         for (Int_t idx : selectedIndices) {
             if (idx < 0 || idx >= hists.size()) {
@@ -146,23 +160,24 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
             }
 
             TH1D* current = hists[idx];
-            Double_t weight = current->GetEntries();
 
             if (!hmerge) { // 第一次初始化合并直方图
                 hmerge = dynamic_cast<TH1D*>(current->Clone(
                     Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs)
                 ));
                 hmerge->SetTitle(Form("bsSample_hPhiSameOverMixed_%d_%d_%d", minRange, maxRange, bs));
-                totalWeight = weight;
+                hmerge->SetDirectory(nullptr);
+                mergedCount = 1;
             } else {       // 后续累加
                 hmerge->Add(current);
-                totalWeight += weight;
+                ++mergedCount;
             }
         }
 
         // 归一化并保存
-        if (hmerge && totalWeight > 0) {
-            hmerge->Scale(1.0 / selectedIndices.size());
+        if (hmerge && mergedCount > 0) {
+            hmerge->Scale(1.0 / mergedCount);
+            outFile->cd();
             hmerge->Write();
             delete hmerge;
         }
