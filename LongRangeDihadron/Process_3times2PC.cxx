@@ -98,9 +98,15 @@ void Process_3times2PC() {
     std::vector<ConfigUnit> configList;
 
     // LM, MR, LR
+    // Ne-Ne datasets (af)
     configList.push_back(ConfigUnit(kCent,
-    {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, kTemplateFit, 0, 20)},
-    "LHC25ae_pass2_645320"));
+    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC25af_pass2_642734"));
+
+    // O-O datasets (ae) - Disabled while focusing on af dataset debugging
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, kTemplateFit, 0, 20)},
+    // "LHC25ae_pass2_645320"));
 
     for (auto config : configList) {
         if (!config.constructed) continue;
