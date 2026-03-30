@@ -301,17 +301,64 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     TH1D* hV3_Sides = BuildSideSummary(hV3, "hV3_Sides", "v_{3};side;v_{3}");
     TH1D* hV4_Sides = BuildSideSummary(hV4, "hV4_Sides", "v_{4};side;v_{4}");
 
+    // Combined graphs: FT0C point + 16 TPC eta bins + FT0A point in one eta axis
+    int nCombinedPoints = nEtaBins + 2;
+    TGraphErrors* gV2_Combined = new TGraphErrors(nCombinedPoints);
+    TGraphErrors* gV3_Combined = new TGraphErrors(nCombinedPoints);
+    TGraphErrors* gV4_Combined = new TGraphErrors(nCombinedPoints);
+    gV2_Combined->SetName("gV2_Combined");
+    gV3_Combined->SetName("gV3_Combined");
+    gV4_Combined->SetName("gV4_Combined");
+    gV2_Combined->SetTitle("v_{2};#eta;v_{2}");
+    gV3_Combined->SetTitle("v_{3};#eta;v_{3}");
+    gV4_Combined->SetTitle("v_{4};#eta;v_{4}");
+
+    // point 0: FT0C (-3.3 to -2.1)
+    gV2_Combined->SetPoint(0, 0.5 * (-3.3 + -2.1), hV2_Sides->GetBinContent(1));
+    gV2_Combined->SetPointError(0, 0.5 * (-2.1 - -3.3), hV2_Sides->GetBinError(1));
+    gV3_Combined->SetPoint(0, 0.5 * (-3.3 + -2.1), hV3_Sides->GetBinContent(1));
+    gV3_Combined->SetPointError(0, 0.5 * (-2.1 - -3.3), hV3_Sides->GetBinError(1));
+    gV4_Combined->SetPoint(0, 0.5 * (-3.3 + -2.1), hV4_Sides->GetBinContent(1));
+    gV4_Combined->SetPointError(0, 0.5 * (-2.1 - -3.3), hV4_Sides->GetBinError(1));
+
+    // points 1..nEtaBins: 16 TPC eta bins
+    for (int ibin = 1; ibin <= nEtaBins; ++ibin) {
+        int ipoint = ibin;
+        double etaCenter = hV2->GetXaxis()->GetBinCenter(ibin);
+        double etaHalfWidth = 0.5 * hV2->GetXaxis()->GetBinWidth(ibin);
+
+        gV2_Combined->SetPoint(ipoint, etaCenter, hV2->GetBinContent(ibin));
+        gV2_Combined->SetPointError(ipoint, etaHalfWidth, hV2->GetBinError(ibin));
+        gV3_Combined->SetPoint(ipoint, etaCenter, hV3->GetBinContent(ibin));
+        gV3_Combined->SetPointError(ipoint, etaHalfWidth, hV3->GetBinError(ibin));
+        gV4_Combined->SetPoint(ipoint, etaCenter, hV4->GetBinContent(ibin));
+        gV4_Combined->SetPointError(ipoint, etaHalfWidth, hV4->GetBinError(ibin));
+    }
+
+    // last point: FT0A (3.5 to 4.9)
+    int lastPoint = nCombinedPoints - 1;
+    gV2_Combined->SetPoint(lastPoint, 0.5 * (3.5 + 4.9), hV2_Sides->GetBinContent(2));
+    gV2_Combined->SetPointError(lastPoint, 0.5 * (4.9 - 3.5), hV2_Sides->GetBinError(2));
+    gV3_Combined->SetPoint(lastPoint, 0.5 * (3.5 + 4.9), hV3_Sides->GetBinContent(2));
+    gV3_Combined->SetPointError(lastPoint, 0.5 * (4.9 - 3.5), hV3_Sides->GetBinError(2));
+    gV4_Combined->SetPoint(lastPoint, 0.5 * (3.5 + 4.9), hV4_Sides->GetBinContent(2));
+    gV4_Combined->SetPointError(lastPoint, 0.5 * (4.9 - 3.5), hV4_Sides->GetBinError(2));
+
     hV2->Write();
     hV3->Write();
     hV4->Write();
     hV2_Sides->Write();
     hV3_Sides->Write();
     hV4_Sides->Write();
+    gV2_Combined->Write();
+    gV3_Combined->Write();
+    gV4_Combined->Write();
 
     std::cout << "[3times2PC] Side summary v2: FT0C_left=" << hV2_Sides->GetBinContent(1)
               << " +/- " << hV2_Sides->GetBinError(1)
               << ", FT0A_right=" << hV2_Sides->GetBinContent(2)
               << " +/- " << hV2_Sides->GetBinError(2) << std::endl;
+    std::cout << "[3times2PC] Wrote combined graphs with FT0C/TPC/FT0A eta ranges" << std::endl;
 
     outputFile.Close();
 
