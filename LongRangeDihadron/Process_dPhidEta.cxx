@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 #include "./include/BasicForDihadron.h"
+R__LOAD_LIBRARY(libO2PhysicsPWGCFCore)
 
 struct InputUnit {
     std::string fileNameSuffix;
@@ -40,10 +41,47 @@ struct InputUnit {
 void printAxesInfo(THnSparseF* sparseHist);
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc);
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc);
+std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType);
+std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const std::string &fileNameSuffix, Int_t corrType, const std::string &splitName, Int_t minRange, Int_t maxRange);
 
 // global variables
 std::string collisionSystemName = "peripheral PbPb";
 std::string additionalSuffix = "";
+
+std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType) {
+    if (fileNameSuffix != "LHC25ae_pass2_644429") return "";
+
+    if (corrType == kTPCFT0A) return "id50663";
+    if (corrType == kTPCFT0C) return "id50664";
+    if (corrType == kFT0AFT0C) return "id50586";
+    return "";
+}
+
+std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const std::string &fileNameSuffix, Int_t corrType, const std::string &splitName, Int_t minRange, Int_t maxRange) {
+    std::vector<std::string> candidates;
+    candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+
+    const std::string datasetTag = GetDatasetDirectoryTag(fileNameSuffix, corrType);
+    if (!datasetTag.empty()) {
+        candidates.push_back(Form("%s_%s_%s_%d_%d", prefix.c_str(), datasetTag.c_str(), splitName.c_str(), minRange, maxRange));
+        candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), datasetTag.c_str(), splitName.c_str(), minRange, maxRange));
+        candidates.push_back(Form("%s_%s%s%s_%d_%d", prefix.c_str(), datasetTag.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+        candidates.push_back(Form("%s_%s_%d_%d_%s", prefix.c_str(), splitName.c_str(), minRange, maxRange, datasetTag.c_str()));
+        candidates.push_back(Form("%s_%s%s_%d_%d_%s", prefix.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, datasetTag.c_str()));
+    }
+
+    for (const auto &candidate : candidates) {
+        if (file->Get(candidate.c_str()) ||
+            file->Get(Form("%s/sameEvent", candidate.c_str())) ||
+            file->Get(Form("%s/sameEvent_%s", candidate.c_str(), DihadronCorrTypeName[corrType].c_str())) ||
+            file->Get(Form("%s/deltaEta_deltaPhi_same_%s", candidate.c_str(), DihadronCorrTypeName[corrType].c_str())) ||
+            file->Get(Form("%s/Trig_hist_%s", candidate.c_str(), DihadronCorrTypeName[corrType].c_str()))) {
+            return candidate;
+        }
+    }
+
+    return candidates.front();
+}
 
 void Process_dPhidEta() {
     // 不显示窗口
@@ -58,12 +96,19 @@ void Process_dPhidEta() {
     // Dataset 1: LHC25af_pass2_632504 with TPC_FT0A
     inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
+    // // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C (single full-range, NOT eta-differential)
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // Dataset 3: LHC25af_pass2_642734 with FT0A_FT0C (single full-range, NOT eta-differential)
+    inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // Dataset 4: LHC25ae_pass2_644429 (TPC channels with id-mapped directories) + LHC25ae_pass2_645320 (FT0A_FT0C)
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
     
     
 
@@ -130,9 +175,11 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
 
+    TString longRangeDir = ResolveInputDirectory(file, "long-range-dihadron-cor", fileNameSuffix, corrType, splitName, minRange, maxRange).c_str();
+
     // check if MCTrue folder is available
     if (isMc) {
-        if (!file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
+        if (!file->Get(Form("%s/MCTrue", longRangeDir.Data()))) {
             std::cerr << "Error: MCTrue folder not found for " << fileNameSuffix << std::endl;
             file->Close();
             delete file;
@@ -140,7 +187,7 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         }
     }
     else {
-        if (file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
+        if (file->Get(Form("%s/MCTrue", longRangeDir.Data()))) {
             std::cerr << "Caution! you are using Reco or Data, but MCTrue folder is found for " << fileNameSuffix << std::endl;
             file->Close();
             delete file;
@@ -148,10 +195,23 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         }
     }
 
-    // Special handling for FT0A_FT0C in LongRangeEta input: direct 2D histograms
-    // Keep TPC processing untouched and only map FT0A_FT0C to the same output object names.
+    TString flowDirProbe = ResolveInputDirectory(file, "flow-decorrelation", fileNameSuffix, corrType, splitName, minRange, maxRange).c_str();
+    bool hasDirectFT0Input =
+        file->Get(Form("%s/deltaEta_deltaPhi_same_%s", flowDirProbe.Data(), DihadronCorrTypeName[corrType].c_str())) &&
+        file->Get(Form("%s/deltaEta_deltaPhi_mixed_%s", flowDirProbe.Data(), DihadronCorrTypeName[corrType].c_str())) &&
+        file->Get(Form("%s/Trig_hist_%s", flowDirProbe.Data(), DihadronCorrTypeName[corrType].c_str()));
+
     if (!isMc && corrType == kFT0AFT0C) {
-        TString flowDir = Form("flow-decorrelation_%s_%d_%d", splitName.c_str(), minRange, maxRange);
+        std::cout << "[FT0 routing] " << fileNameSuffix << " [" << minRange << ", " << maxRange << "] hasDirectFT0Input=" << hasDirectFT0Input << " (flowDir=" << flowDirProbe.Data() << ")" << std::endl;
+    }
+
+    // Special handling for FT0A_FT0C in LongRangeEta input: direct 2D histograms.
+    // Prefer direct objects for ultra-long-range FT0 EtaDiffOff and keep
+    // CorrelationContainer path as fallback when direct objects are unavailable.
+    
+    if (!isMc && corrType == kFT0AFT0C && hasDirectFT0Input) {
+        std::cout << "[FT0 routing] Using direct FT0 histograms for " << fileNameSuffix << " [" << minRange << ", " << maxRange << "]" << std::endl;
+        TString flowDir = flowDirProbe;
         TH2D* hPhiEtaS = (TH2D*)file->Get(Form("%s/deltaEta_deltaPhi_same_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
         TH2D* hPhiEtaM = (TH2D*)file->Get(Form("%s/deltaEta_deltaPhi_mixed_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
         THnSparseD *trig = (THnSparseD*)file->Get(Form("%s/Trig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
@@ -168,25 +228,34 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 
         TH2D* hPhiEtaMSafe = (TH2D*)hPhiEtaM->Clone(Form("dphideta_ME_safe_%d_%d", minRange, maxRange));
         Double_t minPositive = 0.0;
-        for (Int_t ix = 1; ix <= hPhiEtaMSafe->GetNbinsX(); ++ix) {
-            for (Int_t iy = 1; iy <= hPhiEtaMSafe->GetNbinsY(); ++iy) {
-                Double_t value = hPhiEtaMSafe->GetBinContent(ix, iy);
-                if (value > 0.0 && (minPositive == 0.0 || value < minPositive)) {
-                    minPositive = value;
-                }
-            }
-        }
-        if (minPositive <= 0.0) minPositive = 1e-12;
-        for (Int_t ix = 1; ix <= hPhiEtaMSafe->GetNbinsX(); ++ix) {
-            for (Int_t iy = 1; iy <= hPhiEtaMSafe->GetNbinsY(); ++iy) {
-                if (hPhiEtaMSafe->GetBinContent(ix, iy) <= 0.0) {
-                    hPhiEtaMSafe->SetBinContent(ix, iy, minPositive);
-                }
-            }
-        }
+        // for (Int_t ix = 1; ix <= hPhiEtaMSafe->GetNbinsX(); ++ix) {
+        //     for (Int_t iy = 1; iy <= hPhiEtaMSafe->GetNbinsY(); ++iy) {
+        //         Double_t value = hPhiEtaMSafe->GetBinContent(ix, iy);
+        //         if (value > 0.0 && (minPositive == 0.0 || value < minPositive)) {
+        //             minPositive = value;
+        //         }
+        //     }
+        // }
+        // if (minPositive <= 0.0) minPositive = 1e-12;
+        // for (Int_t ix = 1; ix <= hPhiEtaMSafe->GetNbinsX(); ++ix) {
+        //     for (Int_t iy = 1; iy <= hPhiEtaMSafe->GetNbinsY(); ++iy) {
+        //         if (hPhiEtaMSafe->GetBinContent(ix, iy) <= 0.0) {
+        //             hPhiEtaMSafe->SetBinContent(ix, iy, minPositive);
+        //         }
+        //     }
+        // }
 
-        TH2D* hPhiEtaSMsum = (TH2D*)hPhiEtaS->Clone(Form("dphideta_SM_%d_%d", minRange, maxRange));
-        hPhiEtaSMsum->Divide(hPhiEtaS, hPhiEtaMSafe, 1.0, 1.0);
+        Int_t Nbins = hPhiEtaMSafe->GetYaxis()->GetNbins();
+
+        TH2D* hPhiEtaSMdiv = (TH2D*)hPhiEtaS->Clone(Form("dphideta_SMdiv2_%d_%d", minRange, maxRange));
+        TH2D* hPhiEtaMdiv = (TH2D*)hPhiEtaMSafe->Clone(Form("dphideta_MEdiv2_%d_%d", minRange, maxRange));
+        hPhiEtaSMdiv->Rebin2D(3, Nbins);
+        hPhiEtaMdiv->Rebin2D(3, Nbins);
+        // hPhiEtaMdiv->GetYaxis()->SetRangeUser(6.2, 7);
+        // hPhiEtaSMdiv->GetYaxis()->SetRangeUser(6.2, 7);
+
+        TH2D* hPhiEtaSMsum = (TH2D*)hPhiEtaSMdiv->Clone(Form("dphideta_SM_%d_%d", minRange, maxRange));
+        hPhiEtaSMsum->Divide(hPhiEtaSMdiv, hPhiEtaMdiv, 1.0, 1.0);
 
         Double_t nTriggersS = trig->Integral(true);
         if (nTriggersS > 0) {
@@ -199,14 +268,14 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetYaxis()->GetBinWidth(1));
 
-        hPhiEtaSMsum->Rebin2D(4, 1);
-        hPhiEtaSsum->Rebin2D(4, 1);
-        hPhiEtaMsum->Rebin2D(4, 1);
+        hPhiEtaSMsum->Rebin2D(1, 1);
+        hPhiEtaSsum->Rebin2D(1, 1);
+        hPhiEtaMsum->Rebin2D(1, 1);
 
         TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d", minRange, maxRange));
         hEta->SetTitle("#Delta#eta");
 
-        TH1D* hPhiSameOverMixed = (TH1D*)hPhiEtaSMsum->ProjectionX(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange));
+        TH1D* hPhiSameOverMixed = hPhiEtaSMsum->ProjectionX(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange));
         hPhiSameOverMixed->SetTitle(Form("hPhiSameOverMixed_%d_%d", minRange, maxRange));
         hPhiSameOverMixed->GetXaxis()->SetTitle("#Delta#varphi");
 
@@ -304,19 +373,45 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         return;
     }
 
-    CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/sameEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
-    CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/mixedEvent_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
+        
+
+    CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("%s/sameEvent_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
     if (!same) {
-        same = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/sameEvent", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+        same = (CorrelationContainer*)file->Get(Form("%s/sameEvent", longRangeDir.Data()));
     }
     if (!mixed) {
-        mixed = (CorrelationContainer*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/mixedEvent", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+        mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent", longRangeDir.Data()));
     }
     THnSparseD *trig = nullptr;
     if (!isMc) {
-        trig = (THnSparseD*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/Trig_hist_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
+        trig = (THnSparseD*)file->Get(Form("%s/Trig_hist_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
     } else {
-        trig = (THnSparseD*)file->Get(Form("long-range-dihadron-cor_%s%s_%d_%d/MCTrue/MCTrig_hist_%s", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()));
+        trig = (THnSparseD*)file->Get(Form("%s/MCTrue/MCTrig_hist_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    }
+
+    if (!same || !mixed || !trig) {
+        TString flowDir = ResolveInputDirectory(file, "flow-decorrelation", fileNameSuffix, corrType, splitName, minRange, maxRange).c_str();
+        same = (CorrelationContainer*)file->Get(Form("%s/sameEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        if (!same) {
+            same = (CorrelationContainer*)file->Get(Form("%s/sameEvent", flowDir.Data()));
+        }
+        if (!mixed) {
+            mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent", flowDir.Data()));
+        }
+        if (!isMc) {
+            trig = (THnSparseD*)file->Get(Form("%s/Trig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        } else {
+            trig = (THnSparseD*)file->Get(Form("%s/MCTrue/MCTrig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        }
+        if (same && mixed && trig) {
+            longRangeDir = flowDir;
+        }
+    }
+
+    if (!isMc && corrType == kFT0AFT0C) {
+        std::cout << "[FT0 routing] Using CorrelationContainer fallback for " << fileNameSuffix << " [" << minRange << ", " << maxRange << "] from dir " << longRangeDir.Data() << std::endl;
     }
     
 
@@ -327,11 +422,18 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         return;
     }
 
-    Int_t step = CorrelationContainer::kCFStepAll;
-    if (!isMc && corrType != kFT0AFT0C) step = CorrelationContainer::kCFStepReconstructed;
-
-    THnSparseF *sparSig = (THnSparseF*)same->getPairHist()->getTHn(step);
-    THnSparseF *sparMix = (THnSparseF*)mixed->getPairHist()->getTHn(step);
+    THnSparseF *sparSig = nullptr;
+    THnSparseF *sparMix = nullptr;
+    Int_t selectedStep = isMc ? CorrelationContainer::kCFStepAll : 6;
+    sparSig = (THnSparseF*)same->getPairHist()->getTHn(selectedStep);
+    sparMix = (THnSparseF*)mixed->getPairHist()->getTHn(selectedStep);
+    if (!sparSig || !sparMix || sparSig->GetNbins() <= 0 || sparMix->GetNbins() <= 0) {
+        std::cerr << "Error: CF step " << selectedStep << " unavailable/empty (zero filled bins) for " << fileNameSuffix << " in [" << minRange << ", " << maxRange << "]" << std::endl;
+        file->Close();
+        delete file;
+        return;
+    }
+    std::cout << "Using CF step " << selectedStep << " for " << fileNameSuffix << " " << DihadronCorrTypeName[corrType] << " [" << minRange << ", " << maxRange << "]" << std::endl;
 
     sparSig->SetName(Form("sameEvent_%i_%i", minRange, maxRange));
     sparMix->SetName(Form("mixedEvent_%i_%i", minRange, maxRange));
@@ -420,8 +522,13 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 
             hPhiEtaM->Scale(1.0 / norm);
 
+            Int_t dEtaNims = hPhiEtaM->GetYaxis()->GetNbins();
+            TH2D* hPhiEtaMdiv = (TH2D*)hPhiEtaM->Clone(Form("dphideta_Mdiv_%d_%d_%d%s", minRange, maxRange, iz, suffix.Data()));
             TH2D* hPhiEtaSM = (TH2D*)hPhiEtaS->Clone(Form("dphideta_SM_%d_%d_%d%s", minRange, maxRange, iz, suffix.Data()));
-            hPhiEtaSM->Divide(hPhiEtaM);
+            hPhiEtaMdiv->Rebin2D(1, dEtaNims);
+            hPhiEtaSM->Rebin2D(1, dEtaNims);
+
+            hPhiEtaSM->Divide(hPhiEtaMdiv);
             for (Int_t ix = 1; ix <= hPhiEtaSM->GetNbinsX(); ++ix) {
                 for (Int_t iy = 1; iy <= hPhiEtaSM->GetNbinsY(); ++iy) {
                     const Double_t value = hPhiEtaSM->GetBinContent(ix, iy);
@@ -455,23 +562,23 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d%s", minRange, maxRange, suffix.Data()));
         hEta->SetTitle("#Delta#eta");
         if (corrType == kFT0AFT0C) {
-            hPhiEtaSMsum->Rebin2D(4, 2);
+            hPhiEtaSMsum->Rebin2D(1, 1);
         } else {
-            hPhiEtaSMsum->Rebin2D(2, 2);
+            hPhiEtaSMsum->Rebin2D(1, 1);
         }
 
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetYaxis()->GetBinWidth(1));
         hPhiEtaMsum->Rebin2D(1, 1);
         if (corrType == kFT0AFT0C) {
-            hPhiEtaMsum->Rebin2D(4, 2);
+            hPhiEtaMsum->Rebin2D(1, 1);
         }
 
         hPhiEtaSsum->Scale(1.0 / hPhiEtaSsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaSsum->Scale(1.0 / hPhiEtaSsum->GetYaxis()->GetBinWidth(1));
         hPhiEtaSsum->Rebin2D(1, 1);
          if (corrType == kFT0AFT0C) {
-            hPhiEtaSsum->Rebin2D(4, 2);
+            hPhiEtaSsum->Rebin2D(1, 1);
         }
 
         
@@ -601,9 +708,11 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
 
+    TString flowDir = ResolveInputDirectory(file, "flow-decorrelation", fileNameSuffix, corrType, splitName, minRange, maxRange).c_str();
+
     // check if MCTrue folder is available
     if (isMc) {
-        if (!file->Get(Form("flow-decorrelation_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
+        if (!file->Get(Form("%s/MCTrue", flowDir.Data()))) {
             std::cerr << "Error: MCTrue folder not found for " << fileNameSuffix << std::endl;
             file->Close();
             delete file;
@@ -611,16 +720,13 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         }
     }
     else {
-        if (file->Get(Form("flow-decorrelation_%s%s_%d_%d/MCTrue", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange))) {
+        if (file->Get(Form("%s/MCTrue", flowDir.Data()))) {
             std::cerr << "Caution! you are using Reco or Data, but MCTrue folder is found for " << fileNameSuffix << std::endl;
             file->Close();
             delete file;
             return;
         }
     }
-
-
-    TString flowDir = Form("flow-decorrelation_%s%s_%d_%d", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange);
 
     THnSparseD *trig = nullptr;
     if (!isMc) {
@@ -711,11 +817,18 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         return;
     }
 
-    Int_t step = CorrelationContainer::kCFStepReconstructed;
-    if (isMc) step = CorrelationContainer::kCFStepAll;
-
-    THnSparseF *sparSig = (THnSparseF*)same->getPairHist()->getTHn(step);
-    THnSparseF *sparMix = (THnSparseF*)mixed->getPairHist()->getTHn(step);
+    THnSparseF *sparSig = nullptr;
+    THnSparseF *sparMix = nullptr;
+    Int_t selectedStep = isMc ? CorrelationContainer::kCFStepAll : 6;
+    sparSig = (THnSparseF*)same->getPairHist()->getTHn(selectedStep);
+    sparMix = (THnSparseF*)mixed->getPairHist()->getTHn(selectedStep);
+    if (!sparSig || !sparMix || sparSig->GetNbins() <= 0 || sparMix->GetNbins() <= 0) {
+        std::cerr << "Error: CF step " << selectedStep << " unavailable/empty (zero filled bins) for eta-diff " << fileNameSuffix << " in [" << minRange << ", " << maxRange << "] eta [" << etaMin << ", " << etaMax << "]" << std::endl;
+        file->Close();
+        delete file;
+        return;
+    }
+    std::cout << "Using CF step " << selectedStep << " for eta-diff " << fileNameSuffix << " " << DihadronCorrTypeName[corrType] << " [" << minRange << ", " << maxRange << "] eta [" << etaMin << ", " << etaMax << "]" << std::endl;
 
     sparSig->SetName(Form("sameEvent_%i_%i", minRange, maxRange));
     sparMix->SetName(Form("mixedEvent_%i_%i", minRange, maxRange));
@@ -839,9 +952,9 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d%s", minRange, maxRange, suffix.Data()));
         hEta->SetTitle("#Delta#eta");
         if (corrType == kFT0AFT0C) {
-            hPhiEtaSMsum->Rebin2D(4, 2);
+            hPhiEtaSMsum->Rebin2D(1, 1);
         } else {
-            hPhiEtaSMsum->Rebin2D(2, 2);
+            hPhiEtaSMsum->Rebin2D(1, 1);
         }
 
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));

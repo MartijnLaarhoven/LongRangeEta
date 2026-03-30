@@ -42,14 +42,13 @@ struct InputUnit {
 
 struct ConfigUnit {
     Bool_t isNch;
-    Bool_t isPtDiff;
     Bool_t isEtaDiff;
     std::vector<InputUnit> dataList;
     std::string outputFileName;
-    ConfigUnit(Bool_t _isNch, Bool_t _isPtDiff, std::vector<InputUnit> _dataList, std::string _outputFileName) :
-        isNch(_isNch), isPtDiff(_isPtDiff), isEtaDiff(false), dataList(_dataList), outputFileName(_outputFileName) {}
-    ConfigUnit(Bool_t _isNch, Bool_t _isPtDiff, Bool_t _isEtaDiff, std::vector<InputUnit> _dataList, std::string _outputFileName) :
-        isNch(_isNch), isPtDiff(_isPtDiff), isEtaDiff(_isEtaDiff), dataList(_dataList), outputFileName(_outputFileName) {}
+    ConfigUnit(Bool_t _isNch, std::vector<InputUnit> _dataList, std::string _outputFileName) :
+        isNch(_isNch), isEtaDiff(false), dataList(_dataList), outputFileName(_outputFileName) {}
+    ConfigUnit(Bool_t _isNch, Bool_t _isEtaDiff, std::vector<InputUnit> _dataList, std::string _outputFileName) :
+        isNch(_isNch), isEtaDiff(_isEtaDiff), dataList(_dataList), outputFileName(_outputFileName) {}
 };
 
 struct VnUnit {
@@ -91,7 +90,6 @@ struct VnUnit {
 
 // declare functions
 void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string outputFileName);
-// Removed unused PtDiff processing
 VnUnit* FourierFit(Bool_t isNch, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin=0, Double_t pTMax=0);
 std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits);
 VnUnit* fitSample(Bool_t isNch, TFile* datafile, InputUnit data, int sample = -1, Double_t pTMin=0, Double_t pTMax=0);
@@ -107,7 +105,6 @@ void Process_FourierFit() {
     gROOT->SetBatch(kTRUE);
     
     // Create output directories
-    // PtDiff processing disabled - using EtaDiff only
     gSystem->Exec("mkdir -p ./FourierFit/PDFs");
     
     std::vector<ConfigUnit> configList;
@@ -115,25 +112,16 @@ void Process_FourierFit() {
     collisionSystemName = "Unknown";
     kOutputVnDelta = true;
     
-    // configList.push_back(ConfigUnit(kCent, kPtDiffOff,
-    // {InputUnit("LHC25af_pass1_537547", kFT0AFT0C, 0, 20)}, 
-    // "LHC25af_pass1_537547"));
-    // configList.push_back(ConfigUnit(kCent, kPtDiffOff,
-    // {InputUnit("LHC25af_pass1_532067", kTPCFT0A, 0, 10)}, 
-    // "LHC25af_pass1_532067"));
-    // configList.push_back(ConfigUnit(kCent, kPtDiffOff,
-    // {InputUnit("LHC25af_pass1_532067", kTPCFT0C, 0, 10)}, 
-    // "LHC25af_pass1_532067"));
-    // Ne-Ne inner ring datasets (Cent 0-20)
-    configList.push_back(ConfigUnit(kCent, kPtDiffOff,
-    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, 0, 20)},
-    "LHC25af_pass2_632504"));
-    configList.push_back(ConfigUnit(kCent, kPtDiffOff,
-    {InputUnit("LHC25af_pass2_637596", kTPCFT0C, 0, 20)},
-    "LHC25af_pass2_637596"));
-    configList.push_back(ConfigUnit(kCent, kPtDiffOff,
-    {InputUnit("LHC25af_pass2_640018", kFT0AFT0C, 0, 20)},
-    "LHC25af_pass2_640018"));
+    // O-O datasets (Cent 0-20)
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 0, 20)},
+    "LHC25ae_pass2_644429"));
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 0, 20)},
+    "LHC25ae_pass2_644429"));
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, 0, 20)},
+    "LHC25ae_pass2_645320"));
 
     for (auto config : configList) {
         if (!config.dataList.empty()) {
@@ -269,120 +257,6 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
 }
 
 //==============================================================
-void ProcessConfig_PtDiff(Bool_t isNch, std::vector<InputUnit> dataList, std::string outputFileName) {
-    // Just looping the list
-    for (const auto& data : dataList) {
-        
-        // 执行模板拟合获取所有结果
-        std::vector<VnUnit*> vnResults;
-        for (Int_t iPt = 0; iPt < pTBins.size() - 1; iPt++) {
-            double pTMin = pTBins[iPt];
-            double pTMax = pTBins[iPt + 1];
-            vnResults.push_back(FourierFit(isNch, data, kFALSE, pTMin, pTMax));
-        }
-        // 创建输出文件
-        std::string splitName = "Mult";
-        if (!isNch) splitName = "Cent";
-        std::string stringDelta = "";
-        if (kOutputVnDelta) stringDelta = "Delta";
-        TFile outputFile(Form("./FourierFit/PtDiff/Vn%s_%s_%s_%i_%i_%s.root", stringDelta.c_str(), outputFileName.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[dataList[0].corrType].c_str()), "RECREATE");
-
-        // 初始化直方图
-        TH1D* hV2 = new TH1D("hV2", "v_{2};p_{T};v_{2}", 
-                            pTBins.size()-1, pTBins.data());
-        TH1D* hV3 = new TH1D("hV3", "v_{3};p_{T};v_{3}", 
-                            pTBins.size()-1, pTBins.data());
-        TH1D* hV4 = new TH1D("hV4", "v_{4};p_{T};v_{4}", 
-                            pTBins.size()-1, pTBins.data());
-
-        // 填充数据
-        for (size_t i = 0; i < vnResults.size(); ++i) {
-            hV2->SetBinContent(i+1, vnResults[i]->v2);
-            hV2->SetBinError(i+1, vnResults[i]->v2_err);
-            
-            hV3->SetBinContent(i+1, vnResults[i]->v3);
-            hV3->SetBinError(i+1, vnResults[i]->v3_err);
-            
-            hV4->SetBinContent(i+1, vnResults[i]->v4);
-            hV4->SetBinError(i+1, vnResults[i]->v4_err);
-        }
-
-        // 写入文件
-        hV2->Write();
-        hV3->Write();
-        hV4->Write();
-
-        if (kOutputVnDelta) {
-            // create sub directory and write the subsample results
-            TDirectory* subsampleDir = outputFile.mkdir("Subsamples");
-            subsampleDir->cd();
-            for (Int_t sample = 0; sample < vnResults[0]->subsample_v2.size(); sample++) {
-                TH1D* hV2_sub = new TH1D(Form("hV2_subsample_%d", sample), "v_{2};p_{T};v_{2}", 
-                                    pTBins.size()-1, pTBins.data());
-                TH1D* hV3_sub = new TH1D(Form("hV3_subsample_%d", sample), "v_{3};p_{T};v_{3}", 
-                                    pTBins.size()-1, pTBins.data());
-                TH1D* hV4_sub = new TH1D(Form("hV4_subsample_%d", sample), "v_{4};p_{T};v_{4}", 
-                                    pTBins.size()-1, pTBins.data());
-                for (size_t i = 0; i < vnResults.size(); ++i) {
-                    hV2_sub->SetBinContent(i+1, vnResults[i]->subsample_v2[sample]);
-                    hV2_sub->SetBinError(i+1, vnResults[i]->subsample_v2_err[sample]);
-                    hV3_sub->SetBinContent(i+1, vnResults[i]->subsample_v3[sample]);
-                    hV3_sub->SetBinError(i+1, vnResults[i]->subsample_v3_err[sample]);
-                    hV4_sub->SetBinContent(i+1, vnResults[i]->subsample_v4[sample]);
-                    hV4_sub->SetBinError(i+1, vnResults[i]->subsample_v4_err[sample]);
-                }
-                hV2_sub->Write();
-                hV3_sub->Write();
-                hV4_sub->Write();
-            }
-        }
-
-        std::cout << "Output file: " << Form("./FourierFit/PtDiff/Vn%s_%s_%s_%i_%i_%s.root", stringDelta.c_str(), outputFileName.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[dataList[0].corrType].c_str()) << std::endl;
-        outputFile.Close();
-    }
-    
-}
-
-void VnPtDiff(VnUnit* VnResult_PtDiff, VnUnit* VnResult_Ref) {
-    if (!VnResult_PtDiff || !VnResult_Ref) {
-        std::cerr << "Invalid VnUnit pointers provided." << std::endl;
-        return;
-    }
-    // assuming V_{n\Delta}
-    if (VnResult_Ref->v2 > 0) {
-        double v2_2PC = VnResult_PtDiff->v2 / TMath::Sqrt(VnResult_Ref->v2);
-        // synthetic error
-        double v2_2PC_err = Error_Ratio_sqrtY(VnResult_PtDiff->v2, VnResult_PtDiff->v2_err, VnResult_Ref->v2, VnResult_Ref->v2_err);
-        VnResult_PtDiff->v2 = v2_2PC;
-        VnResult_PtDiff->v2_err = v2_2PC_err;
-    } else {
-        VnResult_PtDiff->v2 = -1.;
-        VnResult_PtDiff->v2_err = 10.;
-    }
-    if (VnResult_Ref->v3 > 0) {
-        double v3_2PC = VnResult_PtDiff->v3 / TMath::Sqrt(VnResult_Ref->v3);
-        // synthetic error
-        double v3_2PC_err = Error_Ratio_sqrtY(VnResult_PtDiff->v3, VnResult_PtDiff->v3_err, VnResult_Ref->v3, VnResult_Ref->v3_err);
-        VnResult_PtDiff->v3 = v3_2PC;
-        VnResult_PtDiff->v3_err = v3_2PC_err;
-    } else {
-        VnResult_PtDiff->v3 = -1.;
-        VnResult_PtDiff->v3_err = 10.;
-    }
-    if (VnResult_Ref->v4 > 0) {
-        double v4_2PC = VnResult_PtDiff->v4 / TMath::Sqrt(VnResult_Ref->v4);
-        // synthetic error
-        double v4_2PC_err = Error_Ratio_sqrtY(VnResult_PtDiff->v4, VnResult_PtDiff->v4_err, VnResult_Ref->v4, VnResult_Ref->v4_err);
-        VnResult_PtDiff->v4 = v4_2PC;
-        VnResult_PtDiff->v4_err = v4_2PC_err;
-    } else {
-        VnResult_PtDiff->v4 = -1.;
-        VnResult_PtDiff->v4_err = 10.;
-    }
-    return;
-}
-
-//==============================================================
 VnUnit* FourierFit(Bool_t isNch, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin=0, Double_t pTMax=0) {
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
@@ -422,9 +296,7 @@ VnUnit* FourierFit(Bool_t isNch, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin
             std::cerr << "Cannot fit pT-diff sample: " << data.fileNameSuffix << std::endl;
             exit(1);
         }
-        if (!kOutputVnDelta) {
-            VnPtDiff(vnResult_PtDiff, vnResult);
-        }
+        // PtDiff processing disabled - only used internally if pT binning is added
     }
 
     std::vector<std::vector<std::vector<double>>> ValueArray;
@@ -456,9 +328,7 @@ VnUnit* FourierFit(Bool_t isNch, InputUnit data, Bool_t cn2Tovn2, Double_t pTMin
                 std::cerr << "Cannot fit pT-diff sample: " << data.fileNameSuffix << std::endl;
                 exit(1);
             }
-            if (!kOutputVnDelta) {
-                VnPtDiff(vnTemp_PtDiff, vnTemp);
-            }
+            // PtDiff processing disabled - only used internally if pT binning is added
             ValueArray[0][sample][0] = vnTemp_PtDiff->v2;
             ValueErrorArray[0][sample][0] = vnTemp_PtDiff->v2_err;
             ValueArray[1][sample][0] = vnTemp_PtDiff->v3;

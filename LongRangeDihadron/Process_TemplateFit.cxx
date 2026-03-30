@@ -116,25 +116,26 @@ void Process_TemplateFit() {
     // PtDiff processing disabled - using EtaDiff only
     gSystem->Exec("mkdir -p ./TemplateFit/EtaDiff/PDFs");
     gSystem->Exec("mkdir -p ./TemplateFit/PDFs");
-    gSystem->Exec("mkdir -p ./TemplateFit/PtDiff/PDFs");
+    gSystem->Exec("mkdir -p ./TemplateFit/EtaDiff/PDFs");
     
     std::vector<ConfigUnit> configList;
 
     collisionSystemName = "Unknown";
     kOutputVnDelta = true;
 
-    // Ne-Ne inner ring datasets (template: 80-100, signal: 0-20)
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_632504", kTPCFT0A, 80, 100),
-    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, 0, 20)},
-    "LHC25af_pass2_632504"));
+    // O-O datasets (template: 80-100, signal: 0-20)
 
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_637596", kTPCFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_637596", kTPCFT0C, 0, 20)},
-    "LHC25af_pass2_637596"));
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 80, 100),
+    {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 0, 20)},
+    "LHC25ae_pass2_644429"));
 
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_640018", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_640018", kFT0AFT0C, 0, 20)},
-    "LHC25af_pass2_640018"));
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 0, 20)},
+    "LHC25ae_pass2_644429"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, 0, 20)},
+    "LHC25ae_pass2_645320"));
 
     std::cout << "TemplateFit: Processing " << configList.size() << " configurations" << std::endl;
     for (auto config : configList) {
@@ -144,6 +145,10 @@ void Process_TemplateFit() {
             std::cout << "Calling ProcessConfig_EtaDiff for: " << config.outputFileName << std::endl;
             ProcessConfig_EtaDiff(config.isNch, config.templ, config.dataList, config.outputFileName);
             std::cout << "Done with ProcessConfig_EtaDiff for: " << config.outputFileName << std::endl;
+        } else {
+            std::cout << "Calling ProcessConfig for: " << config.outputFileName << std::endl;
+            ProcessConfig(config.isNch, config.templ, config.dataList, config.outputFileName);
+            std::cout << "Done with ProcessConfig for: " << config.outputFileName << std::endl;
         }
     }
 

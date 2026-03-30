@@ -37,16 +37,14 @@ void Process_CreateBootstrapSample() {
 
     std::vector<InputUnit> inputList;
 
-    // Ne-Ne EtaDiff centrality-based
-    // Dataset 1: LHC25af_pass2_632504 with TPC_FT0A
-    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
-    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 3: LHC25af_pass2_640018 with FT0A_FT0C (single full-range, NOT eta-differential)
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_640018", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // O-O centrality-based datasets
+    // Dataset: LHC25ae_pass2_644429 (TPC channels) + LHC25ae_pass2_645320 (FT0A_FT0C)
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
 
     for (auto input : inputList) {
         if (input.isEtadiff) {
@@ -70,13 +68,12 @@ void Process_CreateBootstrapSample() {
 void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange) {
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
+    TString inputPath = Form("./ProcessOutput/Mixed_%s_%s_%i_%i_%s.root",
+             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str());
+    std::cout << "[CreateBootstrapSample] Attempting to open: " << inputPath.Data() << std::endl;
     
     // 打开输入文件
-    TFile* file = TFile::Open(
-        Form("./ProcessOutput/Mixed_%s_%s_%i_%i_%s.root", 
-             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()), 
-        "READ"
-    );
+    TFile* file = TFile::Open(inputPath.Data(), "READ");
     if (!file || file->IsZombie()) {
         std::cerr << "Error opening input file!" << std::endl;
         return;
@@ -104,11 +101,9 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
     }
 
     // 创建输出文件
-    TFile* outFile = TFile::Open(
-        Form("./ProcessOutput/BootstrapSample_%s_%s_%i_%i_%s.root", 
-             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str()), 
-        "RECREATE"
-    );
+    TString outputPath = Form("./ProcessOutput/BootstrapSample_%s_%s_%i_%i_%s.root",
+             fileNameSuffix.c_str(), splitName.c_str(), minRange, maxRange, DihadronCorrTypeName[corrType].c_str());
+    TFile* outFile = TFile::Open(outputPath.Data(), "RECREATE");
     if (!outFile || outFile->IsZombie()) {
         std::cerr << "Error creating output file!" << std::endl;
         file->Close();
@@ -189,6 +184,7 @@ void CreateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t is
     for (auto* h : hists) delete h;
     delete outFile;
     delete file;
+    std::cout << "Created bootstrap file: " << outputPath.Data() << std::endl;
 }
 
 void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax) {
