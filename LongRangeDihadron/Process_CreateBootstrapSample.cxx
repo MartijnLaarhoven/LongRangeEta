@@ -34,7 +34,7 @@ void CreateBootstrapSample_EtaDiff(std::string fileNameSuffix, Int_t corrType, B
 void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange);
 
 void Process_CreateBootstrapSample() {
-
+    std::vector<InputUnit> inputList;
     // p-O centrality-based datasets
     inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
@@ -42,8 +42,6 @@ void Process_CreateBootstrapSample() {
     inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
     inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
     inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-
-    std::vector<InputUnit> inputList;
 
     // Ne-Ne centrality-based datasets
     // Dataset: LHC25af_pass2_632504 (TPC_FT0A), LHC25af_pass2_637596 (TPCFT0C), LHC25af_pass2_645746 (FT0AFT0C)
