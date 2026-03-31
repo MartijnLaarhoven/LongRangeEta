@@ -49,11 +49,16 @@ std::string collisionSystemName = "peripheral PbPb";
 std::string additionalSuffix = "";
 
 std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType) {
-    if (fileNameSuffix != "LHC25ae_pass2_644429") return "";
-
-    if (corrType == kTPCFT0A) return "id50663";
-    if (corrType == kTPCFT0C) return "id50664";
-    if (corrType == kFT0AFT0C) return "id50586";
+    if (fileNameSuffix == "LHC25ae_pass2_644429") {
+        if (corrType == kTPCFT0A) return "id50663";
+        if (corrType == kTPCFT0C) return "id50664";
+        if (corrType == kFT0AFT0C) return "id50586";
+    }
+    if (fileNameSuffix == "LHC25ad_pass2_644389") {
+        if (corrType == kTPCFT0A) return "id50674";
+        if (corrType == kTPCFT0C) return "id50675";
+        if (corrType == kFT0AFT0C) return "id50587";
+    }
     return "";
 }
 
@@ -100,16 +105,25 @@ void Process_dPhidEta() {
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
     // Dataset 3: LHC25af_pass2_642734 with FT0A_FT0C (single full-range, NOT eta-differential)
-    inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    // Dataset 4: LHC25ae_pass2_644429 (TPC channels with id-mapped directories) + LHC25ae_pass2_645320 (FT0A_FT0C)
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    inputList.push_back(InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // Dataset 4: LHC25ae_pass2_644429 (TPC channels with id-mapped directories) + LHC25ae_pass2_645657 (FT0A_FT0C)
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
     
+    // p-O datasets (template: 80-100, signal: 0-20)
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
     
 
     for (auto input : inputList) {

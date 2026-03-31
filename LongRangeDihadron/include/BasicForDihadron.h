@@ -72,7 +72,7 @@ std::map<int, std::vector<float>> DihadrondEtaRange = {
     {kTPCFT0C, {1.2, 4.2}},
     // {kFT0AFT0C, {5.5, 8.5}}
     // cut edge of FT0A-FT0C
-    {kFT0AFT0C, {6., 7.2}}
+    {kFT0AFT0C, {6., 8.}}
 };
 
 std::map<int, float> MixEventNormalizationEta = {

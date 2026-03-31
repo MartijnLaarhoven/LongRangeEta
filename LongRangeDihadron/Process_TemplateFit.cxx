@@ -123,8 +123,25 @@ void Process_TemplateFit() {
     collisionSystemName = "Unknown";
     kOutputVnDelta = true;
 
-    // O-O datasets (template: 80-100, signal: 0-20)
+    // Ne-Ne datasets (template: 80-100, signal: 0-20)
 
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_632504", kTPCFT0A, 80, 100),
+    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, 0, 20)},
+    "LHC25af_pass2_632504"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_637596", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_637596", kTPCFT0C, 0, 20)},
+    "LHC25af_pass2_637596"));
+
+    // configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_642734", kFT0AFT0C, 80, 100),
+    // {InputUnit("LHC25af_pass2_642734", kFT0AFT0C, 0, 20)},
+    // "LHC25af_pass2_642734"));
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_645746", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_645746", kFT0AFT0C, 0, 20)},
+    "LHC25af_pass2_645746"));
+
+
+    // O-O datasets (template: 80-100, signal: 0-20)
     configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 80, 100),
     {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 0, 20)},
     "LHC25ae_pass2_644429"));
@@ -133,9 +150,23 @@ void Process_TemplateFit() {
     {InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 0, 20)},
     "LHC25ae_pass2_644429"));
 
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, 0, 20)},
-    "LHC25ae_pass2_645320"));
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, 0, 20)},
+    "LHC25ae_pass2_645657"));
+
+
+    // p-O datasets (template: 80-100, signal: 0-20)
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ad_pass2_644389", kTPCFT0A, 80, 100),
+    {InputUnit("LHC25ad_pass2_644389", kTPCFT0A, 0, 20)},
+    "LHC25ad_pass2_644389"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 0, 20)},
+    "LHC25ad_pass2_644389"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 0, 20)},
+    "LHC25ad_pass2_644389"));
 
     std::cout << "TemplateFit: Processing " << configList.size() << " configurations" << std::endl;
     for (auto config : configList) {
@@ -167,15 +198,30 @@ void ProcessConfig(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataLis
         std::cout << "[" << data.minRange << ", " << data.maxRange << "] " << std::endl;
     }
 
-    // 检查范围是否连续
-    std::vector<Int_t> mergedRanges = CheckAndMergeRanges(dataList);
-    Bool_t isContinuous = !mergedRanges.empty();
-
     // 执行模板拟合获取所有结果
     std::vector<VnUnit*> vnResults;
+    std::vector<InputUnit> validDataList;
     for (const auto& data : dataList) {
-        vnResults.push_back(TemplateFit(isNch, templ, data, (!kOutputVnDelta)));
+        VnUnit* result = TemplateFit(isNch, templ, data, (!kOutputVnDelta));
+        if (!result) {
+            std::cerr << "[TemplateFit] Skipping config due to missing/invalid bootstrap input: "
+                      << data.fileNameSuffix << " [" << data.minRange << ", " << data.maxRange << "] "
+                      << DihadronCorrTypeName[data.corrType] << std::endl;
+            continue;
+        }
+        vnResults.push_back(result);
+        validDataList.push_back(data);
     }
+
+    if (vnResults.empty()) {
+        std::cerr << "[TemplateFit] No valid results for " << outputFileName
+                  << " (" << DihadronCorrTypeName[templ.corrType] << "), skipping output." << std::endl;
+        return;
+    }
+
+    // 检查范围是否连续（基于有效输入）
+    std::vector<Int_t> mergedRanges = CheckAndMergeRanges(validDataList);
+    Bool_t isContinuous = !mergedRanges.empty();
 
     // 创建输出文件
     std::string splitName = "Mult";
@@ -241,8 +287,14 @@ void ProcessConfig(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataLis
             }
         }
     } else {
-        // 创建TGraphErrors
-        Int_t nPoints = dataList.size();
+        // 创建直方图和TGraphErrors
+        Int_t nPoints = validDataList.size();
+        
+        // Create histograms for compatibility with 3times2PC
+        TH1D* hV2 = new TH1D("hV2", "v_{2};Centrality;v_{2}", nPoints, 0.0, 100.0);
+        TH1D* hV3 = new TH1D("hV3", "v_{3};Centrality;v_{3}", nPoints, 0.0, 100.0);
+        TH1D* hV4 = new TH1D("hV4", "v_{4};Centrality;v_{4}", nPoints, 0.0, 100.0);
+        
         TGraphErrors* gV2 = new TGraphErrors(nPoints);
         TGraphErrors* gV3 = new TGraphErrors(nPoints);
         TGraphErrors* gV4 = new TGraphErrors(nPoints);
@@ -256,8 +308,8 @@ void ProcessConfig(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataLis
 
         // 填充数据
         for (Int_t i = 0; i < nPoints; ++i) {
-            Double_t xCenter = 0.5*(dataList[i].minRange + dataList[i].maxRange);
-            Double_t xError = 0.5*(dataList[i].maxRange - dataList[i].minRange);
+            Double_t xCenter = 0.5*(validDataList[i].minRange + validDataList[i].maxRange);
+            Double_t xError = 0.5*(validDataList[i].maxRange - validDataList[i].minRange);
             
             gV2->SetPoint(i, xCenter, vnResults[i]->v2);
             gV2->SetPointError(i, xError, vnResults[i]->v2_err);
@@ -267,9 +319,20 @@ void ProcessConfig(Bool_t isNch, InputUnit templ, std::vector<InputUnit> dataLis
             
             gV4->SetPoint(i, xCenter, vnResults[i]->v4);
             gV4->SetPointError(i, xError, vnResults[i]->v4_err);
+            
+            // Also fill histograms for 3times2PC compatibility
+            hV2->SetBinContent(i+1, vnResults[i]->v2);
+            hV2->SetBinError(i+1, vnResults[i]->v2_err);
+            hV3->SetBinContent(i+1, vnResults[i]->v3);
+            hV3->SetBinError(i+1, vnResults[i]->v3_err);
+            hV4->SetBinContent(i+1, vnResults[i]->v4);
+            hV4->SetBinError(i+1, vnResults[i]->v4_err);
         }
 
         // 写入文件
+        hV2->Write();
+        hV3->Write();
+        hV4->Write();
         gV2->Write();
         gV3->Write();
         gV4->Write();
@@ -518,35 +581,79 @@ VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tov
     TFile* templatefile = new TFile(Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, DihadronCorrTypeName[templ.corrType].c_str()), "READ");
     if (!templatefile || !templatefile->IsOpen()) {
         std::cerr << "Cannot open template file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, DihadronCorrTypeName[templ.corrType].c_str()) << std::endl;
-        exit(1);
+        if (templatefile) {
+            templatefile->Close();
+            delete templatefile;
+        }
+        return nullptr;
     }
     TFile* templatefile_PtDiff = nullptr;
     if (pTMin > 0 && pTMax > 0) {
         templatefile_PtDiff = new TFile(Form("./ProcessOutput/PtDiff/BootstrapSample_%s_%s_%d_%d_Pt_%0.1f_%0.1f_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, pTMin, pTMax, DihadronCorrTypeName[templ.corrType].c_str()), "READ");
         if (!templatefile_PtDiff || !templatefile_PtDiff->IsOpen()) {
             std::cerr << "Cannot open template file: " << Form("./ProcessOutput/PtDiff/BootstrapSample_%s_%s_%d_%d_Pt_%0.1f_%0.1f_%s.root", templ.fileNameSuffix.c_str(), splitName.c_str(), templ.minRange, templ.maxRange, pTMin, pTMax, DihadronCorrTypeName[templ.corrType].c_str()) << std::endl;
-            exit(1);
+            if (templatefile_PtDiff) {
+                templatefile_PtDiff->Close();
+                delete templatefile_PtDiff;
+            }
+            templatefile->Close();
+            delete templatefile;
+            return nullptr;
         }
     }
 
     TFile* datafile = new TFile(Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()), "READ");
     if (!datafile || !datafile->IsOpen()) {
         std::cerr << "Cannot open input file: " << Form("./ProcessOutput/BootstrapSample_%s_%s_%d_%d_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, DihadronCorrTypeName[data.corrType].c_str()) << std::endl;
-        exit(1);
+        if (datafile) {
+            datafile->Close();
+            delete datafile;
+        }
+        if (templatefile_PtDiff) {
+            templatefile_PtDiff->Close();
+            delete templatefile_PtDiff;
+        }
+        templatefile->Close();
+        delete templatefile;
+        return nullptr;
     }
     TFile* datafile_PtDiff = nullptr;
     if (pTMin > 0 && pTMax > 0) {
         datafile_PtDiff = new TFile(Form("./ProcessOutput/PtDiff/BootstrapSample_%s_%s_%i_%i_Pt_%0.1f_%0.1f_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, pTMin, pTMax, DihadronCorrTypeName[data.corrType].c_str()), "READ");
         if (!datafile_PtDiff || !datafile_PtDiff->IsOpen()) {
             std::cerr << "Cannot open input file: " << Form("./ProcessOutput/PtDiff/BootstrapSample_%s_%s_%i_%i_Pt_%0.1f_%0.1f_%s.root", data.fileNameSuffix.c_str(), splitName.c_str(), data.minRange, data.maxRange, pTMin, pTMax, DihadronCorrTypeName[data.corrType].c_str()) << std::endl;
-            exit(1);
+            if (datafile_PtDiff) {
+                datafile_PtDiff->Close();
+                delete datafile_PtDiff;
+            }
+            datafile->Close();
+            delete datafile;
+            if (templatefile_PtDiff) {
+                templatefile_PtDiff->Close();
+                delete templatefile_PtDiff;
+            }
+            templatefile->Close();
+            delete templatefile;
+            return nullptr;
         }
     }
 
     VnUnit* vnResult = fitSample(isNch, templatefile, templ, datafile, data, -1);
     if (!vnResult) {
         std::cerr << "Cannot fit sample: " << data.fileNameSuffix << std::endl;
-        exit(1);
+        if (datafile_PtDiff) {
+            datafile_PtDiff->Close();
+            delete datafile_PtDiff;
+        }
+        datafile->Close();
+        delete datafile;
+        if (templatefile_PtDiff) {
+            templatefile_PtDiff->Close();
+            delete templatefile_PtDiff;
+        }
+        templatefile->Close();
+        delete templatefile;
+        return nullptr;
     }
     VnUnit* vnResult_PtDiff = nullptr;
     if (pTMin > 0 && pTMax > 0) {
@@ -560,6 +667,11 @@ VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tov
         }
     }
 
+    // Store aggregated fit errors for fallback
+    double v2_err_agg = vnResult->v2_err;
+    double v3_err_agg = vnResult->v3_err;
+    double v4_err_agg = vnResult->v4_err;
+
     std::vector<std::vector<std::vector<double>>> ValueArray;
     std::vector<std::vector<std::vector<double>>> ValueErrorArray;
     std::vector<std::vector<double>> ErrorArray;
@@ -570,11 +682,16 @@ VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tov
     vnResult->ResizeSubsample(NofSample);
     if (pTMin > 0 && pTMax > 0) vnResult_PtDiff->ResizeSubsample(NofSample);
 
+    int validSampleCount = 0;
     for(int sample=0;sample<NofSample;sample++) {
         VnUnit* vnTemp = fitSample(isNch, templatefile, templ, datafile, data, sample);
         if (!vnTemp) {
             std::cerr << "Cannot fit sample: " << data.fileNameSuffix << " sample: " << sample << std::endl;
             exit(1);
+        }
+        // Count valid samples (not sentinel values v=-1, err=10)
+        if (!(vnTemp->v2 == -1.0 && vnTemp->v2_err == 10.0)) {
+            validSampleCount++;
         }
         ValueArray[0][sample][0] = vnTemp->v2;
         ValueErrorArray[0][sample][0] = vnTemp->v2_err;
@@ -608,17 +725,35 @@ VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tov
     //     std::cout << "sample: " << sample << " v3^2: " << ValueArray[1][sample][0]  << std::endl;
     //     std::cout << "sample: " << sample << " v4^2: " << ValueArray[2][sample][0] << std::endl << std::endl;
     // }
+    
+    std::cout << "[TemplateFit] Valid bootstrap samples: " << validSampleCount << "/" << NofSample << std::endl;
+    
     for(int iobs = 0;iobs < Nobs;iobs++){
         CalculateBootstrapError(ValueArray[iobs],ValueErrorArray[iobs],ErrorArray[iobs],1.);
     }
 
-    vnResult->v2_err = ErrorArray[0][0];
-    vnResult->v3_err = ErrorArray[1][0];
-    vnResult->v4_err = ErrorArray[2][0];
+    // Check if bootstrap error calculation failed (< 3 valid samples) and fallback to aggregated fit errors
+    if (validSampleCount < 3) {
+        std::cout << "[TemplateFit] Too few valid bootstrap samples (" << validSampleCount << "), using aggregated fit errors instead" << std::endl;
+        vnResult->v2_err = v2_err_agg;
+        vnResult->v3_err = v3_err_agg;
+        vnResult->v4_err = v4_err_agg;
+    } else {
+        vnResult->v2_err = ErrorArray[0][0];
+        vnResult->v3_err = ErrorArray[1][0];
+        vnResult->v4_err = ErrorArray[2][0];
+    }
+    
     if (pTMin > 0 && pTMax > 0) {
-        vnResult_PtDiff->v2_err = ErrorArray[0][0];
-        vnResult_PtDiff->v3_err = ErrorArray[1][0];
-        vnResult_PtDiff->v4_err = ErrorArray[2][0];
+        if (validSampleCount < 3) {
+            vnResult_PtDiff->v2_err = v2_err_agg;
+            vnResult_PtDiff->v3_err = v3_err_agg;
+            vnResult_PtDiff->v4_err = v4_err_agg;
+        } else {
+            vnResult_PtDiff->v2_err = ErrorArray[0][0];
+            vnResult_PtDiff->v3_err = ErrorArray[1][0];
+            vnResult_PtDiff->v4_err = ErrorArray[2][0];
+        }
     }
 
     if (cn2Tovn2) {
@@ -698,6 +833,11 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
         }
     }
 
+    // Store aggregated fit errors for fallback
+    double v2_err_agg = vnResult_EtaDiff ? vnResult_EtaDiff->v2_err : 10.0;
+    double v3_err_agg = vnResult_EtaDiff ? vnResult_EtaDiff->v3_err : 10.0;
+    double v4_err_agg = vnResult_EtaDiff ? vnResult_EtaDiff->v4_err : 10.0;
+
     std::vector<std::vector<std::vector<double>>> ValueArray;
     std::vector<std::vector<std::vector<double>>> ValueErrorArray;
     std::vector<std::vector<double>> ErrorArray;
@@ -708,12 +848,17 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
     if (vnResult_EtaDiff) vnResult_EtaDiff->ResizeSubsample(NofSample);
 
     // For EtaDiff, bootstrap samples correspond to eta bins (samples 0-99 for 100 eta bins)
+    int validSampleCount = 0;
     if (etaMin > -0.9 && etaMax < 0.9 && vnResult_EtaDiff) {
         for(int sample=0; sample<NofSample; sample++) {
             VnUnit* vnTemp_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, sample, etaMin, etaMax, kTRUE);
             if (!vnTemp_EtaDiff) {
                 std::cerr << "Cannot fit eta-diff sample: " << data.fileNameSuffix << " sample: " << sample << std::endl;
                 vnTemp_EtaDiff = new VnUnit(0.0, 10.0, 0.0, 10.0, 0.0, 10.0);  // Use placeholder on error
+            }
+            // Count valid samples (not sentinel values v=-1, err=10)
+            if (!(vnTemp_EtaDiff->v2 == -1.0 && vnTemp_EtaDiff->v2_err == 10.0)) {
+                validSampleCount++;
             }
             ValueArray[0][sample][0] = vnTemp_EtaDiff->v2;
             ValueErrorArray[0][sample][0] = vnTemp_EtaDiff->v2_err;
@@ -726,14 +871,24 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
         }
     }
     
+    std::cout << "[TemplateFit_EtaDiff] Valid bootstrap samples: " << validSampleCount << "/" << NofSample << std::endl;
+    
     for(int iobs = 0;iobs < Nobs;iobs++){
         CalculateBootstrapError(ValueArray[iobs],ValueErrorArray[iobs],ErrorArray[iobs],1.);
     }
 
     if (etaMin > -0.9 && etaMax < 0.9 && vnResult_EtaDiff) {
-        vnResult_EtaDiff->v2_err = ErrorArray[0][0];
-        vnResult_EtaDiff->v3_err = ErrorArray[1][0];
-        vnResult_EtaDiff->v4_err = ErrorArray[2][0];
+        // Check if bootstrap error calculation failed (< 3 valid samples) and fallback to aggregated fit errors
+        if (validSampleCount < 3) {
+            std::cout << "[TemplateFit_EtaDiff] Too few valid bootstrap samples (" << validSampleCount << "), using aggregated fit errors instead" << std::endl;
+            vnResult_EtaDiff->v2_err = v2_err_agg;
+            vnResult_EtaDiff->v3_err = v3_err_agg;
+            vnResult_EtaDiff->v4_err = v4_err_agg;
+        } else {
+            vnResult_EtaDiff->v2_err = ErrorArray[0][0];
+            vnResult_EtaDiff->v3_err = ErrorArray[1][0];
+            vnResult_EtaDiff->v4_err = ErrorArray[2][0];
+        }
     }
 
     if (etaMin > -0.9 && etaMax < 0.9 && vnResult_EtaDiff) {
@@ -863,6 +1018,87 @@ void RooTempFitter(TH1 *lm, TH1 *hm, std::vector<Double_t>& fParamVal, std::vect
         std::cerr << "Null pointer to histogram" << std::endl;
         return;
     }
+    // Option: inflate or regularize per-bin errors at runtime to stabilize fits.
+    // Controlled via environment variables (no code edits needed):
+    // LR_ERROR_SCALE  - multiplicative factor applied to all bin errors (default 1.0)
+    // LR_SYS_FRAC     - fractional systematic added in quadrature (e.g. 0.01 = 1%% of bin content)
+    // LR_ERROR_FLOOR  - minimum absolute error allowed per bin (default 1e-6)
+    {
+        const char* es = getenv("LR_ERROR_SCALE");
+        const char* sf = getenv("LR_SYS_FRAC");
+        const char* ef = getenv("LR_ERROR_FLOOR");
+        double envScale = es ? atof(es) : 1.0;
+        double sysFrac = sf ? atof(sf) : 0.0;
+        double errFloor = ef ? atof(ef) : 1e-6;
+        if (!TMath::Finite(envScale) || envScale <= 0) envScale = 1.0;
+        if (!TMath::Finite(sysFrac) || sysFrac < 0) sysFrac = 0.0;
+        if (!TMath::Finite(errFloor) || errFloor < 0) errFloor = 1e-6;
+        if (envScale != 1.0 || sysFrac != 0.0 || errFloor != 1e-6) {
+            std::cout << "[FitDiag] Applying runtime error regularization: scale=" << envScale << " sysFrac=" << sysFrac << " floor=" << errFloor << std::endl;
+            int nb = hm->GetNbinsX();
+            for (int ib = 1; ib <= nb; ++ib) {
+                double err = hm->GetBinError(ib);
+                double val = hm->GetBinContent(ib);
+                if (!TMath::Finite(err) || err <= 0) err = (val > 0) ? sqrt(val) : 1.0;
+                if (sysFrac > 0.0) {
+                    double sys = fabs(val) * sysFrac;
+                    err = sqrt(err*err + sys*sys);
+                }
+                err *= envScale;
+                if (!TMath::Finite(err) || err < errFloor) err = errFloor;
+                hm->SetBinError(ib, err);
+            }
+        }
+    }
+    // Quick diagnostics: print means/max to help spot scale mismatches
+    double hm_mean = hm->GetMean();
+    double lm_mean = lm->GetMean();
+    double hm_max = hm->GetMaximum();
+    double lm_max = lm->GetMaximum();
+    std::cout << "[FitDiag] pre-fit means: hm_mean=" << hm_mean << " lm_mean=" << lm_mean << " hm_max=" << hm_max << " lm_max=" << lm_max << std::endl;
+
+    // Normalize template histogram to data mean to make Fa around O(1) where possible.
+    if (TMath::Finite(lm_mean) && lm_mean != 0.0) {
+        double scale_lm_to_hm = (TMath::Finite(hm_mean) && hm_mean>0) ? (hm_mean / lm_mean) : 1.0;
+        if (TMath::Finite(scale_lm_to_hm) && fabs(scale_lm_to_hm - 1.0) > 1e-12) {
+            std::cout << "[FitDiag] Scaling lm by " << scale_lm_to_hm << " to match hm mean" << std::endl;
+            lm->Scale(scale_lm_to_hm);
+        }
+    }
+
+    // Estimate Fa and Ga via a weighted linear regression: hm ~= Fa * lm + Ga
+    double S = 0, Sx = 0, Sy = 0, Sxx = 0, Sxy = 0;
+    int nbins = hm->GetNbinsX();
+    for (int ib = 1; ib <= nbins; ++ib) {
+        double x = lm->GetBinContent(ib);
+        double y = hm->GetBinContent(ib);
+        double err = hm->GetBinError(ib);
+        double w = (err > 0 && TMath::Finite(err)) ? 1.0 / (err*err) : 1.0;
+        S += w;
+        Sx += w * x;
+        Sy += w * y;
+        Sxx += w * x * x;
+        Sxy += w * x * y;
+    }
+    double denom = (S * Sxx - Sx * Sx);
+    double guessFa = 1.0;
+    double guessGa = 0.0;
+    if (TMath::Finite(denom) && fabs(denom) > 1e-18) {
+        guessFa = (S * Sxy - Sx * Sy) / denom;
+        guessGa = (Sy - guessFa * Sx) / S;
+    } else {
+        // fallback: use ratio of maxima or means
+        if (lm_max > 0) guessFa = hm_max / lm_max;
+        else if (lm_mean > 0) guessFa = hm_mean / lm_mean;
+        guessGa = hm_mean - guessFa * lm_mean;
+    }
+    if (!TMath::Finite(guessFa)) guessFa = 1.0;
+    if (!TMath::Finite(guessGa)) guessGa = 0.0;
+    // Clamp guesses to reasonable ranges
+    double fa_floor = 1e-6;
+    if (fabs(guessFa) < fa_floor) guessFa = (guessFa >= 0) ? fa_floor : -fa_floor;
+    std::cout << "[FitDiag] Regression guess: Fa=" << guessFa << " Ga=" << guessGa << std::endl;
+
     //Initialize fitter with given projections
     TemplateFitter *ft = new TemplateFitter(hm);
     //Setting up variable ( = delta phi, or just "x"):
@@ -870,8 +1106,30 @@ void RooTempFitter(TH1 *lm, TH1 *hm, std::vector<Double_t>& fParamVal, std::vect
 
     if (!kRefit){
         // Pb-Pb initial value
-        ft->AddParameter("Fa","Fa",4.5,0,100);
-        ft->AddParameter("Ga","Ga",1000,0,100000);
+        // OLD: ft->AddParameter("Fa","Fa",4.5,0,100);
+        // OLD: ft->AddParameter("Ga","Ga",23000,0,100000);
+        // Use regression-based initial guesses with data-driven bounds to improve conditioning
+        {
+            double fa_init = guessFa;
+            // Enforce Fa non-negative: physical template scale should be >= 0.
+            if (!TMath::Finite(fa_init)) fa_init = fa_floor;
+            if (fa_init < 0) {
+                std::cout << "[FitDiag] Regression gave negative Fa (" << guessFa << ") - using abs(fa) fallback." << std::endl;
+                fa_init = fabs(fa_init);
+            }
+            if (fa_init < fa_floor) fa_init = fa_floor;
+
+            double fa_min = 0.0; // do not allow negative Fa
+            double fa_max = std::max(fa_min + 1.0, fa_init * 10.0);
+            ft->AddParameter("Fa","Fa",fa_init,fa_min,fa_max);
+
+            double ga_init = guessGa;
+            if (!TMath::Finite(ga_init)) ga_init = 0.0;
+            double ga_span = std::max(1.0, fabs(ga_init)*2.0);
+            double ga_min = ga_init - ga_span;
+            double ga_max = ga_init + ga_span;
+            ft->AddParameter("Ga","Ga",ga_init,ga_min,ga_max);
+        }
         ft->AddParameter("v2","v2",4e-3,-1.0,1.0);
         ft->AddParameter("v3","v3",6e-4,-1.0,1.0);
         ft->AddParameter("v4","v4",1.8e-4,-1.0,1.0);

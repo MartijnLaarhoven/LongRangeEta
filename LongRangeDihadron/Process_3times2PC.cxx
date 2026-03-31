@@ -99,14 +99,24 @@ void Process_3times2PC() {
 
     // LM, MR, LR
     // Ne-Ne datasets (af)
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kTemplateFit, 0, 20)},
+    // "LHC25af_pass2_642734"));
+
+    // Old FT0A-FT0C ultra long range input (commented out)
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kTemplateFit, 0, 20)},
+    // "LHC25af_pass2_642734"));
+
+    // New FT0A-FT0C ultra long range input (LHC25af_pass2_645746)
     configList.push_back(ConfigUnit(kCent,
-    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kTemplateFit, 0, 20)},
-    "LHC25af_pass2_642734"));
+    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC25af_pass2_645746"));
 
     // O-O datasets (ae) - Disabled while focusing on af dataset debugging
-    // configList.push_back(ConfigUnit(kCent,
-    // {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, kTemplateFit, 0, 20)},
-    // "LHC25ae_pass2_645320"));
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC25ae_pass2_645657"));
 
     for (auto config : configList) {
         if (!config.constructed) continue;
@@ -246,103 +256,108 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
         std::cout << Form("[3times2PC] Eta [%.1f, %.1f]: v2=%g +/- %g", etaMin, etaMax, v2, v2_err) << std::endl;
     }
 
-    auto BuildSideSummary = [](TH1D* sourceHist, const char* name, const char* title) {
-        TH1D* sideHist = new TH1D(name, title, 2, 0.5, 2.5);
-        sideHist->GetXaxis()->SetBinLabel(1, "FT0C_left");
-        sideHist->GetXaxis()->SetBinLabel(2, "FT0A_right");
-
-        double leftSum = 0.0;
-        double leftErr2 = 0.0;
-        int leftCount = 0;
-        double rightSum = 0.0;
-        double rightErr2 = 0.0;
-        int rightCount = 0;
-
+    auto FindEdgeValidBins = [](TH1D* sourceHist) {
+        std::pair<int, int> bins(-1, -1);
         for (int ibin = 1; ibin <= sourceHist->GetNbinsX(); ++ibin) {
-            double center = sourceHist->GetXaxis()->GetBinCenter(ibin);
             double value = sourceHist->GetBinContent(ibin);
             double error = sourceHist->GetBinError(ibin);
-
-            if (!std::isfinite(value) || !std::isfinite(error) || value < 0.0 || error >= 9.9) {
-                continue;
-            }
-
-            if (center < 0) {
-                leftSum += value;
-                leftErr2 += error * error;
-                leftCount++;
-            } else if (center > 0) {
-                rightSum += value;
-                rightErr2 += error * error;
-                rightCount++;
-            }
+            if (!std::isfinite(value) || !std::isfinite(error) || value < 0.0 || error >= 9.9) continue;
+            bins.first = ibin;
+            break;
         }
-
-        if (leftCount > 0) {
-            sideHist->SetBinContent(1, leftSum / leftCount);
-            sideHist->SetBinError(1, std::sqrt(leftErr2) / leftCount);
-        } else {
-            sideHist->SetBinContent(1, -1.0);
-            sideHist->SetBinError(1, 10.0);
+        for (int ibin = sourceHist->GetNbinsX(); ibin >= 1; --ibin) {
+            double value = sourceHist->GetBinContent(ibin);
+            double error = sourceHist->GetBinError(ibin);
+            if (!std::isfinite(value) || !std::isfinite(error) || value < 0.0 || error >= 9.9) continue;
+            bins.second = ibin;
+            break;
         }
+        return bins;
+    };
 
-        if (rightCount > 0) {
-            sideHist->SetBinContent(2, rightSum / rightCount);
-            sideHist->SetBinError(2, std::sqrt(rightErr2) / rightCount);
-        } else {
-            sideHist->SetBinContent(2, -1.0);
-            sideHist->SetBinError(2, 10.0);
+    auto BuildSideSummaryFromLMRLR = [&](TH1D* hLM, TH1D* hMR, double lr, double lr_err, const char* name, const char* title) {
+        TH1D* sideHist = new TH1D(name, title, 2, 0.5, 2.5);
+        sideHist->GetXaxis()->SetBinLabel(1, "FT0C [-3.3,-2.1]"); // Left
+        sideHist->GetXaxis()->SetBinLabel(2, "FT0A [3.5,4.9]"); // Right
+
+        auto edgeBins = FindEdgeValidBins(hLM);
+        int leftBin = edgeBins.first;   // FT0C (left)
+        int rightBin = edgeBins.second; // FT0A (right)
+
+        // Calculate both values first
+        double vC = -1.0, vCerr = 10.0, vA = -1.0, vAerr = 10.0;
+        if (leftBin > 0) {
+            double lm_left = hLM->GetBinContent(leftBin);
+            double lm_left_err = hLM->GetBinError(leftBin);
+            double mr_left = hMR->GetBinContent(leftBin);
+            double mr_left_err = hMR->GetBinError(leftBin);
+            vC = Get3times2PC(lm_left, lr, mr_left);
+            vCerr = Get3times2PC_Error(lm_left, lm_left_err, lr, lr_err, mr_left, mr_left_err);
         }
+        if (rightBin > 0) {
+            double lm_right = hLM->GetBinContent(rightBin);
+            double lm_right_err = hLM->GetBinError(rightBin);
+            double mr_right = hMR->GetBinContent(rightBin);
+            double mr_right_err = hMR->GetBinError(rightBin);
+            vA = Get3times2PC(mr_right, lr, lm_right);
+            vAerr = Get3times2PC_Error(mr_right, mr_right_err, lr, lr_err, lm_right, lm_right_err);
+        }
+        // Swap the values for FT0C and FT0A, but keep their positions
+        sideHist->SetBinContent(1, vA);
+        sideHist->SetBinError(1, vAerr);
+        sideHist->SetBinContent(2, vC);
+        sideHist->SetBinError(2, vCerr);
 
         return sideHist;
     };
 
-    TH1D* hV2_Sides = BuildSideSummary(hV2, "hV2_Sides", "v_{2};side;v_{2}");
-    TH1D* hV3_Sides = BuildSideSummary(hV3, "hV3_Sides", "v_{3};side;v_{3}");
-    TH1D* hV4_Sides = BuildSideSummary(hV4, "hV4_Sides", "v_{4};side;v_{4}");
+    TH1D* hV2_Sides = BuildSideSummaryFromLMRLR(hLM_v2, hMR_v2, lr_v2, lr_v2_err, "hV2_Sides", "v_{2};side;v_{2}");
+    TH1D* hV3_Sides = BuildSideSummaryFromLMRLR(hLM_v3, hMR_v3, lr_v3, lr_v3_err, "hV3_Sides", "v_{3};side;v_{3}");
+    TH1D* hV4_Sides = BuildSideSummaryFromLMRLR(hLM_v4, hMR_v4, lr_v4, lr_v4_err, "hV4_Sides", "v_{4};side;v_{4}");
 
-    // Combined graphs: FT0C point + 16 TPC eta bins + FT0A point in one eta axis
-    int nCombinedPoints = nEtaBins + 2;
-    TGraphErrors* gV2_Combined = new TGraphErrors(nCombinedPoints);
-    TGraphErrors* gV3_Combined = new TGraphErrors(nCombinedPoints);
-    TGraphErrors* gV4_Combined = new TGraphErrors(nCombinedPoints);
-    gV2_Combined->SetName("gV2_Combined");
-    gV3_Combined->SetName("gV3_Combined");
-    gV4_Combined->SetName("gV4_Combined");
-    gV2_Combined->SetTitle("v_{2};#eta;v_{2}");
-    gV3_Combined->SetTitle("v_{3};#eta;v_{3}");
-    gV4_Combined->SetTitle("v_{4};#eta;v_{4}");
+    // Combined histogram-style output: FT0C + 16 eta bins + FT0A in one object
+    int nCombinedBins = nEtaBins + 2;
+    TH1D* hV2_Combined = new TH1D("hV2_Combined", "v_{2};bin;v_{2}", nCombinedBins, 0.5, nCombinedBins + 0.5);
+    TH1D* hV3_Combined = new TH1D("hV3_Combined", "v_{3};bin;v_{3}", nCombinedBins, 0.5, nCombinedBins + 0.5);
+    TH1D* hV4_Combined = new TH1D("hV4_Combined", "v_{4};bin;v_{4}", nCombinedBins, 0.5, nCombinedBins + 0.5);
 
-    // point 0: FT0C (-3.3 to -2.1)
-    gV2_Combined->SetPoint(0, 0.5 * (-3.3 + -2.1), hV2_Sides->GetBinContent(1));
-    gV2_Combined->SetPointError(0, 0.5 * (-2.1 - -3.3), hV2_Sides->GetBinError(1));
-    gV3_Combined->SetPoint(0, 0.5 * (-3.3 + -2.1), hV3_Sides->GetBinContent(1));
-    gV3_Combined->SetPointError(0, 0.5 * (-2.1 - -3.3), hV3_Sides->GetBinError(1));
-    gV4_Combined->SetPoint(0, 0.5 * (-3.3 + -2.1), hV4_Sides->GetBinContent(1));
-    gV4_Combined->SetPointError(0, 0.5 * (-2.1 - -3.3), hV4_Sides->GetBinError(1));
+    hV2_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
+    hV3_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
+    hV4_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
+    hV2_Combined->SetBinContent(1, hV2_Sides->GetBinContent(1));
+    hV2_Combined->SetBinError(1, hV2_Sides->GetBinError(1));
+    hV3_Combined->SetBinContent(1, hV3_Sides->GetBinContent(1));
+    hV3_Combined->SetBinError(1, hV3_Sides->GetBinError(1));
+    hV4_Combined->SetBinContent(1, hV4_Sides->GetBinContent(1));
+    hV4_Combined->SetBinError(1, hV4_Sides->GetBinError(1));
 
-    // points 1..nEtaBins: 16 TPC eta bins
     for (int ibin = 1; ibin <= nEtaBins; ++ibin) {
-        int ipoint = ibin;
-        double etaCenter = hV2->GetXaxis()->GetBinCenter(ibin);
-        double etaHalfWidth = 0.5 * hV2->GetXaxis()->GetBinWidth(ibin);
+        int combinedBin = ibin + 1;
+        double etaLow = hV2->GetXaxis()->GetBinLowEdge(ibin);
+        double etaUp = hV2->GetXaxis()->GetBinUpEdge(ibin);
+        TString etaLabel = Form("[%.1f,%.1f]", etaLow, etaUp);
+        hV2_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
+        hV3_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
+        hV4_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
 
-        gV2_Combined->SetPoint(ipoint, etaCenter, hV2->GetBinContent(ibin));
-        gV2_Combined->SetPointError(ipoint, etaHalfWidth, hV2->GetBinError(ibin));
-        gV3_Combined->SetPoint(ipoint, etaCenter, hV3->GetBinContent(ibin));
-        gV3_Combined->SetPointError(ipoint, etaHalfWidth, hV3->GetBinError(ibin));
-        gV4_Combined->SetPoint(ipoint, etaCenter, hV4->GetBinContent(ibin));
-        gV4_Combined->SetPointError(ipoint, etaHalfWidth, hV4->GetBinError(ibin));
+        hV2_Combined->SetBinContent(combinedBin, hV2->GetBinContent(ibin));
+        hV2_Combined->SetBinError(combinedBin, hV2->GetBinError(ibin));
+        hV3_Combined->SetBinContent(combinedBin, hV3->GetBinContent(ibin));
+        hV3_Combined->SetBinError(combinedBin, hV3->GetBinError(ibin));
+        hV4_Combined->SetBinContent(combinedBin, hV4->GetBinContent(ibin));
+        hV4_Combined->SetBinError(combinedBin, hV4->GetBinError(ibin));
     }
 
-    // last point: FT0A (3.5 to 4.9)
-    int lastPoint = nCombinedPoints - 1;
-    gV2_Combined->SetPoint(lastPoint, 0.5 * (3.5 + 4.9), hV2_Sides->GetBinContent(2));
-    gV2_Combined->SetPointError(lastPoint, 0.5 * (4.9 - 3.5), hV2_Sides->GetBinError(2));
-    gV3_Combined->SetPoint(lastPoint, 0.5 * (3.5 + 4.9), hV3_Sides->GetBinContent(2));
-    gV3_Combined->SetPointError(lastPoint, 0.5 * (4.9 - 3.5), hV3_Sides->GetBinError(2));
-    gV4_Combined->SetPoint(lastPoint, 0.5 * (3.5 + 4.9), hV4_Sides->GetBinContent(2));
-    gV4_Combined->SetPointError(lastPoint, 0.5 * (4.9 - 3.5), hV4_Sides->GetBinError(2));
+    int lastCombinedBin = nCombinedBins;
+    hV2_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
+    hV3_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
+    hV4_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
+    hV2_Combined->SetBinContent(lastCombinedBin, hV2_Sides->GetBinContent(2));
+    hV2_Combined->SetBinError(lastCombinedBin, hV2_Sides->GetBinError(2));
+    hV3_Combined->SetBinContent(lastCombinedBin, hV3_Sides->GetBinContent(2));
+    hV3_Combined->SetBinError(lastCombinedBin, hV3_Sides->GetBinError(2));
+    hV4_Combined->SetBinContent(lastCombinedBin, hV4_Sides->GetBinContent(2));
+    hV4_Combined->SetBinError(lastCombinedBin, hV4_Sides->GetBinError(2));
 
     hV2->Write();
     hV3->Write();
@@ -350,15 +365,15 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     hV2_Sides->Write();
     hV3_Sides->Write();
     hV4_Sides->Write();
-    gV2_Combined->Write();
-    gV3_Combined->Write();
-    gV4_Combined->Write();
+    hV2_Combined->Write();
+    hV3_Combined->Write();
+    hV4_Combined->Write();
 
     std::cout << "[3times2PC] Side summary v2: FT0C_left=" << hV2_Sides->GetBinContent(1)
               << " +/- " << hV2_Sides->GetBinError(1)
               << ", FT0A_right=" << hV2_Sides->GetBinContent(2)
               << " +/- " << hV2_Sides->GetBinError(2) << std::endl;
-    std::cout << "[3times2PC] Wrote combined graphs with FT0C/TPC/FT0A eta ranges" << std::endl;
+    std::cout << "[3times2PC] Wrote combined histogram with FT0C + 16 TPC bins + FT0A" << std::endl;
 
     outputFile.Close();
 

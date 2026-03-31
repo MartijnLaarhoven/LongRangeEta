@@ -35,16 +35,32 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
 
 void Process_CreateBootstrapSample() {
 
+    // p-O centrality-based datasets
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+
     std::vector<InputUnit> inputList;
 
+    // Ne-Ne centrality-based datasets
+    // Dataset: LHC25af_pass2_632504 (TPC_FT0A), LHC25af_pass2_637596 (TPCFT0C), LHC25af_pass2_645746 (FT0AFT0C)
+    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+
     // O-O centrality-based datasets
-    // Dataset: LHC25ae_pass2_644429 (TPC channels) + LHC25ae_pass2_645320 (FT0A_FT0C)
     inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
     inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
     inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
 
     for (auto input : inputList) {
         if (input.isEtadiff) {
