@@ -150,6 +150,7 @@ inline std::string GetCollisionSystemNameFromDataset(const std::string& fileName
     if (fileNameSuffix.rfind("LHC25ae", 0) == 0) return "O-O";
     if (fileNameSuffix.rfind("LHC25af", 0) == 0) return "Ne-Ne";
     if (fileNameSuffix.rfind("LHC25ad", 0) == 0) return "p-O";
+    if (fileNameSuffix.rfind("LHC24af", 0) == 0) return "pp";
     if (fileNameSuffix.rfind("LHC25ac", 0) == 0) return "pp";
     return "Unknown";
 }

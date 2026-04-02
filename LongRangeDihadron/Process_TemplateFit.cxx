@@ -164,6 +164,19 @@ void Process_TemplateFit() {
     {InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 0, 20)},
     "LHC25ad_pass2_644389"));
 
+    // p-p datasets (template: 80-100, signal: 0-20)
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC24af_pass1_644663", kTPCFT0A, 80, 100),
+    {InputUnit("LHC24af_pass1_644663", kTPCFT0A, 0, 20)},
+    "LHC24af_pass1_644663"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC24af_pass1_644663", kTPCFT0C, 80, 100),
+    {InputUnit("LHC24af_pass1_644663", kTPCFT0C, 0, 20)},
+    "LHC24af_pass1_644663"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 0, 20)},
+    "LHC24af_pass1_644663"));
+
     configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 80, 100),
     {InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 0, 20)},
     "LHC25ad_pass2_644389"));
@@ -842,7 +855,7 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
     std::vector<std::vector<std::vector<double>>> ValueErrorArray;
     std::vector<std::vector<double>> ErrorArray;
     int Nobs=3;//v22,v32,v42
-    int NofSample = maxSample;  // Only use maxSample for EtaDiff
+    int NofSample = maxSample*maxSample;  // Match non-eta bootstrap count
     int Nbin = 1;
     ResizeValueArray(ValueArray,ValueErrorArray,ErrorArray,Nobs,NofSample,Nbin);
     if (vnResult_EtaDiff) vnResult_EtaDiff->ResizeSubsample(NofSample);
@@ -854,7 +867,7 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
             VnUnit* vnTemp_EtaDiff = fitSample(isNch, templatefile_EtaDiff, templ, datafile_EtaDiff, data, sample, etaMin, etaMax, kTRUE);
             if (!vnTemp_EtaDiff) {
                 std::cerr << "Cannot fit eta-diff sample: " << data.fileNameSuffix << " sample: " << sample << std::endl;
-                vnTemp_EtaDiff = new VnUnit(0.0, 10.0, 0.0, 10.0, 0.0, 10.0);  // Use placeholder on error
+                exit(1);
             }
             // Count valid samples (not sentinel values v=-1, err=10)
             if (!(vnTemp_EtaDiff->v2 == -1.0 && vnTemp_EtaDiff->v2_err == 10.0)) {
@@ -964,6 +977,11 @@ std::vector<Int_t> CheckAndMergeRanges(const std::vector<InputUnit>& inputUnits)
 
 //==============================================================
 VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* datafile, InputUnit data, int sample, Double_t pTMin, Double_t pTMax, Bool_t isEtaDiffRange) {
+    // Guard against null file handles
+    if (!templatefile || !datafile) {
+        std::cerr << "fitSample: null file handle (template or data)." << std::endl;
+        return nullptr;
+    }
     std::vector<Double_t> fParamVal;
     std::vector<Double_t> fParamErr;
     TH1D* lm=0;
@@ -1004,6 +1022,18 @@ VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* dat
     }
     delete lmSafe;
     delete hmSafe;
+    // Validate parameter vector: need at least 5 valid Vn parameters
+    if (fParamVal.size() < 5 || fParamErr.size() < 5) {
+        std::cerr << "fitSample: insufficient parameter count (got " << fParamVal.size() << ", need 5)" << std::endl;
+        return nullptr;
+    }
+    // Check for non-finite parameters (NaN, inf)
+    for (int i = 0; i < 5; ++i) {
+        if (!std::isfinite(fParamVal[i]) || !std::isfinite(fParamErr[i])) {
+            std::cerr << "fitSample: non-finite parameter at index " << i << " (val=" << fParamVal[i] << " err=" << fParamErr[i] << ")" << std::endl;
+            return nullptr;
+        }
+    }
     VnUnit* vnResult = new VnUnit(fParamVal[0], fParamErr[0], fParamVal[1], fParamErr[1], fParamVal[2], fParamErr[2]);
     return vnResult;
 }

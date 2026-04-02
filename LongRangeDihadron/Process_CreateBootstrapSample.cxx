@@ -60,6 +60,14 @@ void Process_CreateBootstrapSample() {
     inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
     inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
 
+    // p-p centrality-based datasets (LHC24af)
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+
     for (auto input : inputList) {
         if (input.isEtadiff) {
             std::cout << "Processing Bootstrap Sample eta diff: " << input.fileNameSuffix << std::endl;

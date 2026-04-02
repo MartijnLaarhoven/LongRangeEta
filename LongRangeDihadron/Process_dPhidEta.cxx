@@ -59,6 +59,11 @@ std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corr
         if (corrType == kTPCFT0C) return "id50675";
         if (corrType == kFT0AFT0C) return "id50587";
     }
+    if (fileNameSuffix == "LHC24af_pass1_644663") {
+        if (corrType == kTPCFT0A) return "id50684";
+        if (corrType == kTPCFT0C) return "id50690";
+        if (corrType == kFT0AFT0C) return "id50579";
+    }
     return "";
 }
 
@@ -73,6 +78,15 @@ std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const 
         candidates.push_back(Form("%s_%s%s%s_%d_%d", prefix.c_str(), datasetTag.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
         candidates.push_back(Form("%s_%s_%d_%d_%s", prefix.c_str(), splitName.c_str(), minRange, maxRange, datasetTag.c_str()));
         candidates.push_back(Form("%s_%s%s_%d_%d_%s", prefix.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, datasetTag.c_str()));
+
+        // LHC24af FT0A-FT0C has two observed id tags in input files; try both.
+        if (fileNameSuffix == "LHC24af_pass1_644663" && corrType == kFT0AFT0C) {
+            candidates.push_back(Form("%s_%s_%s_%d_%d", prefix.c_str(), "id50588", splitName.c_str(), minRange, maxRange));
+            candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), "id50588", splitName.c_str(), minRange, maxRange));
+            candidates.push_back(Form("%s_%s%s%s_%d_%d", prefix.c_str(), "id50588", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+            candidates.push_back(Form("%s_%s_%d_%d_%s", prefix.c_str(), splitName.c_str(), minRange, maxRange, "id50588"));
+            candidates.push_back(Form("%s_%s%s_%d_%d_%s", prefix.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, "id50588"));
+        }
     }
 
     for (const auto &candidate : candidates) {
@@ -125,8 +139,17 @@ void Process_dPhidEta() {
     inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
     inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
     
+    // p-p datasets (LHC24af)
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    
 
     for (auto input : inputList) {
+        collisionSystemName = GetCollisionSystemNameFromDataset(input.fileNameSuffix);
         if (input.isEtadiff) {
             for (int iEta = 0; iEta < etaBins.size() - 1; iEta++) {
                 double etaMin = etaBins[iEta];

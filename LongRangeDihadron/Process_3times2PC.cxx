@@ -123,6 +123,11 @@ void Process_3times2PC() {
     {InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kTemplateFit, 0, 20)},
     "LHC25ad_pass2_644389"));
 
+    // p-p datasets (LHC24af)
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC24af_pass1_644663", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC24af_pass1_644663"));
+
     for (auto config : configList) {
         if (!config.constructed) continue;
         if (!config.dataList.empty()) {
