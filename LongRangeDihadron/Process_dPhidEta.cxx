@@ -41,6 +41,7 @@ struct InputUnit {
 void printAxesInfo(THnSparseF* sparseHist);
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc);
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc);
+std::string GetInputFileNameSuffix(const std::string &fileNameSuffix);
 std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType);
 std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const std::string &fileNameSuffix, Int_t corrType, const std::string &splitName, Int_t minRange, Int_t maxRange);
 
@@ -48,7 +49,20 @@ std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const 
 std::string collisionSystemName = "peripheral PbPb";
 std::string additionalSuffix = "";
 
+std::string GetInputFileNameSuffix(const std::string &fileNameSuffix) {
+    const std::string taggedPrefix = "LHC25af_pass2_646139_id";
+    if (fileNameSuffix.rfind(taggedPrefix, 0) == 0) {
+        return "LHC25af_pass2_646139";
+    }
+    return fileNameSuffix;
+}
+
 std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType) {
+    const std::string taggedPrefix = "LHC25af_pass2_646139_id";
+    if (fileNameSuffix.rfind(taggedPrefix, 0) == 0) {
+        return fileNameSuffix.substr(taggedPrefix.size() - 2); // keep "idXXXXX"
+    }
+
     if (fileNameSuffix == "LHC25ae_pass2_644429") {
         if (corrType == kTPCFT0A) return "id50663";
         if (corrType == kTPCFT0C) return "id50664";
@@ -63,6 +77,9 @@ std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corr
         if (corrType == kTPCFT0A) return "id50684";
         if (corrType == kTPCFT0C) return "id50690";
         if (corrType == kFT0AFT0C) return "id50579";
+    }
+    if (fileNameSuffix == "LHC25af_pass2_631290") {
+        if (corrType == kTPCFT0C) return "id47799";
     }
     return "";
 }
@@ -112,40 +129,81 @@ void Process_dPhidEta() {
     
     collisionSystemName = "Ne-Ne";
     // Ne-Ne EtaDiff centrality-based
-    // Dataset 1: LHC25af_pass2_632504 with TPC_FT0A
-    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // // Dataset 2: LHC25af_pass2_637596 with TPC_FT0C
-    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 3: LHC25af_pass2_642734 with FT0A_FT0C (single full-range, NOT eta-differential)
     // inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
     // inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    // Dataset 4: LHC25ae_pass2_644429 (TPC channels with id-mapped directories) + LHC25ae_pass2_645657 (FT0A_FT0C)
-    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // Dataset 1: LHC25af_pass2_632504 with TPC_FT0A
+    // inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 2: Ne-Ne full-acceptance TPC-FT0C (kept for baseline/full comparison)
+    // inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // Ring-specific Ne-Ne TPC-FT0 inputs
+    // inputList.push_back(InputUnit("LHC25af_pass2_637597", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_637597", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25af_pass2_631290", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_631290", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25af_pass2_637594", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_637594", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // Dataset 3: LHC25af_pass2_642734 with FT0A_FT0C (single full-range, NOT eta-differential)
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // Dataset 4: O-O full-range baseline
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+
+    // Dataset 5: O-O ring-specific TPC-FT0 and ultra-long-range FT0A-FT0C side inputs
+    // inputList.push_back(InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
     
     // p-O datasets (template: 80-100, signal: 0-20)
-    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
     
     // p-p datasets (LHC24af)
-    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
+    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
+    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
+    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+
+    // Ne-Ne Nch-dependent datasets (template: 0-10, data: 10-50), full-range only
+    inputList.push_back(InputUnit("LHC25af_pass2_650316", kTPCFT0A, kNch, kEtaDiffOn, 0, 10));
+    inputList.push_back(InputUnit("LHC25af_pass2_650316", kTPCFT0A, kNch, kEtaDiffOn, 10, 50));
+    inputList.push_back(InputUnit("LHC25af_pass2_650317", kTPCFT0C, kNch, kEtaDiffOn, 0, 10));
+    inputList.push_back(InputUnit("LHC25af_pass2_650317", kTPCFT0C, kNch, kEtaDiffOn, 10, 50));
+    inputList.push_back(InputUnit("LHC25af_pass2_650315", kFT0AFT0C, kNch, kEtaDiffOff, 0, 10));
+    inputList.push_back(InputUnit("LHC25af_pass2_650315", kFT0AFT0C, kNch, kEtaDiffOff, 10, 50));
     
 
     for (auto input : inputList) {
@@ -203,7 +261,8 @@ void printAxesInfo(THnSparseF* sparseHist) {
 }
 
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc=false) {
-    TFile *file = TFile::Open(Form("../../../AnalysisResultsROOTFiles/LongRangeEta/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
+    const std::string inputFileNameSuffix = GetInputFileNameSuffix(fileNameSuffix);
+    TFile *file = TFile::Open(Form("../../../AnalysisResultsROOTFiles/LongRangeEta/AnalysisResults_%s.root", inputFileNameSuffix.c_str()), "READ");
     if (!file || file->IsZombie()) {
         std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
         return;
@@ -598,11 +657,7 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         hPhiEtaSMsum->Scale(1.0 / hPhiEtaSMsum->GetYaxis()->GetBinWidth(1));
         TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d%s", minRange, maxRange, suffix.Data()));
         hEta->SetTitle("#Delta#eta");
-        if (corrType == kFT0AFT0C) {
-            hPhiEtaSMsum->Rebin2D(1, 1);
-        } else {
-            hPhiEtaSMsum->Rebin2D(1, 1);
-        }
+        hPhiEtaSMsum->Rebin2D(1, 1);
 
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetYaxis()->GetBinWidth(1));
@@ -736,7 +791,8 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
 }
 
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc=false) {
-    TFile *file = TFile::Open(Form("../../../AnalysisResultsROOTFiles/LongRangeEta/AnalysisResults_%s.root", fileNameSuffix.c_str()), "READ");
+    const std::string inputFileNameSuffix = GetInputFileNameSuffix(fileNameSuffix);
+    TFile *file = TFile::Open(Form("../../../AnalysisResultsROOTFiles/LongRangeEta/AnalysisResults_%s.root", inputFileNameSuffix.c_str()), "READ");
     if (!file || file->IsZombie()) {
         std::cout << "Error: Cannot open file " << fileNameSuffix << std::endl;
         return;
@@ -745,6 +801,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
 
+    TString longRangeDir = ResolveInputDirectory(file, "long-range-dihadron-cor", fileNameSuffix, corrType, splitName, minRange, maxRange).c_str();
     TString flowDir = ResolveInputDirectory(file, "flow-decorrelation", fileNameSuffix, corrType, splitName, minRange, maxRange).c_str();
 
     // check if MCTrue folder is available
@@ -838,13 +895,38 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         return;
     }
 
-    CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("%s/sameEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
-    CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    CorrelationContainer *same = (CorrelationContainer*)file->Get(Form("%s/sameEvent_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    CorrelationContainer *mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
     if (!same) {
-        same = (CorrelationContainer*)file->Get(Form("%s/sameEvent", flowDir.Data()));
+        same = (CorrelationContainer*)file->Get(Form("%s/sameEvent", longRangeDir.Data()));
     }
     if (!mixed) {
-        mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent", flowDir.Data()));
+        mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent", longRangeDir.Data()));
+    }
+
+    if (!isMc) {
+        trig = (THnSparseD*)file->Get(Form("%s/Trig_hist_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    } else {
+        trig = (THnSparseD*)file->Get(Form("%s/MCTrue/MCTrig_hist_%s", longRangeDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+    }
+
+    if (!same || !mixed || !trig) {
+        same = (CorrelationContainer*)file->Get(Form("%s/sameEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        if (!same) {
+            same = (CorrelationContainer*)file->Get(Form("%s/sameEvent", flowDir.Data()));
+        }
+        if (!mixed) {
+            mixed = (CorrelationContainer*)file->Get(Form("%s/mixedEvent", flowDir.Data()));
+        }
+        if (!isMc) {
+            trig = (THnSparseD*)file->Get(Form("%s/Trig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        } else {
+            trig = (THnSparseD*)file->Get(Form("%s/MCTrue/MCTrig_hist_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
+        }
+        if (same && mixed && trig) {
+            longRangeDir = flowDir;
+        }
     }
 
     if (!same || !mixed || !trig) {
@@ -963,8 +1045,22 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
 
             hPhiEtaM->Scale(1.0 / norm);
 
+            Int_t dEtaNims = hPhiEtaM->GetYaxis()->GetNbins();
+            TH2D* hPhiEtaMdiv = (TH2D*)hPhiEtaM->Clone(Form("dphideta_Mdiv_%d_%d_%d%s", minRange, maxRange, iz, suffix.Data()));
             TH2D* hPhiEtaSM = (TH2D*)hPhiEtaS->Clone(Form("dphideta_SM_%d_%d_%d%s", minRange, maxRange, iz, suffix.Data()));
-            hPhiEtaSM->Divide(hPhiEtaM);
+            hPhiEtaMdiv->Rebin2D(1, dEtaNims);
+            hPhiEtaSM->Rebin2D(1, dEtaNims);
+
+            hPhiEtaSM->Divide(hPhiEtaMdiv);
+            for (Int_t ix = 1; ix <= hPhiEtaSM->GetNbinsX(); ++ix) {
+                for (Int_t iy = 1; iy <= hPhiEtaSM->GetNbinsY(); ++iy) {
+                    const Double_t value = hPhiEtaSM->GetBinContent(ix, iy);
+                    if (!std::isfinite(value)) {
+                        hPhiEtaSM->SetBinContent(ix, iy, 0.0);
+                        hPhiEtaSM->SetBinError(ix, iy, 0.0);
+                    }
+                }
+            }
 
             if (!hPhiEtaSMsum) {
                 hPhiEtaSMsum = (TH2D*)hPhiEtaSM->Clone(Form("dphideta_SM_%d_%d%s", minRange, maxRange, suffix.Data()));
@@ -977,6 +1073,12 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
             } else {
                 hPhiEtaSsum->Add(hPhiEtaS);
             }
+
+            delete hPhiEtaSM;
+            delete hPhiEtaMdiv;
+            delete hPhiEtaS;
+            delete hPhiEtaM;
+            delete hTriggersS;
         }
 
         // Normalization and final processing
@@ -988,11 +1090,7 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         hPhiEtaSMsum->Scale(1.0 / hPhiEtaSMsum->GetYaxis()->GetBinWidth(1));
         TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d%s", minRange, maxRange, suffix.Data()));
         hEta->SetTitle("#Delta#eta");
-        if (corrType == kFT0AFT0C) {
-            hPhiEtaSMsum->Rebin2D(1, 1);
-        } else {
-            hPhiEtaSMsum->Rebin2D(1, 1);
-        }
+        hPhiEtaSMsum->Rebin2D(1, 1);
 
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetYaxis()->GetBinWidth(1));
@@ -1043,42 +1141,8 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         else
             hPhiEtaMsum->SetTitle(Form("Mixed event %d< Centrality #leq%d", minRange, maxRange));
 
-        // Draw histograms
-        TCanvas* c1 = new TCanvas(Form("dPhidEta %s", suffix.Data()), Form("dPhidEta %s", suffix.Data()), 1200, 800);
-        c1->Divide(2, 2);
-
-        c1->cd(1);
-        TH2D* hPhiEtaSMsum_draw = (TH2D*)hPhiEtaSMsum->Clone("hPhiEtaSMsum_draw");
-        // hPhiEtaSMsum_draw->GetYaxis()->SetRangeUser(-1.5, 1.5);
-        hPhiEtaSMsum_draw->Draw("surf1");
-        TLatex latex;
-        latex.SetNDC();
-        latex.SetTextSize(0.04);
-        latex.DrawLatex(0.1, 0.90, Form("ALICE %s", collisionSystemName.c_str()));
-        latex.DrawLatex(0.1, 0.85, Form("#eta^{trig} #in [%0.1f, %0.1f], #eta^{asso} range", etaMin, etaMax));
-
-
-        c1->cd(3);
-        hPhiEtaSsum->Draw("surf1");
-        latex.SetNDC();
-        latex.SetTextSize(0.04);
-        latex.DrawLatex(0.1, 0.90, Form("ALICE %s", collisionSystemName.c_str()));
-        latex.DrawLatex(0.1, 0.85, Form("#eta^{trig} #in [%0.1f, %0.1f], #eta^{asso} range", etaMin, etaMax));
-
-
-        c1->cd(4);
-        hPhiEtaMsum->Draw("surf1");
-        latex.SetNDC();
-        latex.SetTextSize(0.04);
-        latex.DrawLatex(0.1, 0.90, Form("ALICE %s", collisionSystemName.c_str()));
-        latex.DrawLatex(0.1, 0.85, Form("#eta^{trig} #in [%0.1f, %0.1f], #eta^{asso} range", etaMin, etaMax));
-
-        // Saving to file
+        // Save histograms only (no dPhidEta canvas output in EtaDiff mode)
         fout->cd();
-        c1->Write();
-        // write canvas to file
-        // c1->SaveAs(Form("./ProcessOutput/Mixed_%s_%s_%i_%i.png", fileNameSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange)));
-        // delete c1;
 
         // Write histograms
         hPhiEtaSMsum->Write();
@@ -1088,17 +1152,23 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
 
         // Eta Gap processing
         TH1D* hPhiSameOverMixed_pos = hPhiEtaSMsum->ProjectionX("hPhiSameOverMixed");
+        for (Int_t ibin = 1; ibin <= hPhiSameOverMixed_pos->GetNbinsX(); ++ibin) {
+            const Double_t value = hPhiSameOverMixed_pos->GetBinContent(ibin);
+            if (!std::isfinite(value)) {
+                hPhiSameOverMixed_pos->SetBinContent(ibin, 0.0);
+                hPhiSameOverMixed_pos->SetBinError(ibin, 0.0);
+            }
+        }
         hPhiSameOverMixed_pos->SetName(Form("hPhiSameOverMixed_%d_%d%s", minRange, maxRange, suffix.Data()));
         hPhiSameOverMixed_pos->SetTitle(Form("hPhiSameOverMixed_%d_%d%s", minRange, maxRange, suffix.Data()));
         hPhiSameOverMixed_pos->GetXaxis()->SetTitle("#Delta#varphi");
         hPhiSameOverMixed_pos->Write();
 
         delete hPhiEtaSMsum;
-        delete hPhiEtaSMsum_draw;
         delete hPhiEtaSsum;
         delete hPhiEtaMsum;
         delete hPhiSameOverMixed_pos;
-        delete c1;
+        delete hEta;
         
     }
 

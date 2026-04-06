@@ -133,12 +133,37 @@ void Process_TemplateFit() {
     {InputUnit("LHC25af_pass2_637596", kTPCFT0C, 0, 20)},
     "LHC25af_pass2_637596"));
 
-    // configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_642734", kFT0AFT0C, 80, 100),
-    // {InputUnit("LHC25af_pass2_642734", kFT0AFT0C, 0, 20)},
-    // "LHC25af_pass2_642734"));
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_645746", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_645746", kFT0AFT0C, 0, 20)},
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_637597", kTPCFT0A, 80, 100),
+    {InputUnit("LHC25af_pass2_637597", kTPCFT0A, 0, 20)},
+    "LHC25af_pass2_637597"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_631290", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_631290", kTPCFT0C, 0, 20)},
+    "LHC25af_pass2_631290"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_637594", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_637594", kTPCFT0C, 0, 20)},
+    "LHC25af_pass2_637594"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, 0, 20)},
     "LHC25af_pass2_645746"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, 0, 20)},
+    "LHC25af_pass2_646139_id50559"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, 0, 20)},
+    "LHC25af_pass2_646139_id50560"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, 0, 20)},
+    "LHC25af_pass2_646139_id50561"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, 0, 20)},
+    "LHC25af_pass2_646139_id50562"));
 
 
     // O-O datasets (template: 80-100, signal: 0-20)
@@ -154,6 +179,38 @@ void Process_TemplateFit() {
     {InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, 0, 20)},
     "LHC25ae_pass2_645657"));
 
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_638221", kTPCFT0A, 80, 100),
+    {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, 0, 20)},
+    "LHC25ae_pass2_638221"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_634099", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_634099", kTPCFT0C, 0, 20)},
+    "LHC25ae_pass2_634099"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_634103", kTPCFT0A, 80, 100),
+    {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, 0, 20)},
+    "LHC25ae_pass2_634103"));
+
+    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_637591", kTPCFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_637591", kTPCFT0C, 0, 20)},
+    "LHC25ae_pass2_637591"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, 0, 20)},
+    "LHC25ae_pass2_648799"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, 0, 20)},
+    "LHC25ae_pass2_648800"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, 0, 20)},
+    "LHC25ae_pass2_644433"));
+
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 0, 20)},
+    "LHC25ae_pass2_648788"));
+
 
     // p-O datasets (template: 80-100, signal: 0-20)
     configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ad_pass2_644389", kTPCFT0A, 80, 100),
@@ -162,6 +219,10 @@ void Process_TemplateFit() {
 
     configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 80, 100),
     {InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 0, 20)},
+    "LHC25ad_pass2_644389"));
+    
+    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 80, 100),
+    {InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 0, 20)},
     "LHC25ad_pass2_644389"));
 
     // p-p datasets (template: 80-100, signal: 0-20)
@@ -177,9 +238,20 @@ void Process_TemplateFit() {
     {InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 0, 20)},
     "LHC24af_pass1_644663"));
 
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 0, 20)},
-    "LHC25ad_pass2_644389"));
+    // Ne-Ne Nch-dependent datasets (template: 0-10, data: 10-50)
+    configList.push_back(ConfigUnit(kNch, false, true, InputUnit("LHC25af_pass2_650316", kTPCFT0A, 0, 10),
+    {InputUnit("LHC25af_pass2_650316", kTPCFT0A, 10, 50)},
+    "LHC25af_pass2_650316_nch10_50"));
+
+    configList.push_back(ConfigUnit(kNch, false, true, InputUnit("LHC25af_pass2_650317", kTPCFT0C, 0, 10),
+    {InputUnit("LHC25af_pass2_650317", kTPCFT0C, 10, 50)},
+    "LHC25af_pass2_650317_nch10_50"));
+
+    configList.push_back(ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 0, 10),
+    {InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 10, 50)},
+    "LHC25af_pass2_650315_nch10_50"));
+
+
 
     std::cout << "TemplateFit: Processing " << configList.size() << " configurations" << std::endl;
     for (auto config : configList) {
@@ -1035,6 +1107,7 @@ VnUnit* fitSample(Bool_t isNch, TFile* templatefile, InputUnit templ, TFile* dat
         }
     }
     VnUnit* vnResult = new VnUnit(fParamVal[0], fParamErr[0], fParamVal[1], fParamErr[1], fParamVal[2], fParamErr[2]);
+    std::cout << "fitSample: " << fParamVal[0] << " +/- " << fParamErr[0] << std::endl;
     return vnResult;
 }
 
@@ -1053,81 +1126,81 @@ void RooTempFitter(TH1 *lm, TH1 *hm, std::vector<Double_t>& fParamVal, std::vect
     // LR_ERROR_SCALE  - multiplicative factor applied to all bin errors (default 1.0)
     // LR_SYS_FRAC     - fractional systematic added in quadrature (e.g. 0.01 = 1%% of bin content)
     // LR_ERROR_FLOOR  - minimum absolute error allowed per bin (default 1e-6)
-    {
-        const char* es = getenv("LR_ERROR_SCALE");
-        const char* sf = getenv("LR_SYS_FRAC");
-        const char* ef = getenv("LR_ERROR_FLOOR");
-        double envScale = es ? atof(es) : 1.0;
-        double sysFrac = sf ? atof(sf) : 0.0;
-        double errFloor = ef ? atof(ef) : 1e-6;
-        if (!TMath::Finite(envScale) || envScale <= 0) envScale = 1.0;
-        if (!TMath::Finite(sysFrac) || sysFrac < 0) sysFrac = 0.0;
-        if (!TMath::Finite(errFloor) || errFloor < 0) errFloor = 1e-6;
-        if (envScale != 1.0 || sysFrac != 0.0 || errFloor != 1e-6) {
-            std::cout << "[FitDiag] Applying runtime error regularization: scale=" << envScale << " sysFrac=" << sysFrac << " floor=" << errFloor << std::endl;
-            int nb = hm->GetNbinsX();
-            for (int ib = 1; ib <= nb; ++ib) {
-                double err = hm->GetBinError(ib);
-                double val = hm->GetBinContent(ib);
-                if (!TMath::Finite(err) || err <= 0) err = (val > 0) ? sqrt(val) : 1.0;
-                if (sysFrac > 0.0) {
-                    double sys = fabs(val) * sysFrac;
-                    err = sqrt(err*err + sys*sys);
-                }
-                err *= envScale;
-                if (!TMath::Finite(err) || err < errFloor) err = errFloor;
-                hm->SetBinError(ib, err);
-            }
-        }
-    }
+    // {
+    //     const char* es = getenv("LR_ERROR_SCALE");
+    //     const char* sf = getenv("LR_SYS_FRAC");
+    //     const char* ef = getenv("LR_ERROR_FLOOR");
+    //     double envScale = es ? atof(es) : 1.0;
+    //     double sysFrac = sf ? atof(sf) : 0.0;
+    //     double errFloor = ef ? atof(ef) : 1e-6;
+    //     if (!TMath::Finite(envScale) || envScale <= 0) envScale = 1.0;
+    //     if (!TMath::Finite(sysFrac) || sysFrac < 0) sysFrac = 0.0;
+    //     if (!TMath::Finite(errFloor) || errFloor < 0) errFloor = 1e-6;
+    //     if (envScale != 1.0 || sysFrac != 0.0 || errFloor != 1e-6) {
+    //         std::cout << "[FitDiag] Applying runtime error regularization: scale=" << envScale << " sysFrac=" << sysFrac << " floor=" << errFloor << std::endl;
+    //         int nb = hm->GetNbinsX();
+    //         for (int ib = 1; ib <= nb; ++ib) {
+    //             double err = hm->GetBinError(ib);
+    //             double val = hm->GetBinContent(ib);
+    //             if (!TMath::Finite(err) || err <= 0) err = (val > 0) ? sqrt(val) : 1.0;
+    //             if (sysFrac > 0.0) {
+    //                 double sys = fabs(val) * sysFrac;
+    //                 err = sqrt(err*err + sys*sys);
+    //             }
+    //             err *= envScale;
+    //             if (!TMath::Finite(err) || err < errFloor) err = errFloor;
+    //             hm->SetBinError(ib, err);
+    //         }
+    //     }
+    // }
     // Quick diagnostics: print means/max to help spot scale mismatches
-    double hm_mean = hm->GetMean();
-    double lm_mean = lm->GetMean();
-    double hm_max = hm->GetMaximum();
-    double lm_max = lm->GetMaximum();
-    std::cout << "[FitDiag] pre-fit means: hm_mean=" << hm_mean << " lm_mean=" << lm_mean << " hm_max=" << hm_max << " lm_max=" << lm_max << std::endl;
+    // double hm_mean = hm->GetMean();
+    // double lm_mean = lm->GetMean();
+    // double hm_max = hm->GetMaximum();
+    // double lm_max = lm->GetMaximum();
+    // std::cout << "[FitDiag] pre-fit means: hm_mean=" << hm_mean << " lm_mean=" << lm_mean << " hm_max=" << hm_max << " lm_max=" << lm_max << std::endl;
 
     // Normalize template histogram to data mean to make Fa around O(1) where possible.
-    if (TMath::Finite(lm_mean) && lm_mean != 0.0) {
-        double scale_lm_to_hm = (TMath::Finite(hm_mean) && hm_mean>0) ? (hm_mean / lm_mean) : 1.0;
-        if (TMath::Finite(scale_lm_to_hm) && fabs(scale_lm_to_hm - 1.0) > 1e-12) {
-            std::cout << "[FitDiag] Scaling lm by " << scale_lm_to_hm << " to match hm mean" << std::endl;
-            lm->Scale(scale_lm_to_hm);
-        }
-    }
+    // if (TMath::Finite(lm_mean) && lm_mean != 0.0) {
+    //     double scale_lm_to_hm = (TMath::Finite(hm_mean) && hm_mean>0) ? (hm_mean / lm_mean) : 1.0;
+    //     if (TMath::Finite(scale_lm_to_hm) && fabs(scale_lm_to_hm - 1.0) > 1e-12) {
+    //         std::cout << "[FitDiag] Scaling lm by " << scale_lm_to_hm << " to match hm mean" << std::endl;
+    //         lm->Scale(scale_lm_to_hm);
+    //     }
+    // }
 
     // Estimate Fa and Ga via a weighted linear regression: hm ~= Fa * lm + Ga
-    double S = 0, Sx = 0, Sy = 0, Sxx = 0, Sxy = 0;
-    int nbins = hm->GetNbinsX();
-    for (int ib = 1; ib <= nbins; ++ib) {
-        double x = lm->GetBinContent(ib);
-        double y = hm->GetBinContent(ib);
-        double err = hm->GetBinError(ib);
-        double w = (err > 0 && TMath::Finite(err)) ? 1.0 / (err*err) : 1.0;
-        S += w;
-        Sx += w * x;
-        Sy += w * y;
-        Sxx += w * x * x;
-        Sxy += w * x * y;
-    }
-    double denom = (S * Sxx - Sx * Sx);
-    double guessFa = 1.0;
-    double guessGa = 0.0;
-    if (TMath::Finite(denom) && fabs(denom) > 1e-18) {
-        guessFa = (S * Sxy - Sx * Sy) / denom;
-        guessGa = (Sy - guessFa * Sx) / S;
-    } else {
-        // fallback: use ratio of maxima or means
-        if (lm_max > 0) guessFa = hm_max / lm_max;
-        else if (lm_mean > 0) guessFa = hm_mean / lm_mean;
-        guessGa = hm_mean - guessFa * lm_mean;
-    }
-    if (!TMath::Finite(guessFa)) guessFa = 1.0;
-    if (!TMath::Finite(guessGa)) guessGa = 0.0;
-    // Clamp guesses to reasonable ranges
-    double fa_floor = 1e-6;
-    if (fabs(guessFa) < fa_floor) guessFa = (guessFa >= 0) ? fa_floor : -fa_floor;
-    std::cout << "[FitDiag] Regression guess: Fa=" << guessFa << " Ga=" << guessGa << std::endl;
+    // double S = 0, Sx = 0, Sy = 0, Sxx = 0, Sxy = 0;
+    // int nbins = hm->GetNbinsX();
+    // for (int ib = 1; ib <= nbins; ++ib) {
+    //     double x = lm->GetBinContent(ib);
+    //     double y = hm->GetBinContent(ib);
+    //     double err = hm->GetBinError(ib);
+    //     double w = (err > 0 && TMath::Finite(err)) ? 1.0 / (err*err) : 1.0;
+    //     S += w;
+    //     Sx += w * x;
+    //     Sy += w * y;
+    //     Sxx += w * x * x;
+    //     Sxy += w * x * y;
+    // }
+    // double denom = (S * Sxx - Sx * Sx);
+    // double guessFa = 1.0;
+    // double guessGa = 0.0;
+    // if (TMath::Finite(denom) && fabs(denom) > 1e-18) {
+    //     guessFa = (S * Sxy - Sx * Sy) / denom;
+    //     guessGa = (Sy - guessFa * Sx) / S;
+    // } else {
+    //     // fallback: use ratio of maxima or means
+    //     if (lm_max > 0) guessFa = hm_max / lm_max;
+    //     else if (lm_mean > 0) guessFa = hm_mean / lm_mean;
+    //     guessGa = hm_mean - guessFa * lm_mean;
+    // }
+    // if (!TMath::Finite(guessFa)) guessFa = 1.0;
+    // if (!TMath::Finite(guessGa)) guessGa = 0.0;
+    // // Clamp guesses to reasonable ranges
+    // double fa_floor = 1e-6;
+    // if (fabs(guessFa) < fa_floor) guessFa = (guessFa >= 0) ? fa_floor : -fa_floor;
+    // std::cout << "[FitDiag] Regression guess: Fa=" << guessFa << " Ga=" << guessGa << std::endl;
 
     //Initialize fitter with given projections
     TemplateFitter *ft = new TemplateFitter(hm);
@@ -1139,27 +1212,29 @@ void RooTempFitter(TH1 *lm, TH1 *hm, std::vector<Double_t>& fParamVal, std::vect
         // OLD: ft->AddParameter("Fa","Fa",4.5,0,100);
         // OLD: ft->AddParameter("Ga","Ga",23000,0,100000);
         // Use regression-based initial guesses with data-driven bounds to improve conditioning
-        {
-            double fa_init = guessFa;
-            // Enforce Fa non-negative: physical template scale should be >= 0.
-            if (!TMath::Finite(fa_init)) fa_init = fa_floor;
-            if (fa_init < 0) {
-                std::cout << "[FitDiag] Regression gave negative Fa (" << guessFa << ") - using abs(fa) fallback." << std::endl;
-                fa_init = fabs(fa_init);
-            }
-            if (fa_init < fa_floor) fa_init = fa_floor;
+        //{
+            // double fa_init = guessFa;
+            // // Enforce Fa non-negative: physical template scale should be >= 0.
+            // if (!TMath::Finite(fa_init)) fa_init = fa_floor;
+            // if (fa_init < 0) {
+            //     std::cout << "[FitDiag] Regression gave negative Fa (" << guessFa << ") - using abs(fa) fallback." << std::endl;
+            //     fa_init = fabs(fa_init);
+            // }
+            // if (fa_init < fa_floor) fa_init = fa_floor;
 
-            double fa_min = 0.0; // do not allow negative Fa
-            double fa_max = std::max(fa_min + 1.0, fa_init * 10.0);
-            ft->AddParameter("Fa","Fa",fa_init,fa_min,fa_max);
+            // double fa_min = 0.0; // do not allow negative Fa
+            // double fa_max = std::max(fa_min + 1.0, fa_init * 10.0);
+            // ft->AddParameter("Fa","Fa",fa_init,fa_min,fa_max);
+            ft->AddParameter("Fa","Fa",0.2,0,100);
 
-            double ga_init = guessGa;
-            if (!TMath::Finite(ga_init)) ga_init = 0.0;
-            double ga_span = std::max(1.0, fabs(ga_init)*2.0);
-            double ga_min = ga_init - ga_span;
-            double ga_max = ga_init + ga_span;
-            ft->AddParameter("Ga","Ga",ga_init,ga_min,ga_max);
-        }
+            // double ga_init = guessGa;
+            // if (!TMath::Finite(ga_init)) ga_init = 0.0;
+            // double ga_span = std::max(1.0, fabs(ga_init)*2.0);
+            // double ga_min = ga_init - ga_span;
+            // double ga_max = ga_init + ga_span;
+            //ft->AddParameter("Ga","Ga",ga_init,ga_min,ga_max);
+            ft->AddParameter("Ga","Ga",0.5,0,30000);
+        //}
         ft->AddParameter("v2","v2",4e-3,-1.0,1.0);
         ft->AddParameter("v3","v3",6e-4,-1.0,1.0);
         ft->AddParameter("v4","v4",1.8e-4,-1.0,1.0);
@@ -1182,6 +1257,7 @@ void RooTempFitter(TH1 *lm, TH1 *hm, std::vector<Double_t>& fParamVal, std::vect
         ft->AddParameter("Ga","Ga",fParamVal[4],fParamVal[4]-5,fParamVal[4]+5);
         ft->AddParameter("v2","v2",fParamVal[0],fParamVal[0]-0.0002,fParamVal[0]+0.0002);
         ft->AddParameter("v3","v3",fParamVal[1],fParamVal[1]-0.0002,fParamVal[1]+0.0002);
+        ft->AddParameter("v4","v4",fParamVal[2],fParamVal[2]-0.0002,fParamVal[2]+0.0002);
     }
 
     //Construct fit function

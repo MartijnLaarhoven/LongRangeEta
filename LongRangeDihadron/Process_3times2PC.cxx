@@ -108,15 +108,33 @@ void Process_3times2PC() {
     // {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kTemplateFit, 0, 20)},
     // "LHC25af_pass2_642734"));
 
-    // New FT0A-FT0C ultra long range input (LHC25af_pass2_645746)
+    // Ne-Ne full-range combination (baseline)
     configList.push_back(ConfigUnit(kCent,
     {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
     "LHC25af_pass2_645746"));
 
-    // O-O datasets (ae) - Disabled while focusing on af dataset debugging
+    // Ne-Ne ring combinations (TPC ring bins + side-specific FT0-FT0 ids)
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC25af_pass2_innerRing"));
+
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25af_pass2_637597", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637594", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC25af_pass2_outerRing"));
+
+    // O-O full-range combination (baseline)
     configList.push_back(ConfigUnit(kCent,
     {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kTemplateFit, 0, 20)},
     "LHC25ae_pass2_645657"));
+
+    // O-O ring combinations
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC25ae_pass2_innerRing"));
+
+    configList.push_back(ConfigUnit(kCent,
+    {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kTemplateFit, 0, 20)},
+    "LHC25ae_pass2_outerRing"));
 
     // p-O datasets (ad)
     configList.push_back(ConfigUnit(kCent,
@@ -127,6 +145,11 @@ void Process_3times2PC() {
     configList.push_back(ConfigUnit(kCent,
     {InputUnit("LHC24af_pass1_644663", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kTemplateFit, 0, 20)},
     "LHC24af_pass1_644663"));
+
+    // Ne-Ne Nch-dependent full-range combination (data: 10-50, template: 0-10)
+    configList.push_back(ConfigUnit(kNch,
+    {InputUnit("LHC25af_pass2_650316", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650315", kFT0AFT0C, kTemplateFit, 10, 50)},
+    "LHC25af_pass2_650315_nch10_50"));
 
     for (auto config : configList) {
         if (!config.constructed) continue;
@@ -217,6 +240,102 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     double lr_v4 = hLR_v4->GetBinContent(1);
     double lr_v4_err = hLR_v4->GetBinError(1);
 
+    // Default: use the same LR for both FT0 sides. Ring outputs can override per side.
+    double lrC_v2 = lr_v2, lrC_v2_err = lr_v2_err;
+    double lrA_v2 = lr_v2, lrA_v2_err = lr_v2_err;
+    double lrC_v3 = lr_v3, lrC_v3_err = lr_v3_err;
+    double lrA_v3 = lr_v3, lrA_v3_err = lr_v3_err;
+    double lrC_v4 = lr_v4, lrC_v4_err = lr_v4_err;
+    double lrA_v4 = lr_v4, lrA_v4_err = lr_v4_err;
+
+    auto LoadLRFromDataset = [&](const std::string& datasetSuffix,
+                                 double& outV2, double& outV2Err,
+                                 double& outV3, double& outV3Err,
+                                 double& outV4, double& outV4Err) {
+        TFile* f = new TFile(Form("./TemplateFit/VnDelta_%s_%s_%s.root",
+                                  datasetSuffix.c_str(), splitName.c_str(), DihadronCorrTypeName[kFT0AFT0C].c_str()), "READ");
+        if (!f || !f->IsOpen()) {
+            Printf("[3times2PC] Warning: cannot open side LR file for %s", datasetSuffix.c_str());
+            if (f) {
+                f->Close();
+                delete f;
+            }
+            return false;
+        }
+        TH1D* hv2 = (TH1D*)f->Get("hV2");
+        TH1D* hv3 = (TH1D*)f->Get("hV3");
+        TH1D* hv4 = (TH1D*)f->Get("hV4");
+        if (!hv2 || !hv3 || !hv4) {
+            Printf("[3times2PC] Warning: missing hV2/hV3/hV4 in side LR file for %s", datasetSuffix.c_str());
+            f->Close();
+            delete f;
+            return false;
+        }
+
+        const double v2 = hv2->GetBinContent(1);
+        const double v2Err = hv2->GetBinError(1);
+        const double v3 = hv3->GetBinContent(1);
+        const double v3Err = hv3->GetBinError(1);
+        const double v4 = hv4->GetBinContent(1);
+        const double v4Err = hv4->GetBinError(1);
+
+        auto isInvalidSideValue = [](double value, double error) {
+            return (!std::isfinite(value) || !std::isfinite(error) || value < 0.0 || error >= 9.9);
+        };
+        if (isInvalidSideValue(v2, v2Err) || isInvalidSideValue(v3, v3Err) || isInvalidSideValue(v4, v4Err)) {
+            Printf("[3times2PC] Warning: invalid side LR value(s) in %s (v2=%g+-%g, v3=%g+-%g, v4=%g+-%g)",
+                   datasetSuffix.c_str(), v2, v2Err, v3, v3Err, v4, v4Err);
+            f->Close();
+            delete f;
+            return false;
+        }
+
+        outV2 = v2;
+        outV2Err = v2Err;
+        outV3 = v3;
+        outV3Err = v3Err;
+        outV4 = v4;
+        outV4Err = v4Err;
+        f->Close();
+        delete f;
+        return true;
+    };
+
+    auto LoadLRFromDatasetWithOptionalId = [&](const std::string& datasetSuffix, const std::string& optionalId,
+                                               double& outV2, double& outV2Err,
+                                               double& outV3, double& outV3Err,
+                                               double& outV4, double& outV4Err) {
+        if (!optionalId.empty()) {
+            if (LoadLRFromDataset(Form("%s_%s", datasetSuffix.c_str(), optionalId.c_str()),
+                                  outV2, outV2Err, outV3, outV3Err, outV4, outV4Err)) {
+                return true;
+            }
+        }
+        return LoadLRFromDataset(datasetSuffix, outV2, outV2Err, outV3, outV3Err, outV4, outV4Err);
+    };
+
+    if (outputFileName.find("innerRing") != std::string::npos) {
+        if (outputFileName.find("LHC25af_pass2") != std::string::npos) {
+            // Ne-Ne inner ring: C from id50560 (reject C outside), A from id50559 (reject A outside)
+            LoadLRFromDataset("LHC25af_pass2_646139_id50560", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
+            LoadLRFromDataset("LHC25af_pass2_646139_id50559", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
+        } else if (outputFileName.find("LHC25ae_pass2") != std::string::npos) {
+            // O-O inner ring: C from 648800, A from 648799 (try id50564 variant first, then plain dataset)
+            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_648800", "id50564", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
+            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_648799", "id50564", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
+        }
+    } else if (outputFileName.find("outerRing") != std::string::npos) {
+        if (outputFileName.find("LHC25af_pass2") != std::string::npos) {
+            // Ne-Ne outer ring: C from id50562 (reject C inside), A from id50561 (reject A inside)
+            LoadLRFromDataset("LHC25af_pass2_646139_id50562", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
+            LoadLRFromDataset("LHC25af_pass2_646139_id50561", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
+        } else if (outputFileName.find("LHC25ae_pass2") != std::string::npos) {
+            // O-O outer ring: C from 648788, A from 644433 (try id50564 variant first, then plain dataset)
+            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_648788", "id50564", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
+            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_644433", "id50564", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
+        }
+    }
+
     TFile outputFile(Form("./3times2PC/Vn_%s_%s_%i_%i.root", outputFileName.c_str(), splitName.c_str(), dataLR.minRange, dataLR.maxRange), "RECREATE");
     TH1D* hV2 = dynamic_cast<TH1D*>(hLM_v2->Clone("hV2"));
     TH1D* hV3 = dynamic_cast<TH1D*>(hLM_v3->Clone("hV3"));
@@ -266,64 +385,59 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
         std::cout << Form("[3times2PC] Eta [%.1f, %.1f]: v2=%g +/- %g", etaMin, etaMax, v2, v2_err) << std::endl;
     }
 
-    auto FindEdgeValidBins = [](TH1D* sourceHist) {
-        std::pair<int, int> bins(-1, -1);
+    auto ComputeHistogramAverage = [](TH1D* sourceHist) {
+        double sum = 0.0;
+        double sumErr2 = 0.0;
+        int nValid = 0;
+        if (!sourceHist) return std::make_tuple(-1.0, 10.0, 0);
         for (int ibin = 1; ibin <= sourceHist->GetNbinsX(); ++ibin) {
             double value = sourceHist->GetBinContent(ibin);
             double error = sourceHist->GetBinError(ibin);
             if (!std::isfinite(value) || !std::isfinite(error) || value < 0.0 || error >= 9.9) continue;
-            bins.first = ibin;
-            break;
+            sum += value;
+            sumErr2 += error * error;
+            ++nValid;
         }
-        for (int ibin = sourceHist->GetNbinsX(); ibin >= 1; --ibin) {
-            double value = sourceHist->GetBinContent(ibin);
-            double error = sourceHist->GetBinError(ibin);
-            if (!std::isfinite(value) || !std::isfinite(error) || value < 0.0 || error >= 9.9) continue;
-            bins.second = ibin;
-            break;
-        }
-        return bins;
+        if (nValid <= 0) return std::make_tuple(-1.0, 10.0, 0);
+        return std::make_tuple(sum / nValid, std::sqrt(sumErr2) / nValid, nValid);
     };
 
-    auto BuildSideSummaryFromLMRLR = [&](TH1D* hLM, TH1D* hMR, double lr, double lr_err, const char* name, const char* title) {
+    auto BuildSideSummaryFromLMRLR = [&](TH1D* hLM, TH1D* hMR,
+                                         double lrForC, double lrForCErr,
+                                         double lrForA, double lrForAErr,
+                                         const char* name, const char* title) {
         TH1D* sideHist = new TH1D(name, title, 2, 0.5, 2.5);
         sideHist->GetXaxis()->SetBinLabel(1, "FT0C [-3.3,-2.1]"); // Left
         sideHist->GetXaxis()->SetBinLabel(2, "FT0A [3.5,4.9]"); // Right
 
-        auto edgeBins = FindEdgeValidBins(hLM);
-        int leftBin = edgeBins.first;   // FT0C (left)
-        int rightBin = edgeBins.second; // FT0A (right)
+        double lmAvg = -1.0, lmAvgErr = 10.0;
+        double mrAvg = -1.0, mrAvgErr = 10.0;
+        int lmValidBins = 0;
+        int mrValidBins = 0;
+        std::tie(lmAvg, lmAvgErr, lmValidBins) = ComputeHistogramAverage(hLM);
+        std::tie(mrAvg, mrAvgErr, mrValidBins) = ComputeHistogramAverage(hMR);
 
-        // Calculate both values first
+        // Calculate both values using the full TPC coverage on each side
         double vC = -1.0, vCerr = 10.0, vA = -1.0, vAerr = 10.0;
-        if (leftBin > 0) {
-            double lm_left = hLM->GetBinContent(leftBin);
-            double lm_left_err = hLM->GetBinError(leftBin);
-            double mr_left = hMR->GetBinContent(leftBin);
-            double mr_left_err = hMR->GetBinError(leftBin);
-            vC = Get3times2PC(lm_left, lr, mr_left);
-            vCerr = Get3times2PC_Error(lm_left, lm_left_err, lr, lr_err, mr_left, mr_left_err);
+        if (lmValidBins > 0 && mrValidBins > 0) {
+            // LM=t*a, MR=t*c, LR=a*c  => c=sqrt(MR*LR/LM), a=sqrt(LM*LR/MR)
+            vC = Get3times2PC(mrAvg, lrForC, lmAvg);
+            vCerr = Get3times2PC_Error(mrAvg, mrAvgErr, lrForC, lrForCErr, lmAvg, lmAvgErr);
+            vA = Get3times2PC(lmAvg, lrForA, mrAvg);
+            vAerr = Get3times2PC_Error(lmAvg, lmAvgErr, lrForA, lrForAErr, mrAvg, mrAvgErr);
         }
-        if (rightBin > 0) {
-            double lm_right = hLM->GetBinContent(rightBin);
-            double lm_right_err = hLM->GetBinError(rightBin);
-            double mr_right = hMR->GetBinContent(rightBin);
-            double mr_right_err = hMR->GetBinError(rightBin);
-            vA = Get3times2PC(mr_right, lr, lm_right);
-            vAerr = Get3times2PC_Error(mr_right, mr_right_err, lr, lr_err, lm_right, lm_right_err);
-        }
-        // Swap the values for FT0C and FT0A, but keep their positions
-        sideHist->SetBinContent(1, vA);
-        sideHist->SetBinError(1, vAerr);
-        sideHist->SetBinContent(2, vC);
-        sideHist->SetBinError(2, vCerr);
+        // Keep physical mapping: bin 1 is FT0C, bin 2 is FT0A
+        sideHist->SetBinContent(1, vC);
+        sideHist->SetBinError(1, vCerr);
+        sideHist->SetBinContent(2, vA);
+        sideHist->SetBinError(2, vAerr);
 
         return sideHist;
     };
 
-    TH1D* hV2_Sides = BuildSideSummaryFromLMRLR(hLM_v2, hMR_v2, lr_v2, lr_v2_err, "hV2_Sides", "v_{2};side;v_{2}");
-    TH1D* hV3_Sides = BuildSideSummaryFromLMRLR(hLM_v3, hMR_v3, lr_v3, lr_v3_err, "hV3_Sides", "v_{3};side;v_{3}");
-    TH1D* hV4_Sides = BuildSideSummaryFromLMRLR(hLM_v4, hMR_v4, lr_v4, lr_v4_err, "hV4_Sides", "v_{4};side;v_{4}");
+    TH1D* hV2_Sides = BuildSideSummaryFromLMRLR(hLM_v2, hMR_v2, lrC_v2, lrC_v2_err, lrA_v2, lrA_v2_err, "hV2_Sides", "v_{2};side;v_{2}");
+    TH1D* hV3_Sides = BuildSideSummaryFromLMRLR(hLM_v3, hMR_v3, lrC_v3, lrC_v3_err, lrA_v3, lrA_v3_err, "hV3_Sides", "v_{3};side;v_{3}");
+    TH1D* hV4_Sides = BuildSideSummaryFromLMRLR(hLM_v4, hMR_v4, lrC_v4, lrC_v4_err, lrA_v4, lrA_v4_err, "hV4_Sides", "v_{4};side;v_{4}");
 
     // Combined histogram-style output: FT0C + 16 eta bins + FT0A in one object
     int nCombinedBins = nEtaBins + 2;
@@ -501,7 +615,7 @@ VnUnit* GetResultsFromVnDeltaFiles(int isample, TFile* file, Bool_t isPtDiff, In
     double v2_err = 10;
     double v3_err = 10;
     double v4_err = 10;
-    if(isample > 0) {
+    if(isample >= 0) {
         hv2 = (TH1D*)file->Get(Form("Subsamples/hV2_subsample_%d", isample));
         hv3 = (TH1D*)file->Get(Form("Subsamples/hV3_subsample_%d", isample));
         hv4 = (TH1D*)file->Get(Form("Subsamples/hV4_subsample_%d", isample));
@@ -527,33 +641,54 @@ VnUnit* GetResultsFromVnDeltaFiles(int isample, TFile* file, Bool_t isPtDiff, In
         // Check if histogram has multiple bins (eta-differential case)
         // If so, average all bins for the full eta range
         if (hv2->GetNbinsX() > 1) {
-            // EtaDiff file: average across all eta bins for full eta-range result
-            double sumV2 = 0, sumV2Err2 = 0;
-            double sumV3 = 0, sumV3Err2 = 0;
-            double sumV4 = 0, sumV4Err2 = 0;
+            // EtaDiff file: use inverse-variance weighted average across eta bins.
+            // This avoids giving noisy bins equal influence and helps recover system trends.
+            double numV2 = 0.0, denV2 = 0.0;
+            double numV3 = 0.0, denV3 = 0.0;
+            double numV4 = 0.0, denV4 = 0.0;
+            int validV2 = 0, validV3 = 0, validV4 = 0;
             int nbins = hv2->GetNbinsX();
             for (int i = 1; i <= nbins; ++i) {
-                double val = hv2->GetBinContent(i);
-                double err = hv2->GetBinError(i);
-                sumV2 += val;
-                sumV2Err2 += err * err;
-                
-                val = hv3->GetBinContent(i);
-                err = hv3->GetBinError(i);
-                sumV3 += val;
-                sumV3Err2 += err * err;
-                
-                val = hv4->GetBinContent(i);
-                err = hv4->GetBinError(i);
-                sumV4 += val;
-                sumV4Err2 += err * err;
+                double val2 = hv2->GetBinContent(i);
+                double err2 = hv2->GetBinError(i);
+                if (std::isfinite(val2) && std::isfinite(err2) && err2 > 0.0 && err2 < 9.9 && val2 >= 0.0) {
+                    double w2 = 1.0 / (err2 * err2);
+                    numV2 += w2 * val2;
+                    denV2 += w2;
+                    ++validV2;
+                }
+
+                double val3 = hv3->GetBinContent(i);
+                double err3 = hv3->GetBinError(i);
+                if (std::isfinite(val3) && std::isfinite(err3) && err3 > 0.0 && err3 < 9.9 && val3 >= 0.0) {
+                    double w3 = 1.0 / (err3 * err3);
+                    numV3 += w3 * val3;
+                    denV3 += w3;
+                    ++validV3;
+                }
+
+                double val4 = hv4->GetBinContent(i);
+                double err4 = hv4->GetBinError(i);
+                if (std::isfinite(val4) && std::isfinite(err4) && err4 > 0.0 && err4 < 9.9 && val4 >= 0.0) {
+                    double w4 = 1.0 / (err4 * err4);
+                    numV4 += w4 * val4;
+                    denV4 += w4;
+                    ++validV4;
+                }
             }
-            v2 = sumV2 / nbins;
-            v2_err = std::sqrt(sumV2Err2) / nbins;  // Propagated error
-            v3 = sumV3 / nbins;
-            v3_err = std::sqrt(sumV3Err2) / nbins;
-            v4 = sumV4 / nbins;
-            v4_err = std::sqrt(sumV4Err2) / nbins;
+
+            if (denV2 > 0.0 && validV2 > 0) {
+                v2 = numV2 / denV2;
+                v2_err = std::sqrt(1.0 / denV2);
+            }
+            if (denV3 > 0.0 && validV3 > 0) {
+                v3 = numV3 / denV3;
+                v3_err = std::sqrt(1.0 / denV3);
+            }
+            if (denV4 > 0.0 && validV4 > 0) {
+                v4 = numV4 / denV4;
+                v4_err = std::sqrt(1.0 / denV4);
+            }
         } else {
             // Single-bin histogram: use the single value directly
             v2 = hv2->GetBinContent(1);
