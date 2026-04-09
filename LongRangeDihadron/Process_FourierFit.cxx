@@ -113,15 +113,25 @@ void Process_FourierFit() {
     kOutputVnDelta = true;
     
     // O-O datasets (Cent 0-20)
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 0, 20)},
+    // "LHC25ae_pass2_644429"));
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 0, 20)},
+    // "LHC25ae_pass2_644429"));
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, 0, 20)},
+    // "LHC25ae_pass2_645657"));
+
     configList.push_back(ConfigUnit(kCent,
-    {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 0, 20)},
-    "LHC25ae_pass2_644429"));
+    {InputUnit("LHC24af_pass1_644663", kTPCFT0A, 0, 20)},
+    "LHC24af_pass1_644663"));
     configList.push_back(ConfigUnit(kCent,
-    {InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 0, 20)},
-    "LHC25ae_pass2_644429"));
+    {InputUnit("LHC24af_pass1_644663", kTPCFT0C, 0, 20)},
+    "LHC24af_pass1_644663"));
     configList.push_back(ConfigUnit(kCent,
-    {InputUnit("LHC25ae_pass2_645320", kFT0AFT0C, 0, 20)},
-    "LHC25ae_pass2_645320"));
+    {InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 0, 20)},
+    "LHC24af_pass1_644663"));
 
     for (auto config : configList) {
         if (!config.dataList.empty()) {

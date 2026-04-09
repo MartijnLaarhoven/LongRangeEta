@@ -54,9 +54,13 @@ struct ConfigUnit {
                 Printf("The input vector don't have a size of 3!");
                 return;
             }
-            if (!(_dataList[0].corrType == kTPCFT0A && _dataList[1].corrType == kTPCFT0C && _dataList[2].corrType == kFT0AFT0C)) {
+            // Allow both (FT0A, FT0C, FT0A×FT0C) and (FT0C, FT0A, FT0A×FT0C) orderings for ring-specific calculations
+            Bool_t validOrder = (_dataList[0].corrType == kTPCFT0A && _dataList[1].corrType == kTPCFT0C && _dataList[2].corrType == kFT0AFT0C) ||
+                                (_dataList[0].corrType == kTPCFT0C && _dataList[1].corrType == kTPCFT0A && _dataList[2].corrType == kFT0AFT0C);
+            if (!validOrder) {
                 constructed = false;
-                Printf("This calculation only valid for the sequence of kTPCFT0A, kTPCFT0C, kFT0AFT0C");
+                Printf("This calculation requires TPC×FT0A, TPC×FT0C, and FT0A×FT0C in some order; got corrTypes %d, %d, %d", 
+                    _dataList[0].corrType, _dataList[1].corrType, _dataList[2].corrType);
                 return;
             }
             if (!(_dataList[0].minRange == _dataList[1].minRange && _dataList[0].minRange == _dataList[2].minRange && _dataList[0].maxRange == _dataList[1].maxRange && _dataList[0].maxRange == _dataList[2].maxRange)) {
@@ -108,12 +112,24 @@ void Process_3times2PC() {
     // {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kTemplateFit, 0, 20)},
     // "LHC25af_pass2_642734"));
 
+    // -------------------------------------
+
     // Ne-Ne full-range combination (baseline)
     configList.push_back(ConfigUnit(kCent,
     {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637596", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
     "LHC25af_pass2_645746"));
 
-    // Ne-Ne ring combinations (TPC ring bins + side-specific FT0-FT0 ids)
+    // Ne-Ne Nch-dependent full-range combination (data: 10-50, template: 0-10)
+    // configList.push_back(ConfigUnit(kNch,
+    // {InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650641_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
+
+
+    // Additional Nch-dependent configuration
+    // configList.push_back(ConfigUnit(kNch,
+    // {InputUnit("LHC25af_pass2_650315_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650641_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
+    // "LHC25af_pass2_650641_nch10_50"));
+
+    // Ne-Ne ring combinations (TPC ring bins + side-specific FT0-FT0 inputs)
     configList.push_back(ConfigUnit(kCent,
     {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
     "LHC25af_pass2_innerRing"));
@@ -137,19 +153,24 @@ void Process_3times2PC() {
     "LHC25ae_pass2_outerRing"));
 
     // p-O datasets (ad)
-    configList.push_back(ConfigUnit(kCent,
-    {InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kTemplateFit, 0, 20)},
-    "LHC25ad_pass2_644389"));
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kTemplateFit, 0, 20)},
+    // "LHC25ad_pass2_644389"));
 
     // p-p datasets (LHC24af)
-    configList.push_back(ConfigUnit(kCent,
-    {InputUnit("LHC24af_pass1_644663", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kTemplateFit, 0, 20)},
-    "LHC24af_pass1_644663"));
+    // configList.push_back(ConfigUnit(kCent,
+    // {InputUnit("LHC24af_pass1_644663", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kTemplateFit, 0, 20)},
+    // "LHC24af_pass1_644663"));
 
     // Ne-Ne Nch-dependent full-range combination (data: 10-50, template: 0-10)
-    configList.push_back(ConfigUnit(kNch,
-    {InputUnit("LHC25af_pass2_650316", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650315", kFT0AFT0C, kTemplateFit, 10, 50)},
-    "LHC25af_pass2_650315_nch10_50"));
+    // configList.push_back(ConfigUnit(kNch,
+    // {InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650641_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
+    // "LHC25af_pass2_650641_nch10_50"));
+
+    // O-O Nch-dependent full-range combination (data: 10-50, template: 0-10)
+    // configList.push_back(ConfigUnit(kNch,
+    // {InputUnit("LHC25ae_pass2_650313_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_650312_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_650311_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
+    // "LHC25ae_pass2_650311_nch10_50"));
 
     for (auto config : configList) {
         if (!config.constructed) continue;
@@ -248,93 +269,8 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     double lrC_v4 = lr_v4, lrC_v4_err = lr_v4_err;
     double lrA_v4 = lr_v4, lrA_v4_err = lr_v4_err;
 
-    auto LoadLRFromDataset = [&](const std::string& datasetSuffix,
-                                 double& outV2, double& outV2Err,
-                                 double& outV3, double& outV3Err,
-                                 double& outV4, double& outV4Err) {
-        TFile* f = new TFile(Form("./TemplateFit/VnDelta_%s_%s_%s.root",
-                                  datasetSuffix.c_str(), splitName.c_str(), DihadronCorrTypeName[kFT0AFT0C].c_str()), "READ");
-        if (!f || !f->IsOpen()) {
-            Printf("[3times2PC] Warning: cannot open side LR file for %s", datasetSuffix.c_str());
-            if (f) {
-                f->Close();
-                delete f;
-            }
-            return false;
-        }
-        TH1D* hv2 = (TH1D*)f->Get("hV2");
-        TH1D* hv3 = (TH1D*)f->Get("hV3");
-        TH1D* hv4 = (TH1D*)f->Get("hV4");
-        if (!hv2 || !hv3 || !hv4) {
-            Printf("[3times2PC] Warning: missing hV2/hV3/hV4 in side LR file for %s", datasetSuffix.c_str());
-            f->Close();
-            delete f;
-            return false;
-        }
-
-        const double v2 = hv2->GetBinContent(1);
-        const double v2Err = hv2->GetBinError(1);
-        const double v3 = hv3->GetBinContent(1);
-        const double v3Err = hv3->GetBinError(1);
-        const double v4 = hv4->GetBinContent(1);
-        const double v4Err = hv4->GetBinError(1);
-
-        auto isInvalidSideValue = [](double value, double error) {
-            return (!std::isfinite(value) || !std::isfinite(error) || value < 0.0 || error >= 9.9);
-        };
-        if (isInvalidSideValue(v2, v2Err) || isInvalidSideValue(v3, v3Err) || isInvalidSideValue(v4, v4Err)) {
-            Printf("[3times2PC] Warning: invalid side LR value(s) in %s (v2=%g+-%g, v3=%g+-%g, v4=%g+-%g)",
-                   datasetSuffix.c_str(), v2, v2Err, v3, v3Err, v4, v4Err);
-            f->Close();
-            delete f;
-            return false;
-        }
-
-        outV2 = v2;
-        outV2Err = v2Err;
-        outV3 = v3;
-        outV3Err = v3Err;
-        outV4 = v4;
-        outV4Err = v4Err;
-        f->Close();
-        delete f;
-        return true;
-    };
-
-    auto LoadLRFromDatasetWithOptionalId = [&](const std::string& datasetSuffix, const std::string& optionalId,
-                                               double& outV2, double& outV2Err,
-                                               double& outV3, double& outV3Err,
-                                               double& outV4, double& outV4Err) {
-        if (!optionalId.empty()) {
-            if (LoadLRFromDataset(Form("%s_%s", datasetSuffix.c_str(), optionalId.c_str()),
-                                  outV2, outV2Err, outV3, outV3Err, outV4, outV4Err)) {
-                return true;
-            }
-        }
-        return LoadLRFromDataset(datasetSuffix, outV2, outV2Err, outV3, outV3Err, outV4, outV4Err);
-    };
-
-    if (outputFileName.find("innerRing") != std::string::npos) {
-        if (outputFileName.find("LHC25af_pass2") != std::string::npos) {
-            // Ne-Ne inner ring: C from id50560 (reject C outside), A from id50559 (reject A outside)
-            LoadLRFromDataset("LHC25af_pass2_646139_id50560", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-            LoadLRFromDataset("LHC25af_pass2_646139_id50559", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-        } else if (outputFileName.find("LHC25ae_pass2") != std::string::npos) {
-            // O-O inner ring: C from 648800, A from 648799 (try id50564 variant first, then plain dataset)
-            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_648800", "id50564", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_648799", "id50564", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-        }
-    } else if (outputFileName.find("outerRing") != std::string::npos) {
-        if (outputFileName.find("LHC25af_pass2") != std::string::npos) {
-            // Ne-Ne outer ring: C from id50562 (reject C inside), A from id50561 (reject A inside)
-            LoadLRFromDataset("LHC25af_pass2_646139_id50562", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-            LoadLRFromDataset("LHC25af_pass2_646139_id50561", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-        } else if (outputFileName.find("LHC25ae_pass2") != std::string::npos) {
-            // O-O outer ring: C from 648788, A from 644433 (try id50564 variant first, then plain dataset)
-            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_648788", "id50564", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-            LoadLRFromDatasetWithOptionalId("LHC25ae_pass2_644433", "id50564", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-        }
-    }
+    // Keep the shared LR baseline from the already-produced full-range FT0A-FT0C file.
+    // The ring-specific files only modify the LM/MR eta-differential inputs.
 
     TFile outputFile(Form("./3times2PC/Vn_%s_%s_%i_%i.root", outputFileName.c_str(), splitName.c_str(), dataLR.minRange, dataLR.maxRange), "RECREATE");
     TH1D* hV2 = dynamic_cast<TH1D*>(hLM_v2->Clone("hV2"));
