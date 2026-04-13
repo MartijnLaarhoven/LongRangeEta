@@ -21,6 +21,7 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <utility>
 #include <vector>
 #include "./include/BasicForDihadron.h"
 R__LOAD_LIBRARY(libO2PhysicsPWGCFCore)
@@ -38,16 +39,97 @@ struct InputUnit {
         fileNameSuffix(_fileNameSuffix), corrType(_corrType), isNch(_isNch), isEtadiff(_isEtadiff), minRange(_minRange), maxRange(_maxRange), isMc(_isMc) {}
 };
 
+struct CorrelationInputSpec {
+    std::string roleName;
+    Int_t corrType;
+    std::string fileNameSuffix;
+    std::string directoryTag;
+    Bool_t isNch;
+    Bool_t isEtadiff;
+    std::vector<std::pair<Int_t, Int_t>> ranges;
+
+    CorrelationInputSpec(std::string _roleName, Int_t _corrType, std::string _fileNameSuffix, std::string _directoryTag, Bool_t _isNch, Bool_t _isEtadiff, std::vector<std::pair<Int_t, Int_t>> _ranges) :
+        roleName(_roleName), corrType(_corrType), fileNameSuffix(_fileNameSuffix), directoryTag(_directoryTag), isNch(_isNch), isEtadiff(_isEtadiff), ranges(_ranges) {}
+};
+
 void printAxesInfo(THnSparseF* sparseHist);
 void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Bool_t isMc);
 void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType, Bool_t isNch, Int_t minRange, Int_t maxRange, Double_t etaMin, Double_t etaMax, Bool_t isMc);
 std::string GetInputFileNameSuffix(const std::string &fileNameSuffix);
 std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType);
 std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const std::string &fileNameSuffix, Int_t corrType, const std::string &splitName, Int_t minRange, Int_t maxRange);
+std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& systemName);
 
 // global variables
 std::string collisionSystemName = "peripheral PbPb";
 std::string additionalSuffix = "";
+std::vector<CorrelationInputSpec> gActiveInputSpecs;
+
+std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& systemName) {
+    if (systemName == "O-O") {
+        // Single source-of-truth for the 11 O-O input combinations used across the pipeline.
+        // Add another system by creating another branch with the same role naming pattern.
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_648788", "id50663", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_648788", "id50664", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_648798", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_638221", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_634099", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_634103", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_637591", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_648799", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_648800", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_653257", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_648788", "id50565", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "Ne-Ne") {
+        return {
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",      kFT0AFT0C, "LHC25af_pass2_642734",       "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",      kTPCFT0A,  "LHC25af_pass2_645173",       "id50661", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",      kTPCFT0C,  "LHC25af_pass2_645173",       "id50662", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",     kTPCFT0A,  "LHC25af_pass2_637597",       "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",     kTPCFT0C,  "LHC25af_pass2_631290",       "id47799", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",     kTPCFT0C,  "LHC25af_pass2_637594",       "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("FULL_LR_TAGGED",        kFT0AFT0C, "LHC25af_pass2_646139_id50585", "",      kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0A",         kFT0AFT0C, "LHC25af_pass2_646139_id50559", "",      kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",         kFT0AFT0C, "LHC25af_pass2_646139_id50560", "",      kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",         kFT0AFT0C, "LHC25af_pass2_646139_id50561", "",      kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",         kFT0AFT0C, "LHC25af_pass2_646139_id50562", "",      kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "p-O") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",      kTPCFT0A,  "LHC25ad_pass2_644389", "id50674", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",      kTPCFT0C,  "LHC25ad_pass2_644389", "id50675", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",     kFT0AFT0C, "LHC25ad_pass2_644389", "id50587", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "pp") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",      kTPCFT0A,  "LHC24af_pass1_644663", "id50684", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",      kTPCFT0C,  "LHC24af_pass1_644663", "id50690", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",     kFT0AFT0C, "LHC24af_pass1_644663", "id50579", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "Ne-Ne-Nch") {
+        return {
+            CorrelationInputSpec("NCH_LM_TPC_FT0A",       kTPCFT0A,  "LHC25af_pass2_650316", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_MR_TPC_FT0C",       kTPCFT0C,  "LHC25af_pass2_650317", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_LR_FT0A_FT0C",      kFT0AFT0C, "LHC25af_pass2_650315", "", kNch, kEtaDiffOff, {{0, 10}, {10, 50}})
+        };
+    }
+
+    return {};
+}
 
 std::string GetInputFileNameSuffix(const std::string &fileNameSuffix) {
     const std::string taggedPrefix = "LHC25af_pass2_646139_id";
@@ -61,6 +143,12 @@ std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corr
     const std::string taggedPrefix = "LHC25af_pass2_646139_id";
     if (fileNameSuffix.rfind(taggedPrefix, 0) == 0) {
         return fileNameSuffix.substr(taggedPrefix.size() - 2); // keep "idXXXXX"
+    }
+
+    for (const auto& spec : gActiveInputSpecs) {
+        if (spec.fileNameSuffix == fileNameSuffix && spec.corrType == corrType && !spec.directoryTag.empty()) {
+            return spec.directoryTag;
+        }
     }
 
     if (fileNameSuffix == "LHC25ae_pass2_644429") {
@@ -79,10 +167,16 @@ std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corr
         if (corrType == kFT0AFT0C) return "id50579";
     }
     if (fileNameSuffix == "LHC25ae_pass2_648788") {
+        if (corrType == kTPCFT0A) return "id50663";
+        if (corrType == kTPCFT0C) return "id50664";
         if (corrType == kFT0AFT0C) return "id50565";
     }
     if (fileNameSuffix == "LHC25af_pass2_631290") {
         if (corrType == kTPCFT0C) return "id47799";
+    }
+    if (fileNameSuffix == "LHC25af_pass2_645173") {
+        if (corrType == kTPCFT0A) return "id50661";
+        if (corrType == kTPCFT0C) return "id50662";
     }
     return "";
 }
@@ -129,85 +223,31 @@ void Process_dPhidEta() {
 
     std::vector<InputUnit> inputList;
     additionalSuffix = "";
-    
-    collisionSystemName = "Ne-Ne";
-    // Ne-Ne EtaDiff centrality-based
-    // inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    // inputList.push_back(InputUnit("LHC25af_pass2_642734", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    // Dataset 1: LHC25af_pass2_632504 with TPC_FT0A
-    // inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25af_pass2_632504", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 2: Ne-Ne full-acceptance TPC-FT0C (kept for baseline/full comparison)
-    // inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25af_pass2_637596", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // Ring-specific Ne-Ne TPC-FT0 inputs
-    inputList.push_back(InputUnit("LHC25af_pass2_637597", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_637597", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25af_pass2_631290", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_631290", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25af_pass2_637594", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_637594", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // Dataset 3: LHC25af_pass2_642734 with FT0A_FT0C (single full-range, NOT eta-differential)
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    // Dataset 4: O-O full-range baseline
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_644429", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
 
-    // Dataset 5: O-O ring-specific TPC-FT0 and ultra-long-range FT0A-FT0C side inputs
-    inputList.push_back(InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    inputList.push_back(InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    inputList.push_back(InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    
-    // p-O datasets (template: 80-100, signal: 0-20)
-    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    // inputList.push_back(InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
-    
-    // p-p datasets (LHC24af)
-    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0A, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 0, 20));
-    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kTPCFT0C, kCent, kEtaDiffOn, 80, 100));
-    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 0, 20));
-    // inputList.push_back(InputUnit("LHC24af_pass1_644663", kFT0AFT0C, kCent, kEtaDiffOff, 80, 100));
+    // Options: "O-O", "Ne-Ne", "p-O", "pp", "Ne-Ne-Nch"
+    const std::string activeSystem = "O-O";
+    gActiveInputSpecs = BuildSystemInputSpecs(activeSystem);
+    collisionSystemName = activeSystem;
 
-    // Ne-Ne Nch-dependent datasets (template: 0-10, data: 10-50), full-range only
-    // inputList.push_back(InputUnit("LHC25af_pass2_650316", kTPCFT0A, kNch, kEtaDiffOn, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass2_650316", kTPCFT0A, kNch, kEtaDiffOn, 10, 50));
-    // inputList.push_back(InputUnit("LHC25af_pass2_650317", kTPCFT0C, kNch, kEtaDiffOn, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass2_650317", kTPCFT0C, kNch, kEtaDiffOn, 10, 50));
-    // inputList.push_back(InputUnit("LHC25af_pass2_650315", kFT0AFT0C, kNch, kEtaDiffOff, 0, 10));
-    // inputList.push_back(InputUnit("LHC25af_pass2_650315", kFT0AFT0C, kNch, kEtaDiffOff, 10, 50));
-    
+    if (gActiveInputSpecs.empty()) {
+        Printf("[dPhidEta] No input specs configured for system %s", activeSystem.c_str());
+        return;
+    }
+
+    Printf("[Config][dPhidEta] Active system: %s, entries=%zu", activeSystem.c_str(), gActiveInputSpecs.size());
+
+    for (const auto& spec : gActiveInputSpecs) {
+        const char* splitLabel = (spec.isNch ? "Nch" : "Cent");
+        const char* etaLabel = (spec.isEtadiff ? "EtaDiff" : "LR");
+        const std::string tagPrint = (spec.directoryTag.empty() ? "-" : spec.directoryTag);
+        Printf("  - %s | %s | dataset=%s | tag=%s | mode=%s %s",
+               spec.roleName.c_str(), DihadronCorrTypeName[spec.corrType].c_str(),
+               spec.fileNameSuffix.c_str(), tagPrint.c_str(), splitLabel, etaLabel);
+
+        for (const auto& range : spec.ranges) {
+            inputList.push_back(InputUnit(spec.fileNameSuffix, spec.corrType, spec.isNch, spec.isEtadiff, range.first, range.second));
+        }
+    }
 
     for (auto input : inputList) {
         collisionSystemName = GetCollisionSystemNameFromDataset(input.fileNameSuffix);

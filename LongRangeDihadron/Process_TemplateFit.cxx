@@ -55,6 +55,12 @@ struct ConfigUnit {
         isNch(_isNch), isPtDiff(_isPtDiff), isEtaDiff(_isEtaDiff), templ(_template), dataList(_dataList), outputFileName(_outputFileName) {}
 };
 
+struct NamedConfigUnit {
+    std::string roleName;
+    ConfigUnit config;
+    NamedConfigUnit(std::string _roleName, ConfigUnit _config) : roleName(_roleName), config(_config) {}
+};
+
 struct VnUnit {
     Double_t v2;
     Double_t v2_err;
@@ -106,6 +112,67 @@ void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t m
 // global variables
 std::string collisionSystemName = "peripheral PbPb";
 Bool_t kOutputVnDelta = true;
+
+std::vector<NamedConfigUnit> BuildTemplateFitConfigList(const std::string& systemName) {
+    if (systemName == "O-O") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_648788", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_648788", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_648788")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_648788", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_648788")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648798", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648798", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648798")),
+            NamedConfigUnit("INNER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_638221", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_638221")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_634099", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_634099", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_634099")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_634103", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_634103")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_637591", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_637591", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_637591")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648799")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648800")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_653257", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_653257", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_653257")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648788"))
+        };
+    }
+    if (systemName == "Ne-Ne") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25af_pass2_645173", kTPCFT0A, 80, 100), {InputUnit("LHC25af_pass2_645173", kTPCFT0A, 0, 20)}, "LHC25af_pass2_645173")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25af_pass2_645173", kTPCFT0C, 80, 100), {InputUnit("LHC25af_pass2_645173", kTPCFT0C, 0, 20)}, "LHC25af_pass2_645173")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25af_pass2_637597", kTPCFT0A, 80, 100), {InputUnit("LHC25af_pass2_637597", kTPCFT0A, 0, 20)}, "LHC25af_pass2_637597")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25af_pass2_631290", kTPCFT0C, 80, 100), {InputUnit("LHC25af_pass2_631290", kTPCFT0C, 0, 20)}, "LHC25af_pass2_631290")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25af_pass2_637594", kTPCFT0C, 80, 100), {InputUnit("LHC25af_pass2_637594", kTPCFT0C, 0, 20)}, "LHC25af_pass2_637594")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, 80, 100), {InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, 0, 20)}, "LHC25af_pass2_645746")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, 80, 100), {InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, 0, 20)}, "LHC25af_pass2_646139_id50559")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, 80, 100), {InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, 0, 20)}, "LHC25af_pass2_646139_id50560")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, 80, 100), {InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, 0, 20)}, "LHC25af_pass2_646139_id50561")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, 80, 100), {InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, 0, 20)}, "LHC25af_pass2_646139_id50562"))
+        };
+    }
+    if (systemName == "p-O") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ad_pass2_644389", kTPCFT0A, 80, 100), {InputUnit("LHC25ad_pass2_644389", kTPCFT0A, 0, 20)}, "LHC25ad_pass2_644389")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 80, 100), {InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 0, 20)}, "LHC25ad_pass2_644389")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 80, 100), {InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 0, 20)}, "LHC25ad_pass2_644389"))
+        };
+    }
+    if (systemName == "pp") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC24af_pass1_644663", kTPCFT0A, 80, 100), {InputUnit("LHC24af_pass1_644663", kTPCFT0A, 0, 20)}, "LHC24af_pass1_644663")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC24af_pass1_644663", kTPCFT0C, 80, 100), {InputUnit("LHC24af_pass1_644663", kTPCFT0C, 0, 20)}, "LHC24af_pass1_644663")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 80, 100), {InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 0, 20)}, "LHC24af_pass1_644663"))
+        };
+    }
+    if (systemName == "Ne-Ne-Nch") {
+        return {
+            NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_650316", kTPCFT0A, 0, 10), {InputUnit("LHC25af_pass2_650316", kTPCFT0A, 10, 50)}, "LHC25af_pass2_650316_nch10_50")),
+            NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_650317", kTPCFT0C, 0, 10), {InputUnit("LHC25af_pass2_650317", kTPCFT0C, 10, 50)}, "LHC25af_pass2_650317_nch10_50")),
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_650641", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_650641", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_650641_nch10_50"))
+        };
+    }
+    if (systemName == "O-O-Nch") {
+        return {
+            NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_650313", kTPCFT0A, 0, 10), {InputUnit("LHC25ae_pass2_650313", kTPCFT0A, 10, 50)}, "LHC25ae_pass2_650313_nch10_50")),
+            NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_650312", kTPCFT0C, 0, 10), {InputUnit("LHC25ae_pass2_650312", kTPCFT0C, 10, 50)}, "LHC25ae_pass2_650312_nch10_50")),
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_650311", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_650311", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_650311_nch10_50"))
+        };
+    }
+    return {};
+}
 //==============================================================
 void Process_TemplateFit() {
     // 不显示窗口
@@ -118,160 +185,27 @@ void Process_TemplateFit() {
     gSystem->Exec("mkdir -p ./TemplateFit/PDFs");
     gSystem->Exec("mkdir -p ./TemplateFit/EtaDiff/PDFs");
     
+    // Options: "O-O", "Ne-Ne", "p-O", "pp", "Ne-Ne-Nch", "O-O-Nch"
+    const std::string activeSystem = "O-O";
+    std::vector<NamedConfigUnit> namedConfigList = BuildTemplateFitConfigList(activeSystem);
     std::vector<ConfigUnit> configList;
+    configList.reserve(namedConfigList.size());
 
     collisionSystemName = "Unknown";
     kOutputVnDelta = true;
 
-    // Ne-Ne datasets (template: 80-100, signal: 0-20)
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_632504", kTPCFT0A, 80, 100),
-    {InputUnit("LHC25af_pass2_632504", kTPCFT0A, 0, 20)},
-    "LHC25af_pass2_632504"));
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_637596", kTPCFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_637596", kTPCFT0C, 0, 20)},
-    "LHC25af_pass2_637596"));
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_637597", kTPCFT0A, 80, 100),
-    {InputUnit("LHC25af_pass2_637597", kTPCFT0A, 0, 20)},
-    "LHC25af_pass2_637597"));
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_631290", kTPCFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_631290", kTPCFT0C, 0, 20)},
-    "LHC25af_pass2_631290"));
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25af_pass2_637594", kTPCFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_637594", kTPCFT0C, 0, 20)},
-    "LHC25af_pass2_637594"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_646139_id50585", kFT0AFT0C, 0, 20)},
-    "LHC25af_pass2_645746"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, 0, 20)},
-    "LHC25af_pass2_646139_id50559"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, 0, 20)},
-    "LHC25af_pass2_646139_id50560"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, 0, 20)},
-    "LHC25af_pass2_646139_id50561"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, 0, 20)},
-    "LHC25af_pass2_646139_id50562"));
-
-
-    // O-O datasets (template: 80-100, signal: 0-20)
-    // configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 80, 100),
-    // {InputUnit("LHC25ae_pass2_644429", kTPCFT0A, 0, 20)},
-    // "LHC25ae_pass2_644429"));
-
-    // configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 80, 100),
-    // {InputUnit("LHC25ae_pass2_644429", kTPCFT0C, 0, 20)},
-    // "LHC25ae_pass2_644429"));
-
-    // configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, 80, 100),
-    // {InputUnit("LHC25ae_pass2_645657", kFT0AFT0C, 0, 20)},
-    // "LHC25ae_pass2_645657"));
-
-    // O-O ring-specific inputs
-
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_638221", kTPCFT0A, 80, 100),
-    {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, 0, 20)},
-    "LHC25ae_pass2_638221"));
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_634099", kTPCFT0C, 80, 100),
-    {InputUnit("LHC25ae_pass2_634099", kTPCFT0C, 0, 20)},
-    "LHC25ae_pass2_634099"));
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_634103", kTPCFT0A, 80, 100),
-    {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, 0, 20)},
-    "LHC25ae_pass2_634103"));
-
-    configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ae_pass2_637591", kTPCFT0C, 80, 100),
-    {InputUnit("LHC25ae_pass2_637591", kTPCFT0C, 0, 20)},
-    "LHC25ae_pass2_637591"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, 0, 20)},
-    "LHC25ae_pass2_648799"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, 0, 20)},
-    "LHC25ae_pass2_648800"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25ae_pass2_644433", kFT0AFT0C, 0, 20)},
-    "LHC25ae_pass2_644433"));
-
-    configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 80, 100),
-    {InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 0, 20)},
-    "LHC25ae_pass2_648788"));
-
-
-
-
-
-    // p-O datasets (template: 80-100, signal: 0-20)
-    // configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ad_pass2_644389", kTPCFT0A, 80, 100),
-    // {InputUnit("LHC25ad_pass2_644389", kTPCFT0A, 0, 20)},
-    // "LHC25ad_pass2_644389"));
-
-    // configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 80, 100),
-    // {InputUnit("LHC25ad_pass2_644389", kTPCFT0C, 0, 20)},
-    // "LHC25ad_pass2_644389"));
-    
-    // configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 80, 100),
-    // {InputUnit("LHC25ad_pass2_644389", kFT0AFT0C, 0, 20)},
-    // "LHC25ad_pass2_644389"));
-
-    // p-p datasets (template: 80-100, signal: 0-20)
-    // configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC24af_pass1_644663", kTPCFT0A, 80, 100),
-    // {InputUnit("LHC24af_pass1_644663", kTPCFT0A, 0, 20)},
-    // "LHC24af_pass1_644663"));
-
-    // configList.push_back(ConfigUnit(kCent, false, true, InputUnit("LHC24af_pass1_644663", kTPCFT0C, 80, 100),
-    // {InputUnit("LHC24af_pass1_644663", kTPCFT0C, 0, 20)},
-    // "LHC24af_pass1_644663"));
-
-    // configList.push_back(ConfigUnit(kCent, false, false, InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 80, 100),
-    // {InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 0, 20)},
-    // "LHC24af_pass1_644663"));
-
-    // Ne-Ne Nch-dependent datasets (template: 0-10, data: 10-50)
-    // configList.push_back(ConfigUnit(kNch, false, true, InputUnit("LHC25af_pass2_650316", kTPCFT0A, 0, 10),
-    // {InputUnit("LHC25af_pass2_650316", kTPCFT0A, 10, 50)},
-    // "LHC25af_pass2_650316_nch10_50"));
-
-    // configList.push_back(ConfigUnit(kNch, false, true, InputUnit("LHC25af_pass2_650317", kTPCFT0C, 0, 10),
-    // {InputUnit("LHC25af_pass2_650317", kTPCFT0C, 10, 50)},
-    // "LHC25af_pass2_650317_nch10_50"));
-
-    // configList.push_back(ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_650641", kFT0AFT0C, 0, 10),
-    // {InputUnit("LHC25af_pass2_650641", kFT0AFT0C, 10, 50)},
-    // "LHC25af_pass2_650641_nch10_50"));
-
-    // O-O Nch-dependent datasets (template: 0-10, data: 10-50)
-
-    // configList.push_back(ConfigUnit(kNch, false, true, InputUnit("LHC25ae_pass2_650313", kTPCFT0A, 0, 10),
-    // {InputUnit("LHC25ae_pass2_650313", kTPCFT0A, 10, 50)},
-    // "LHC25ae_pass2_650313_nch10_50"));
-
-    // configList.push_back(ConfigUnit(kNch, false, true, InputUnit("LHC25ae_pass2_650312", kTPCFT0C, 0, 10),
-    // {InputUnit("LHC25ae_pass2_650312", kTPCFT0C, 10, 50)},
-    // "LHC25ae_pass2_650312_nch10_50"));
-
-    // configList.push_back(ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_650311", kFT0AFT0C, 0, 10),
-    // {InputUnit("LHC25ae_pass2_650311", kFT0AFT0C, 10, 50)},
-    // "LHC25ae_pass2_650311_nch10_50"));
-
-
+    std::cout << "[Config][TemplateFit] Active system: " << activeSystem << ", entries=" << namedConfigList.size() << std::endl;
+    for (const auto& named : namedConfigList) {
+        const char* splitLabel = (named.config.isNch ? "Nch" : "Cent");
+        const char* modeLabel = (named.config.isEtaDiff ? "EtaDiff" : "LR");
+        std::cout << "  - " << named.roleName
+                  << " | " << DihadronCorrTypeName[named.config.templ.corrType]
+                  << " | template=" << named.config.templ.fileNameSuffix
+                  << " | output=" << named.config.outputFileName
+                  << " | mode=" << splitLabel << " " << modeLabel
+                  << std::endl;
+        configList.push_back(named.config);
+    }
 
     std::cout << "TemplateFit: Processing " << configList.size() << " configurations" << std::endl;
     for (auto config : configList) {
