@@ -58,14 +58,14 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
 std::string GetInputFileNameSuffix(const std::string &fileNameSuffix);
 std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType);
 std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const std::string &fileNameSuffix, Int_t corrType, const std::string &splitName, Int_t minRange, Int_t maxRange);
-std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& systemName);
+std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& systemName, Bool_t useNchMode);
 
 // global variables
 std::string collisionSystemName = "peripheral PbPb";
 std::string additionalSuffix = "";
 std::vector<CorrelationInputSpec> gActiveInputSpecs;
 
-std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& systemName) {
+std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& systemName, Bool_t useNchMode) {
     if (systemName == "O-O") {
         // Single source-of-truth for the 11 O-O input combinations used across the pipeline.
         // Add another system by creating another branch with the same role naming pattern.
@@ -86,7 +86,23 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
         };
     }
 
+    if (systemName == "O-O-Nch") {
+        return {
+            CorrelationInputSpec("NCH_LM_TPC_FT0A",      kTPCFT0A,  "LHC25ae_pass2_653254", "id51547", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_MR_TPC_FT0C",      kTPCFT0C,  "LHC25ae_pass2_653254", "id51548", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_LR_FT0A_FT0C",     kFT0AFT0C, "LHC25ae_pass2_653254", "id51549", kNch, kEtaDiffOff, {{0, 10}, {10, 50}})
+        };
+    }
+
     if (systemName == "Ne-Ne") {
+        if (useNchMode) {
+            return {
+                CorrelationInputSpec("NCH_LM_TPC_FT0A",       kTPCFT0A,  "LHC25af_pass2_650316", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+                CorrelationInputSpec("NCH_MR_TPC_FT0C",       kTPCFT0C,  "LHC25af_pass2_650317", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+                CorrelationInputSpec("NCH_LR_FT0A_FT0C",      kFT0AFT0C, "LHC25af_pass2_650315", "", kNch, kEtaDiffOff, {{0, 10}, {10, 50}})
+            };
+        }
+
         return {
             CorrelationInputSpec("FULL_LR_FT0A_FT0C",      kFT0AFT0C, "LHC25af_pass2_642734",       "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
             CorrelationInputSpec("FULL_LM_TPC_FT0A",      kTPCFT0A,  "LHC25af_pass2_645173",       "id50661", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
@@ -104,11 +120,27 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
         };
     }
 
+    if (systemName == "Ne-Ne-Nch") {
+        return {
+            CorrelationInputSpec("NCH_LM_TPC_FT0A",       kTPCFT0A,  "LHC25af_pass2_650316_nch10_50", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_MR_TPC_FT0C",       kTPCFT0C,  "LHC25af_pass2_650317_nch10_50", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_LR_FT0A_FT0C",      kFT0AFT0C, "LHC25af_pass2_650315_nch10_50", "", kNch, kEtaDiffOff, {{0, 10}, {10, 50}})
+        };
+    }
+
     if (systemName == "p-O") {
         return {
             CorrelationInputSpec("FULL_LM_TPC_FT0A",      kTPCFT0A,  "LHC25ad_pass2_644389", "id50674", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
             CorrelationInputSpec("FULL_MR_TPC_FT0C",      kTPCFT0C,  "LHC25ad_pass2_644389", "id50675", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
             CorrelationInputSpec("FULL_LR_FT0A_FT0C",     kFT0AFT0C, "LHC25ad_pass2_644389", "id50587", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "p-O-Nch") {
+        return {
+            CorrelationInputSpec("NCH_LM_TPC_FT0A",       kTPCFT0A,  "LHC25ad_pass2_650295", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_MR_TPC_FT0C",       kTPCFT0C,  "LHC25ad_pass2_650297", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_LR_FT0A_FT0C",      kFT0AFT0C, "LHC25ad_pass2_650299", "", kNch, kEtaDiffOff, {{0, 10}, {10, 50}})
         };
     }
 
@@ -120,11 +152,11 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
         };
     }
 
-    if (systemName == "Ne-Ne-Nch") {
+    if (systemName == "pp-Nch") {
         return {
-            CorrelationInputSpec("NCH_LM_TPC_FT0A",       kTPCFT0A,  "LHC25af_pass2_650316", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
-            CorrelationInputSpec("NCH_MR_TPC_FT0C",       kTPCFT0C,  "LHC25af_pass2_650317", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
-            CorrelationInputSpec("NCH_LR_FT0A_FT0C",      kFT0AFT0C, "LHC25af_pass2_650315", "", kNch, kEtaDiffOff, {{0, 10}, {10, 50}})
+            CorrelationInputSpec("NCH_LM_TPC_FT0A",       kTPCFT0A,  "LHC24af_pass1_650589", "id51553", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_MR_TPC_FT0C",       kTPCFT0C,  "LHC24af_pass1_650589", "id51554", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_LR_FT0A_FT0C",      kFT0AFT0C, "LHC24af_pass1_650588", "", kNch, kEtaDiffOff, {{0, 10}, {10, 50}})
         };
     }
 
@@ -182,24 +214,46 @@ std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corr
 }
 
 std::string ResolveInputDirectory(TFile *file, const std::string &prefix, const std::string &fileNameSuffix, Int_t corrType, const std::string &splitName, Int_t minRange, Int_t maxRange) {
+    if (!file) return "";
+
+    std::vector<std::string> splitAliases;
+    if (splitName == "Mult") {
+        splitAliases = {"Mult", "Nch"};
+    } else if (splitName == "Cent") {
+        splitAliases = {"Cent", "Centrality"};
+    } else {
+        splitAliases = {splitName};
+    }
+
     std::vector<std::string> candidates;
-    candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
+    for (const auto& splitAlias : splitAliases) {
+        candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), additionalSuffix.c_str(), splitAlias.c_str(), minRange, maxRange));
+        candidates.push_back(Form("%s_%s_%d_%d_ch", prefix.c_str(), splitAlias.c_str(), minRange, maxRange));
+        candidates.push_back(Form("%s_%s%s_%d_%d_ch", prefix.c_str(), additionalSuffix.c_str(), splitAlias.c_str(), minRange, maxRange));
+    }
 
     const std::string datasetTag = GetDatasetDirectoryTag(fileNameSuffix, corrType);
     if (!datasetTag.empty()) {
-        candidates.push_back(Form("%s_%s_%s_%d_%d", prefix.c_str(), datasetTag.c_str(), splitName.c_str(), minRange, maxRange));
-        candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), datasetTag.c_str(), splitName.c_str(), minRange, maxRange));
-        candidates.push_back(Form("%s_%s%s%s_%d_%d", prefix.c_str(), datasetTag.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
-        candidates.push_back(Form("%s_%s_%d_%d_%s", prefix.c_str(), splitName.c_str(), minRange, maxRange, datasetTag.c_str()));
-        candidates.push_back(Form("%s_%s%s_%d_%d_%s", prefix.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, datasetTag.c_str()));
+        for (const auto& splitAlias : splitAliases) {
+            candidates.push_back(Form("%s_%s_%s_%d_%d", prefix.c_str(), datasetTag.c_str(), splitAlias.c_str(), minRange, maxRange));
+            candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), datasetTag.c_str(), splitAlias.c_str(), minRange, maxRange));
+            candidates.push_back(Form("%s_%s%s%s_%d_%d", prefix.c_str(), datasetTag.c_str(), additionalSuffix.c_str(), splitAlias.c_str(), minRange, maxRange));
+            candidates.push_back(Form("%s_%s_%d_%d_%s", prefix.c_str(), splitAlias.c_str(), minRange, maxRange, datasetTag.c_str()));
+            candidates.push_back(Form("%s_%s%s_%d_%d_%s", prefix.c_str(), additionalSuffix.c_str(), splitAlias.c_str(), minRange, maxRange, datasetTag.c_str()));
+            candidates.push_back(Form("%s_%s_%d_%d_ch_%s", prefix.c_str(), splitAlias.c_str(), minRange, maxRange, datasetTag.c_str()));
+            candidates.push_back(Form("%s_%s%s_%d_%d_ch_%s", prefix.c_str(), additionalSuffix.c_str(), splitAlias.c_str(), minRange, maxRange, datasetTag.c_str()));
+        }
 
         // LHC24af FT0A-FT0C has two observed id tags in input files; try both.
         if (fileNameSuffix == "LHC24af_pass1_644663" && corrType == kFT0AFT0C) {
-            candidates.push_back(Form("%s_%s_%s_%d_%d", prefix.c_str(), "id50588", splitName.c_str(), minRange, maxRange));
-            candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), "id50588", splitName.c_str(), minRange, maxRange));
-            candidates.push_back(Form("%s_%s%s%s_%d_%d", prefix.c_str(), "id50588", additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange));
-            candidates.push_back(Form("%s_%s_%d_%d_%s", prefix.c_str(), splitName.c_str(), minRange, maxRange, "id50588"));
-            candidates.push_back(Form("%s_%s%s_%d_%d_%s", prefix.c_str(), additionalSuffix.c_str(), splitName.c_str(), minRange, maxRange, "id50588"));
+            for (const auto& splitAlias : splitAliases) {
+                candidates.push_back(Form("%s_%s_%s_%d_%d", prefix.c_str(), "id50588", splitAlias.c_str(), minRange, maxRange));
+                candidates.push_back(Form("%s_%s%s_%d_%d", prefix.c_str(), "id50588", splitAlias.c_str(), minRange, maxRange));
+                candidates.push_back(Form("%s_%s%s%s_%d_%d", prefix.c_str(), "id50588", additionalSuffix.c_str(), splitAlias.c_str(), minRange, maxRange));
+                candidates.push_back(Form("%s_%s_%d_%d_%s", prefix.c_str(), splitAlias.c_str(), minRange, maxRange, "id50588"));
+                candidates.push_back(Form("%s_%s%s_%d_%d_%s", prefix.c_str(), additionalSuffix.c_str(), splitAlias.c_str(), minRange, maxRange, "id50588"));
+                candidates.push_back(Form("%s_%s_%d_%d_ch_%s", prefix.c_str(), splitAlias.c_str(), minRange, maxRange, "id50588"));
+            }
         }
     }
 
@@ -224,9 +278,11 @@ void Process_dPhidEta() {
     std::vector<InputUnit> inputList;
     additionalSuffix = "";
 
-    // Options: "O-O", "Ne-Ne", "p-O", "pp", "Ne-Ne-Nch"
-    const std::string activeSystem = "O-O";
-    gActiveInputSpecs = BuildSystemInputSpecs(activeSystem);
+    // Options: "O-O", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    const std::string activeSystem = "pp-Nch";
+    const Bool_t useNchMode = (activeSystem.find("Nch") != std::string::npos) ? kTRUE : kFALSE;
+
+    gActiveInputSpecs = BuildSystemInputSpecs(activeSystem, useNchMode);
     collisionSystemName = activeSystem;
 
     if (gActiveInputSpecs.empty()) {
@@ -234,7 +290,7 @@ void Process_dPhidEta() {
         return;
     }
 
-    Printf("[Config][dPhidEta] Active system: %s, entries=%zu", activeSystem.c_str(), gActiveInputSpecs.size());
+    Printf("[Config][dPhidEta] Active system: %s, split=%s, entries=%zu", activeSystem.c_str(), useNchMode ? "Nch" : "Cent", gActiveInputSpecs.size());
 
     for (const auto& spec : gActiveInputSpecs) {
         const char* splitLabel = (spec.isNch ? "Nch" : "Cent");
@@ -340,15 +396,21 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         file->Get(Form("%s/deltaEta_deltaPhi_mixed_%s", flowDirProbe.Data(), DihadronCorrTypeName[corrType].c_str())) &&
         file->Get(Form("%s/Trig_hist_%s", flowDirProbe.Data(), DihadronCorrTypeName[corrType].c_str()));
 
+    // Keep FT0A_FT0C EtaDiffOff behavior aligned with the legacy container-based path.
+    const Bool_t preferContainerPathForFT0 = (!isMc && corrType == kFT0AFT0C);
+
     if (!isMc && corrType == kFT0AFT0C) {
         std::cout << "[FT0 routing] " << fileNameSuffix << " [" << minRange << ", " << maxRange << "] hasDirectFT0Input=" << hasDirectFT0Input << " (flowDir=" << flowDirProbe.Data() << ")" << std::endl;
+        if (preferContainerPathForFT0) {
+            std::cout << "[FT0 routing] EtaDiffOff FT0A_FT0C: preferring CorrelationContainer path (legacy-compatible)" << std::endl;
+        }
     }
 
     // Special handling for FT0A_FT0C in LongRangeEta input: direct 2D histograms.
     // Prefer direct objects for ultra-long-range FT0 EtaDiffOff and keep
     // CorrelationContainer path as fallback when direct objects are unavailable.
     
-    if (!isMc && corrType == kFT0AFT0C && hasDirectFT0Input) {
+    if (!isMc && corrType == kFT0AFT0C && hasDirectFT0Input && !preferContainerPathForFT0) {
         std::cout << "[FT0 routing] Using direct FT0 histograms for " << fileNameSuffix << " [" << minRange << ", " << maxRange << "]" << std::endl;
         TString flowDir = flowDirProbe;
         TH2D* hPhiEtaS = (TH2D*)file->Get(Form("%s/deltaEta_deltaPhi_same_%s", flowDir.Data(), DihadronCorrTypeName[corrType].c_str()));
@@ -407,9 +469,9 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetYaxis()->GetBinWidth(1));
 
-        hPhiEtaSMsum->Rebin2D(1, 1);
-        hPhiEtaSsum->Rebin2D(1, 1);
-        hPhiEtaMsum->Rebin2D(1, 1);
+        hPhiEtaSMsum->Rebin2D(4, 1);
+        hPhiEtaSsum->Rebin2D(4, 1);
+        hPhiEtaMsum->Rebin2D(4, 1);
 
         TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d", minRange, maxRange));
         hEta->SetTitle("#Delta#eta");
@@ -579,11 +641,17 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
     trig->SetName(Form("Trig_hist_%i_%i", minRange, maxRange));
 
     // Common axis settings for all samples
-    sparSig->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(minPt+0.001, maxPt-0.001);
-    sparMix->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(minPt+0.001, maxPt-0.001);
-    sparSig->GetAxis(corrAxis_kdEtaTPCTPC)->SetRangeUser(DihadrondEtaRange[corrType][0], DihadrondEtaRange[corrType][1]);
-    sparMix->GetAxis(corrAxis_kdEtaTPCTPC)->SetRangeUser(DihadrondEtaRange[corrType][0], DihadrondEtaRange[corrType][1]);
-    trig->GetAxis(trigAxis_pT)->SetRangeUser(minPt+0.001, maxPt-0.001);
+    // For FT0A_FT0C ultra-long-range, don't apply pT/eta cuts - use full correlation data
+    if (corrType != kFT0AFT0C) {
+        sparSig->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(minPt+0.001, maxPt-0.001);
+        sparMix->GetAxis(corrAxis_kPt_TPC_trig)->SetRangeUser(minPt+0.001, maxPt-0.001);
+        sparSig->GetAxis(corrAxis_kdEtaTPCTPC)->SetRangeUser(DihadrondEtaRange[corrType][0], DihadrondEtaRange[corrType][1]);
+        sparMix->GetAxis(corrAxis_kdEtaTPCTPC)->SetRangeUser(DihadrondEtaRange[corrType][0], DihadrondEtaRange[corrType][1]);
+        trig->GetAxis(trigAxis_pT)->SetRangeUser(minPt+0.001, maxPt-0.001);
+    } else {
+        // FT0A_FT0C: ultra-long-range needs full pT/eta ranges, no cuts
+        std::cout << "[FT0 routing] FT0A_FT0C CorrelationContainer: using full pT/eta ranges for LR correlations" << std::endl;
+    }
 
     // Create output file
     TFile* fout = TFile::Open(Form("./ProcessOutput/Mixed_%s%s_%s_%i_%i_%s.root", fileNameSuffix.c_str(), additionalSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange), DihadronCorrTypeName[corrType].c_str()), "RECREATE");
@@ -632,25 +700,34 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
             TH2D *hPhiEtaS = (TH2D*)sparSig->Projection(corrAxis_kdEtaTPCTPC, corrAxis_kdPhiTPCTPC);
             TH2D *hPhiEtaM = (TH2D*)sparMix->Projection(corrAxis_kdEtaTPCTPC, corrAxis_kdPhiTPCTPC);
 
-            // Normalize mixed event using peak-based method
+            // Normalize mixed event at fixed eta anchor (same behavior as legacy working macro)
             Double_t norm = 1.;
             Int_t binPhi1 = hPhiEtaM->GetXaxis()->FindBin(-TMath::Pi()/2 + 0.0001);
             Int_t binPhi2 = hPhiEtaM->GetXaxis()->FindBin(3*TMath::Pi()/2 - 0.0001);
-            
-            // Find peak in eta distribution
-            TH1D* hEtaNorm = hPhiEtaM->ProjectionY("hEtaNorm_temp");
-            Int_t peakEtaBin = hEtaNorm->GetMaximumBin();
-            Int_t binEta1 = std::max(1, peakEtaBin - 1);
-            Int_t binEta2 = std::min(hPhiEtaM->GetNbinsY(), peakEtaBin + 1);
+
+            Int_t binEta1 = hPhiEtaM->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]);
+            Int_t binEta2 = hPhiEtaM->GetYaxis()->FindBin(MixEventNormalizationEta[corrType]);
+
+            Int_t phiN = hPhiEtaM->GetXaxis()->GetNbins();
+            Int_t etaN = hPhiEtaM->GetYaxis()->GetNbins();
+            binPhi1 = TMath::Max(1, TMath::Min(binPhi1, phiN));
+            binPhi2 = TMath::Max(1, TMath::Min(binPhi2, phiN));
+            binEta1 = TMath::Max(1, TMath::Min(binEta1, etaN));
+            binEta2 = TMath::Max(1, TMath::Min(binEta2, etaN));
+            if (binPhi2 < binPhi1) std::swap(binPhi1, binPhi2);
+            if (binEta2 < binEta1) std::swap(binEta1, binEta2);
+
             Int_t nNormBins = (binEta2 - binEta1 + 1) * (binPhi2 - binPhi1 + 1);
-            norm = hPhiEtaM->Integral(binPhi1, binPhi2, binEta1, binEta2) / nNormBins;
-            delete hEtaNorm;
-            
-            // Fallback to full histogram if peak method fails
-            if (!std::isfinite(norm) || norm <= 0.0) {
-                const Int_t nAllBins = hPhiEtaM->GetNbinsX() * hPhiEtaM->GetNbinsY();
-                const Double_t fullIntegral = hPhiEtaM->Integral(1, hPhiEtaM->GetNbinsX(), 1, hPhiEtaM->GetNbinsY());
-                norm = (nAllBins > 0) ? (fullIntegral / nAllBins) : 1.0;
+            if (nNormBins <= 0) {
+                norm = 0.;
+            } else {
+                norm = hPhiEtaM->Integral(binPhi1, binPhi2, binEta1, binEta2) / nNormBins;
+            }
+
+            if (!std::isfinite(norm) || norm == 0.) {
+                norm = 1.0;
+            } else if (norm < 1e-12) {
+                norm = 1e-12;
             }
 
             if (!hPhiEtaMsum) {
@@ -700,20 +777,24 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         hPhiEtaSMsum->Scale(1.0 / hPhiEtaSMsum->GetYaxis()->GetBinWidth(1));
         TH1D* hEta = hPhiEtaSMsum->ProjectionY(Form("hEta_%d_%d%s", minRange, maxRange, suffix.Data()));
         hEta->SetTitle("#Delta#eta");
-        hPhiEtaSMsum->Rebin2D(1, 1);
+        if (corrType == kFT0AFT0C) {
+            hPhiEtaSMsum->Rebin2D(4, 1);
+        } else {
+            hPhiEtaSMsum->Rebin2D(2, 1);
+        }
 
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaMsum->Scale(1.0 / hPhiEtaMsum->GetYaxis()->GetBinWidth(1));
         hPhiEtaMsum->Rebin2D(1, 1);
         if (corrType == kFT0AFT0C) {
-            hPhiEtaMsum->Rebin2D(1, 1);
+            hPhiEtaMsum->Rebin2D(4, 1);
         }
 
         hPhiEtaSsum->Scale(1.0 / hPhiEtaSsum->GetXaxis()->GetBinWidth(1));
         hPhiEtaSsum->Scale(1.0 / hPhiEtaSsum->GetYaxis()->GetBinWidth(1));
         hPhiEtaSsum->Rebin2D(1, 1);
-         if (corrType == kFT0AFT0C) {
-            hPhiEtaSsum->Rebin2D(1, 1);
+        if (corrType == kFT0AFT0C) {
+            hPhiEtaSsum->Rebin2D(4, 1);
         }
 
         

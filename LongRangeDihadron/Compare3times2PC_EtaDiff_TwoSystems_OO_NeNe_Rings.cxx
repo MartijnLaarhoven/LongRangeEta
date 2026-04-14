@@ -24,18 +24,43 @@ struct EtaPoint {
     bool mirrored;
 };
 
-TH1D* LoadFullV2(TFile* f) {
+TH1D* LoadFullVn(TFile* f, int harmonic) {
     if (!f || !f->IsOpen()) return nullptr;
-    TH1D* h = (TH1D*)f->Get("hV2_Combined");
-    if (!h) h = (TH1D*)f->Get("hV2");
+    TH1D* h = (TH1D*)f->Get(Form("hV%d_Combined", harmonic));
+    if (!h) h = (TH1D*)f->Get(Form("hV%d", harmonic));
     return h;
 }
 
-TH1D* LoadRingV2(TFile* f) {
+TH1D* LoadRingVn(TFile* f, int harmonic) {
     if (!f || !f->IsOpen()) return nullptr;
-    TH1D* h = (TH1D*)f->Get("hV2_Sides");
-    if (!h) h = (TH1D*)f->Get("hV2_Combined");
-    if (!h) h = (TH1D*)f->Get("hV2");
+    TH1D* h = (TH1D*)f->Get(Form("hV%d_Side", harmonic));
+    if (!h) h = (TH1D*)f->Get(Form("hV%d_Sides", harmonic));
+    if (!h) h = (TH1D*)f->Get(Form("hV%d_Combined", harmonic));
+    if (!h) h = (TH1D*)f->Get(Form("hV%d", harmonic));
+    return h;
+}
+
+TH1D* LoadSideValue(TFile* f, int harmonic) {
+    if (!f || !f->IsOpen()) return nullptr;
+    TH1D* h = (TH1D*)f->Get(Form("hV%d_Side", harmonic));
+    if (!h) h = (TH1D*)f->Get(Form("hV%d_Sides", harmonic));
+    if (!h) h = (TH1D*)f->Get(Form("hV%d_Combined", harmonic));
+    if (!h) h = (TH1D*)f->Get(Form("hV%d", harmonic));
+    return h;
+}
+
+TH1D* BuildRingSidesFromSideFiles(TFile* fFT0C, TFile* fFT0A, int harmonic, const char* name, const char* title) {
+    TH1D* hFT0C = LoadSideValue(fFT0C, harmonic);
+    TH1D* hFT0A = LoadSideValue(fFT0A, harmonic);
+    if (!hFT0C || !hFT0A) return nullptr;
+
+    TH1D* h = new TH1D(name, title, 2, 0.5, 2.5);
+    h->GetXaxis()->SetBinLabel(1, "FT0C [-3.3,-2.1]");
+    h->GetXaxis()->SetBinLabel(2, "FT0A [3.5,4.9]");
+    h->SetBinContent(1, hFT0C->GetBinContent(1));
+    h->SetBinError(1, hFT0C->GetBinError(1));
+    h->SetBinContent(2, hFT0A->GetBinContent(1));
+    h->SetBinError(2, hFT0A->GetBinError(1));
     return h;
 }
 
@@ -48,10 +73,10 @@ void Style(TGraphAsymmErrors* g, int color, int marker) {
     g->SetLineWidth(2);
 }
 
-TH1D* BuildEtaScaleHistogram(const char* name, const char* title) {
+TH1D* BuildEtaScaleHistogram(const char* name, const char* title, int harmonic) {
     TH1D* h = new TH1D(name, title, 20, -5.0, 5.0);
     h->GetXaxis()->SetTitle("#eta");
-    h->GetYaxis()->SetTitle("v_{2}");
+    h->GetYaxis()->SetTitle(Form("v_{%d}", harmonic));
     h->SetStats(0);
     h->SetTitle("");
     h->GetXaxis()->SetTitleSize(0.050);
@@ -79,6 +104,40 @@ TH1D* BuildRatioHistogram(const char* name) {
     h->GetYaxis()->SetTitleOffset(0.48);
     h->GetXaxis()->SetNdivisions(510);
     h->GetYaxis()->SetNdivisions(505);
+    return h;
+}
+
+TH1D* BuildRingToFullHistogram(const char* name) {
+    TH1D* h = new TH1D(name, "", 20, -5.0, 5.0);
+    h->GetXaxis()->SetTitle("#eta");
+    h->GetYaxis()->SetTitle("ring / full FT0");
+    h->SetStats(0);
+    h->SetTitle("");
+    h->GetXaxis()->SetTitleSize(0.050);
+    h->GetXaxis()->SetLabelSize(0.042);
+    h->GetXaxis()->SetTitleOffset(1.00);
+    h->GetYaxis()->SetTitleSize(0.050);
+    h->GetYaxis()->SetLabelSize(0.042);
+    h->GetYaxis()->SetTitleOffset(1.08);
+    h->GetXaxis()->SetNdivisions(510);
+    h->GetYaxis()->SetNdivisions(508);
+    return h;
+}
+
+TH1D* BuildRingToFullDeltaPercentHistogram(const char* name) {
+    TH1D* h = new TH1D(name, "", 20, -5.0, 5.0);
+    h->GetXaxis()->SetTitle("#eta");
+    h->GetYaxis()->SetTitle("100#times(ring/full - 1) [%]");
+    h->SetStats(0);
+    h->SetTitle("");
+    h->GetXaxis()->SetTitleSize(0.050);
+    h->GetXaxis()->SetLabelSize(0.042);
+    h->GetXaxis()->SetTitleOffset(1.00);
+    h->GetYaxis()->SetTitleSize(0.050);
+    h->GetYaxis()->SetLabelSize(0.042);
+    h->GetYaxis()->SetTitleOffset(1.08);
+    h->GetXaxis()->SetNdivisions(510);
+    h->GetYaxis()->SetNdivisions(508);
     return h;
 }
 
@@ -131,10 +190,10 @@ std::vector<EtaPoint> BuildEtaPoints(TH1D* hFull, TH1D* hInnerSides, TH1D* hOute
         const double ft0cErr = hFull->GetBinError(1);
         const double ft0aY = hFull->GetBinContent(hFull->GetNbinsX());
         const double ft0aErr = hFull->GetBinError(hFull->GetNbinsX());
-        pushPoint(-2.4, ft0cY, 0.3, 0.3, ft0cErr, ft0cErr, false);
-        pushPoint(2.4, ft0cY, 0.3, 0.3, ft0cErr, ft0cErr, true);
-        pushPoint(4.55, ft0aY, 0.35, 0.35, ft0aErr, ft0aErr, false);
-        pushPoint(-4.55, ft0aY, 0.35, 0.35, ft0aErr, ft0aErr, true);
+        pushPoint(-2.7, ft0cY, 0.6, 0.6, ft0cErr, ft0cErr, false);
+        pushPoint(2.7, ft0cY, 0.6, 0.6, ft0cErr, ft0cErr, true);
+        pushPoint(4.2, ft0aY, 0.7, 0.7, ft0aErr, ft0aErr, false);
+        pushPoint(-4.2, ft0aY, 0.7, 0.7, ft0aErr, ft0aErr, true);
     }
 
     for (int itpc = 0; itpc < 16; ++itpc) {
@@ -218,6 +277,115 @@ std::vector<EtaPoint> BuildRatioPoints(const std::vector<EtaPoint>& numPoints, c
     return ratioPoints;
 }
 
+std::vector<EtaPoint> BuildRingToFullPoints(TH1D* hFull, TH1D* hInnerSides, TH1D* hOuterSides) {
+    std::vector<EtaPoint> points;
+    if (!hFull || !hInnerSides || !hOuterSides) return points;
+
+    const double fullFt0cY = hFull->GetBinContent(1);
+    const double fullFt0cErr = hFull->GetBinError(1);
+    const double fullFt0aY = hFull->GetBinContent(hFull->GetNbinsX());
+    const double fullFt0aErr = hFull->GetBinError(hFull->GetNbinsX());
+
+    auto pushRatioPoint = [&](double x,
+                              double ringY,
+                              double ringErr,
+                              double fullY,
+                              double fullErr,
+                              bool mirrored,
+                              double ex) {
+        if (!std::isfinite(ringY) || !std::isfinite(ringErr) || !std::isfinite(fullY) || !std::isfinite(fullErr)) return;
+        if (ringY <= 0.0 || fullY <= 0.0) return;
+        const double r = ringY / fullY;
+        const double relRing = ringErr / ringY;
+        const double relFull = fullErr / fullY;
+        const double errR = r * std::sqrt(relRing * relRing + relFull * relFull);
+        points.push_back({x, r, ex, ex, errR, errR, mirrored});
+    };
+
+    const double ft0cInnerY = hInnerSides->GetBinContent(1);
+    const double ft0cInnerErr = hInnerSides->GetBinError(1);
+    const double ft0cOuterY = hOuterSides->GetBinContent(1);
+    const double ft0cOuterErr = hOuterSides->GetBinError(1);
+    const double ft0aOuterY = hOuterSides->GetBinContent(2);
+    const double ft0aOuterErr = hOuterSides->GetBinError(2);
+    const double ft0aInnerY = hInnerSides->GetBinContent(2);
+    const double ft0aInnerErr = hInnerSides->GetBinError(2);
+
+    pushRatioPoint(-3.0, ft0cInnerY, ft0cInnerErr, fullFt0cY, fullFt0cErr, false, 0.3);
+    pushRatioPoint(-2.4, ft0cOuterY, ft0cOuterErr, fullFt0cY, fullFt0cErr, false, 0.3);
+    pushRatioPoint(2.4, ft0cOuterY, ft0cOuterErr, fullFt0cY, fullFt0cErr, true, 0.3);
+    pushRatioPoint(3.0, ft0cInnerY, ft0cInnerErr, fullFt0cY, fullFt0cErr, true, 0.3);
+
+    pushRatioPoint(3.85, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, false, 0.35);
+    pushRatioPoint(4.55, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, false, 0.35);
+    pushRatioPoint(-4.55, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, true, 0.35);
+    pushRatioPoint(-3.85, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, true, 0.35);
+
+    return points;
+}
+
+std::vector<EtaPoint> BuildFullOnlyPointsWithRingAverage(TH1D* hFull, TH1D* hInnerSides, TH1D* hOuterSides) {
+    // Keep TPC bins from full histogram; replace FT0 side values by (inner+outer)/2 when available.
+    if (!hFull) return {};
+    std::vector<EtaPoint> points;
+
+    auto pushPoint = [&](double xval,
+                         double yval,
+                         double xerrLow,
+                         double xerrHigh,
+                         double yerrLow,
+                         double yerrHigh,
+                         bool mirrored) {
+        points.push_back({xval, yval, xerrLow, xerrHigh, yerrLow, yerrHigh, mirrored});
+    };
+
+    double ft0cY = hFull->GetBinContent(1);
+    double ft0cErr = hFull->GetBinError(1);
+    double ft0aY = hFull->GetBinContent(hFull->GetNbinsX());
+    double ft0aErr = hFull->GetBinError(hFull->GetNbinsX());
+
+    if (hInnerSides && hOuterSides) {
+        const double innerC = hInnerSides->GetBinContent(1);
+        const double outerC = hOuterSides->GetBinContent(1);
+        const double innerCErr = hInnerSides->GetBinError(1);
+        const double outerCErr = hOuterSides->GetBinError(1);
+        const double innerA = hInnerSides->GetBinContent(2);
+        const double outerA = hOuterSides->GetBinContent(2);
+        const double innerAErr = hInnerSides->GetBinError(2);
+        const double outerAErr = hOuterSides->GetBinError(2);
+
+        const bool validC = std::isfinite(innerC) && std::isfinite(outerC) && innerC > 0.0 && outerC > 0.0;
+        const bool validA = std::isfinite(innerA) && std::isfinite(outerA) && innerA > 0.0 && outerA > 0.0;
+
+        if (validC) {
+            ft0cY = 0.5 * (innerC + outerC);
+            ft0cErr = 0.5 * std::sqrt(innerCErr * innerCErr + outerCErr * outerCErr);
+        }
+        if (validA) {
+            ft0aY = 0.5 * (innerA + outerA);
+            ft0aErr = 0.5 * std::sqrt(innerAErr * innerAErr + outerAErr * outerAErr);
+        }
+    }
+
+    pushPoint(-2.7, ft0cY, 0.6, 0.6, ft0cErr, ft0cErr, false);
+    pushPoint(2.7, ft0cY, 0.6, 0.6, ft0cErr, ft0cErr, true);
+    pushPoint(4.2, ft0aY, 0.7, 0.7, ft0aErr, ft0aErr, false);
+    pushPoint(-4.2, ft0aY, 0.7, 0.7, ft0aErr, ft0aErr, true);
+
+    for (int itpc = 0; itpc < 16; ++itpc) {
+        const int sourceBin = itpc + 2;
+        pushPoint(-0.75 + 0.1 * itpc,
+                  hFull->GetBinContent(sourceBin),
+                  0.05,
+                  0.05,
+                  hFull->GetBinError(sourceBin),
+                  hFull->GetBinError(sourceBin),
+                  false);
+    }
+
+    return points;
+}
+
 double GetGraphMax(TGraphAsymmErrors* g) {
     if (!g) return 0.0;
     double maxVal = 0.0;
@@ -248,19 +416,40 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
     gStyle->SetOptStat(0);
     gStyle->SetEndErrorSize(4);
 
-    const char* fileOOFull      = "./3times2PC/Vn_LHC25ae_pass2_645657_Cent_0_20.root";
-    const char* fileOOInner     = "./3times2PC/Vn_LHC25ae_pass2_innerRing_Cent_0_20.root";
-    const char* fileOOOuter     = "./3times2PC/Vn_LHC25ae_pass2_outerRing_Cent_0_20.root";
+    const char* fileOOFull      = "./3times2PC/Vn_LHC25ae_pass2_648798_Cent_0_20.root";
+    const char* fileOOInnerC    = "./3times2PC/Vn_LHC25ae_pass2_innerRing_FT0C_Cent_0_20.root";
+    const char* fileOOInnerA    = "./3times2PC/Vn_LHC25ae_pass2_innerRing_FT0A_Cent_0_20.root";
+    const char* fileOOOuterC    = "./3times2PC/Vn_LHC25ae_pass2_outerRing_FT0C_Cent_0_20.root";
+    const char* fileOOOuterA    = "./3times2PC/Vn_LHC25ae_pass2_outerRing_FT0A_Cent_0_20.root";
     const char* fileNeNeFull    = "./3times2PC/Vn_LHC25af_pass2_645746_Cent_0_20.root";
-    const char* fileNeNeInner   = "./3times2PC/Vn_LHC25af_pass2_innerRing_Cent_0_20.root";
-    const char* fileNeNeOuter   = "./3times2PC/Vn_LHC25af_pass2_outerRing_Cent_0_20.root";
+    const char* fileNeNeInnerC  = "./3times2PC/Vn_LHC25af_pass2_innerRing_FT0C_Cent_0_20.root";
+    const char* fileNeNeInnerA  = "./3times2PC/Vn_LHC25af_pass2_innerRing_FT0A_Cent_0_20.root";
+    const char* fileNeNeOuterC  = "./3times2PC/Vn_LHC25af_pass2_outerRing_FT0C_Cent_0_20.root";
+    const char* fileNeNeOuterA  = "./3times2PC/Vn_LHC25af_pass2_outerRing_FT0A_Cent_0_20.root";
 
     TFile* fOOFull    = TFile::Open(fileOOFull, "READ");
-    TFile* fOOInner   = TFile::Open(fileOOInner, "READ");
-    TFile* fOOOuter   = TFile::Open(fileOOOuter, "READ");
+    TFile* fOOInnerC  = TFile::Open(fileOOInnerC, "READ");
+    TFile* fOOInnerA  = TFile::Open(fileOOInnerA, "READ");
+    TFile* fOOOuterC  = TFile::Open(fileOOOuterC, "READ");
+    TFile* fOOOuterA  = TFile::Open(fileOOOuterA, "READ");
     TFile* fNeNeFull  = TFile::Open(fileNeNeFull, "READ");
-    TFile* fNeNeInner = TFile::Open(fileNeNeInner, "READ");
-    TFile* fNeNeOuter = TFile::Open(fileNeNeOuter, "READ");
+    TFile* fNeNeInnerC = TFile::Open(fileNeNeInnerC, "READ");
+    TFile* fNeNeInnerA = TFile::Open(fileNeNeInnerA, "READ");
+    TFile* fNeNeOuterC = TFile::Open(fileNeNeOuterC, "READ");
+    TFile* fNeNeOuterA = TFile::Open(fileNeNeOuterA, "READ");
+
+    std::cout << "[Compare rings] O-O inputs: full, inner FT0C, inner FT0A, outer FT0C, outer FT0A" << std::endl;
+    std::cout << "[Compare rings]   full  : " << fileOOFull << std::endl;
+    std::cout << "[Compare rings]   innerC: " << fileOOInnerC << std::endl;
+    std::cout << "[Compare rings]   innerA: " << fileOOInnerA << std::endl;
+    std::cout << "[Compare rings]   outerC: " << fileOOOuterC << std::endl;
+    std::cout << "[Compare rings]   outerA: " << fileOOOuterA << std::endl;
+    std::cout << "[Compare rings] Ne-Ne inputs: full, inner FT0C, inner FT0A, outer FT0C, outer FT0A" << std::endl;
+    std::cout << "[Compare rings]   full  : " << fileNeNeFull << std::endl;
+    std::cout << "[Compare rings]   innerC: " << fileNeNeInnerC << std::endl;
+    std::cout << "[Compare rings]   innerA: " << fileNeNeInnerA << std::endl;
+    std::cout << "[Compare rings]   outerC: " << fileNeNeOuterC << std::endl;
+    std::cout << "[Compare rings]   outerA: " << fileNeNeOuterA << std::endl;
 
     if (!fOOFull || !fOOFull->IsOpen()) {
         std::cerr << "Cannot open O-O full-range file: " << fileOOFull << std::endl;
@@ -272,163 +461,40 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
         delete fOOFull;
         return;
     }
-    if (!fOOInner || !fOOInner->IsOpen()) {
-        std::cerr << "Warning: Cannot open O-O inner-ring file: " << fileOOInner << std::endl;
+    if (!fOOInnerC || !fOOInnerC->IsOpen()) {
+        std::cerr << "Warning: Cannot open O-O inner-ring FT0C file: " << fileOOInnerC << std::endl;
     }
-    if (!fOOOuter || !fOOOuter->IsOpen()) {
-        std::cerr << "Warning: Cannot open O-O outer-ring file: " << fileOOOuter << std::endl;
+    if (!fOOInnerA || !fOOInnerA->IsOpen()) {
+        std::cerr << "Warning: Cannot open O-O inner-ring FT0A file: " << fileOOInnerA << std::endl;
     }
-    if (!fNeNeInner || !fNeNeInner->IsOpen()) {
-        std::cerr << "Warning: Cannot open Ne-Ne inner-ring file: " << fileNeNeInner << std::endl;
+    if (!fOOOuterC || !fOOOuterC->IsOpen()) {
+        std::cerr << "Warning: Cannot open O-O outer-ring FT0C file: " << fileOOOuterC << std::endl;
     }
-    if (!fNeNeOuter || !fNeNeOuter->IsOpen()) {
-        std::cerr << "Warning: Cannot open Ne-Ne outer-ring file: " << fileNeNeOuter << std::endl;
+    if (!fOOOuterA || !fOOOuterA->IsOpen()) {
+        std::cerr << "Warning: Cannot open O-O outer-ring FT0A file: " << fileOOOuterA << std::endl;
     }
-
-    TH1D* hOOFull    = LoadFullV2(fOOFull);
-    TH1D* hOOInner   = LoadRingV2(fOOInner);
-    TH1D* hOOOuter   = LoadRingV2(fOOOuter);
-    TH1D* hNeNeFull  = LoadFullV2(fNeNeFull);
-    TH1D* hNeNeInner = LoadRingV2(fNeNeInner);
-    TH1D* hNeNeOuter = LoadRingV2(fNeNeOuter);
-
-    if (!hOOFull || !hNeNeFull) {
-        std::cerr << "Missing hV2_Combined/hV2 in O-O or Ne-Ne full-range file." << std::endl;
-        fOOFull->Close();
-        fNeNeFull->Close();
-        if (fOOInner) fOOInner->Close();
-        if (fOOOuter) fOOOuter->Close();
-        if (fNeNeInner) fNeNeInner->Close();
-        if (fNeNeOuter) fNeNeOuter->Close();
-        delete fOOFull;
-        delete fNeNeFull;
-        if (fOOInner) delete fOOInner;
-        if (fOOOuter) delete fOOOuter;
-        if (fNeNeInner) delete fNeNeInner;
-        if (fNeNeOuter) delete fNeNeOuter;
-        return;
+    if (!fNeNeInnerC || !fNeNeInnerC->IsOpen()) {
+        std::cerr << "Warning: Cannot open Ne-Ne inner-ring FT0C file: " << fileNeNeInnerC << std::endl;
+    }
+    if (!fNeNeInnerA || !fNeNeInnerA->IsOpen()) {
+        std::cerr << "Warning: Cannot open Ne-Ne inner-ring FT0A file: " << fileNeNeInnerA << std::endl;
+    }
+    if (!fNeNeOuterC || !fNeNeOuterC->IsOpen()) {
+        std::cerr << "Warning: Cannot open Ne-Ne outer-ring FT0C file: " << fileNeNeOuterC << std::endl;
+    }
+    if (!fNeNeOuterA || !fNeNeOuterA->IsOpen()) {
+        std::cerr << "Warning: Cannot open Ne-Ne outer-ring FT0A file: " << fileNeNeOuterA << std::endl;
     }
 
-    const bool ooHasRings = (hOOInner && hOOOuter);
-    std::vector<EtaPoint> ooPoints = BuildEtaPoints(hOOFull, hOOInner, hOOOuter, ooHasRings);
-    std::vector<EtaPoint> nePoints = BuildEtaPoints(hNeNeFull, hNeNeInner, hNeNeOuter, true);
-    std::vector<EtaPoint> ratioPoints = BuildRatioPoints(nePoints, ooPoints);
-
-    TH1D* hFrame = BuildEtaScaleHistogram("hFrame", "");
-    TH1D* hRatioFrame = BuildRatioHistogram("hRatioFrame");
-
-    TGraphAsymmErrors* gOOFilled = BuildGraphFromPoints("gOOFilled", ooPoints, false, false);
-    TGraphAsymmErrors* gOOMirror = BuildGraphFromPoints("gOOMirror", ooPoints, true, true);
-    TGraphAsymmErrors* gNeNeFilled = BuildGraphFromPoints("gNeNeFilled", nePoints, false, false);
-    TGraphAsymmErrors* gNeNeMirror = BuildGraphFromPoints("gNeNeMirror", nePoints, true, true);
-    TGraphAsymmErrors* gRatioFilled = BuildGraphFromPoints("gRatioFilled", ratioPoints, false, false);
-    TGraphAsymmErrors* gRatioMirror = BuildGraphFromPoints("gRatioMirror", ratioPoints, true, true);
-
-    if (!hFrame || !hRatioFrame || !gOOFilled || !gNeNeFilled || !gRatioFilled) {
-        std::cerr << "Failed to build eta-scale frame/graphs or ratio graph." << std::endl;
-        fOOFull->Close();
-        fNeNeFull->Close();
-        if (fOOInner) fOOInner->Close();
-        if (fOOOuter) fOOOuter->Close();
-        if (fNeNeInner) fNeNeInner->Close();
-        if (fNeNeOuter) fNeNeOuter->Close();
-        delete fOOFull;
-        delete fNeNeFull;
-        if (fOOInner) delete fOOInner;
-        if (fOOOuter) delete fOOOuter;
-        if (fNeNeInner) delete fNeNeInner;
-        if (fNeNeOuter) delete fNeNeOuter;
-        return;
-    }
-
-    Style(gOOFilled,    kRed + 1, 21);
-    Style(gOOMirror,    kRed + 1, 25);
-    Style(gNeNeFilled,  kGreen + 2, 20);
-    Style(gNeNeMirror,  kGreen + 2, 24);
-    Style(gRatioFilled, kBlack, 20);
-    Style(gRatioMirror, kBlack, 24);
-
-    double maxVal = 0.0;
-    maxVal = std::max(maxVal, GetGraphMax(gOOFilled));
-    maxVal = std::max(maxVal, GetGraphMax(gOOMirror));
-    maxVal = std::max(maxVal, GetGraphMax(gNeNeFilled));
-    maxVal = std::max(maxVal, GetGraphMax(gNeNeMirror));
-    if (maxVal <= 0.0) maxVal = 0.1;
-
-    TCanvas* c = new TCanvas("cEtaDiff2SysRings", "3x2PC with explicit FT0 eta scale and ratio", 1150, 850);
-
-    TPad* padTop = new TPad("padTop", "padTop", 0.0, 0.30, 1.0, 1.0);
-    padTop->SetLeftMargin(0.11);
-    padTop->SetRightMargin(0.03);
-    padTop->SetTopMargin(0.07);
-    padTop->SetBottomMargin(0.02);
-    padTop->SetTicks(1, 1);
-    padTop->Draw();
-
-    TPad* padBottom = new TPad("padBottom", "padBottom", 0.0, 0.00, 1.0, 0.30);
-    padBottom->SetLeftMargin(0.11);
-    padBottom->SetRightMargin(0.03);
-    padBottom->SetTopMargin(0.02);
-    padBottom->SetBottomMargin(0.34);
-    padBottom->SetTicks(1, 1);
-    padBottom->Draw();
-
-    padTop->cd();
-    hFrame->GetXaxis()->SetLabelSize(0.0);
-    hFrame->GetYaxis()->SetRangeUser(0.0, maxVal * 1.25);
-    hFrame->Draw("AXIS");
-    gNeNeFilled->Draw("PZ same");
-    if (gNeNeMirror) gNeNeMirror->Draw("PZ same");
-    gOOFilled->Draw("PZ same");
-    if (gOOMirror) gOOMirror->Draw("PZ same");
-
-    TLegend* leg = new TLegend(0.74, 0.78, 0.91, 0.90);
-    leg->SetBorderSize(0);
-    leg->SetFillStyle(0);
-    leg->SetTextFont(42);
-    leg->SetTextSize(0.030);
-    leg->AddEntry(gOOFilled,    ooHasRings ? "O-O" : "O-O (full FT0 baseline)", "lep");
-    leg->AddEntry(gNeNeFilled,  "Ne-Ne", "lep");
-    if (gOOMirror) leg->AddEntry(gOOMirror, "Mirrored points", "p");
-    leg->Draw();
-
-    TLatex latex;
-    latex.SetNDC();
-    latex.SetTextFont(42);
-    latex.SetTextColor(kBlack);
-    latex.SetTextSize(0.042);
-    latex.DrawLatex(0.13, 0.91, "ALICE Preliminary");
-    latex.SetTextSize(0.036);
-    latex.DrawLatex(0.13, 0.855, "3x2PC, 0-20%");
-    latex.DrawLatex(0.13, 0.805, "FT0 rings + TPC acceptance (+ ratio)");
-
-    padBottom->cd();
-    double ratioMin = std::min(GetGraphMin(gRatioFilled), GetGraphMin(gRatioMirror));
-    double ratioMax = std::max(GetGraphMax(gRatioFilled), GetGraphMax(gRatioMirror));
-    if (!std::isfinite(ratioMin) || !std::isfinite(ratioMax) || ratioMax <= ratioMin) {
-        ratioMin = 0.6;
-        ratioMax = 1.4;
-    }
-    const double pad = 0.15 * (ratioMax - ratioMin);
-    hRatioFrame->GetYaxis()->SetRangeUser(std::max(0.0, ratioMin - pad), ratioMax + pad);
-    hRatioFrame->Draw("AXIS");
-    TLine* unity = new TLine(-5.0, 1.0, 5.0, 1.0);
-    unity->SetLineStyle(2);
-    unity->SetLineColor(kGray + 2);
-    unity->Draw("same");
-    gRatioFilled->Draw("PZ same");
-    if (gRatioMirror) gRatioMirror->Draw("PZ same");
-
-    c->SaveAs("./3times2PC/Compare_v2_FT0Side_OO_vs_NeNe_inner_outer_full.root");
-    c->SaveAs("./3times2PC/Compare_v2_FT0Side_OO_vs_NeNe_inner_outer_full.png");
-
-    auto DrawSingleSystem = [&](const char* canvasName,
+    auto DrawSingleSystem = [&](int harmonic,
+                                const char* canvasName,
                                 const char* canvasTitle,
                                 const char* outStem,
                                 TGraphAsymmErrors* graphFilled,
                                 TGraphAsymmErrors* graphMirror,
                                 const char* legendLabel,
-                                const char* systemLabel) {
+                                const char* systemLabel,
+                                double yMax) {
         TCanvas* cSingle = new TCanvas(canvasName, canvasTitle, 1150, 700);
         cSingle->SetLeftMargin(0.11);
         cSingle->SetRightMargin(0.03);
@@ -436,8 +502,8 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
         cSingle->SetBottomMargin(0.12);
         cSingle->SetTicks(1, 1);
 
-        TH1D* hFrameSingle = BuildEtaScaleHistogram(Form("hFrame_%s", canvasName), "");
-        hFrameSingle->GetYaxis()->SetRangeUser(0.0, maxVal * 1.25);
+        TH1D* hFrameSingle = BuildEtaScaleHistogram(Form("hFrame_%s", canvasName), "", harmonic);
+        hFrameSingle->GetYaxis()->SetRangeUser(0.0, yMax * 1.25);
         hFrameSingle->Draw("AXIS");
         graphFilled->Draw("PZ same");
         if (graphMirror) graphMirror->Draw("PZ same");
@@ -456,48 +522,478 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
         latexSingle.SetTextFont(42);
         latexSingle.SetTextColor(kBlack);
         latexSingle.SetTextSize(0.042);
-        latexSingle.DrawLatex(0.13, 0.91, "ALICE Preliminary");
+        latexSingle.DrawLatex(0.13, 0.88, "ALICE Preliminary");
         latexSingle.SetTextSize(0.036);
-        latexSingle.DrawLatex(0.13, 0.855, "3x2PC, 0-20%");
-        latexSingle.DrawLatex(0.13, 0.805, systemLabel);
+        latexSingle.DrawLatex(0.13, 0.825, "3x2PC, 0-20%");
+        latexSingle.DrawLatex(0.13, 0.775, systemLabel);
 
         cSingle->SaveAs(Form("./3times2PC/%s.root", outStem));
         cSingle->SaveAs(Form("./3times2PC/%s.png", outStem));
     };
 
-    DrawSingleSystem("cEtaDiff_OOOnly",
-                     "3x2PC O-O only",
-                     "Compare_v2_FT0Side_OO_only_inner_outer_full",
-                     gOOFilled,
-                     gOOMirror,
-                     ooHasRings ? "O-O" : "O-O (full FT0 baseline)",
-                     "O-O, FT0 rings + TPC acceptance");
+    auto DrawRingToFullSystem = [&](int harmonic,
+                                    const char* canvasName,
+                                    const char* canvasTitle,
+                                    const char* outStem,
+                                    const char* systemLabel,
+                                    int color,
+                                    TH1D* hFull,
+                                    TH1D* hInner,
+                                    TH1D* hOuter) {
+        if (!hFull || !hInner || !hOuter) {
+            std::cout << "[Compare rings] Skip ring/full for " << systemLabel
+                      << " v" << harmonic << ": missing full or ring histogram." << std::endl;
+            return;
+        }
 
-    DrawSingleSystem("cEtaDiff_NeNeOnly",
-                     "3x2PC Ne-Ne only",
-                     "Compare_v2_FT0Side_NeNe_only_inner_outer_full",
-                     gNeNeFilled,
-                     gNeNeMirror,
-                     "Ne-Ne",
-                     "Ne-Ne, FT0 rings + TPC acceptance");
+        std::vector<EtaPoint> ringToFullPoints = BuildRingToFullPoints(hFull, hInner, hOuter);
+        if (ringToFullPoints.empty()) {
+            std::cout << "[Compare rings] Skip ring/full for " << systemLabel
+                      << " v" << harmonic << ": no valid ratio points." << std::endl;
+            return;
+        }
 
-    if (!ooHasRings) {
-        std::cout << "Saved comparison plot. Note: O-O ring files missing, so O-O uses full-range FT0 points." << std::endl;
-    } else {
-        std::cout << "Saved comparison plot with FT0 ring points for both O-O and Ne-Ne." << std::endl;
+        std::cout << "[Compare rings] " << systemLabel << " v" << harmonic << " ring/full values:" << std::endl;
+        for (const auto& p : ringToFullPoints) {
+            std::cout << "  eta=" << p.x << " ratio=" << p.y << " +/- " << p.eyHigh
+                      << (p.mirrored ? " (mirror)" : "") << std::endl;
+        }
+
+        TGraphAsymmErrors* gFilled = BuildGraphFromPoints(Form("gRingToFullFilled_%s_v%d", systemLabel, harmonic),
+                                                           ringToFullPoints,
+                                                           false,
+                                                           false);
+        TGraphAsymmErrors* gMirror = BuildGraphFromPoints(Form("gRingToFullMirror_%s_v%d", systemLabel, harmonic),
+                                                           ringToFullPoints,
+                                                           true,
+                                                           true);
+        if (!gFilled) {
+            std::cout << "[Compare rings] Skip ring/full for " << systemLabel
+                      << " v" << harmonic << ": graph build failed." << std::endl;
+            return;
+        }
+
+        std::vector<EtaPoint> ringToFullDeltaPercent;
+        ringToFullDeltaPercent.reserve(ringToFullPoints.size());
+        for (const auto& p : ringToFullPoints) {
+            ringToFullDeltaPercent.push_back({p.x,
+                                              100.0 * (p.y - 1.0),
+                                              p.exLow,
+                                              p.exHigh,
+                                              100.0 * p.eyLow,
+                                              100.0 * p.eyHigh,
+                                              p.mirrored});
+        }
+
+        TGraphAsymmErrors* gDeltaFilled = BuildGraphFromPoints(Form("gRingToFullDeltaFilled_%s_v%d", systemLabel, harmonic),
+                                                                ringToFullDeltaPercent,
+                                                                false,
+                                                                false);
+        TGraphAsymmErrors* gDeltaMirror = BuildGraphFromPoints(Form("gRingToFullDeltaMirror_%s_v%d", systemLabel, harmonic),
+                                                                ringToFullDeltaPercent,
+                                                                true,
+                                                                true);
+
+        Style(gFilled, color, 20);
+        Style(gMirror, color, 24);
+        Style(gDeltaFilled, color, 20);
+        Style(gDeltaMirror, color, 24);
+
+        TH1D* hFrameRing = BuildRingToFullHistogram(Form("hFrameRingToFull_%s_v%d", systemLabel, harmonic));
+        if (!hFrameRing) return;
+
+        const double yMinRaw = std::min(GetGraphMin(gFilled), GetGraphMin(gMirror));
+        const double yMaxRaw = std::max(GetGraphMax(gFilled), GetGraphMax(gMirror));
+        double yMin = yMinRaw;
+        double yMax = yMaxRaw;
+        if (!std::isfinite(yMin) || !std::isfinite(yMax) || yMax <= yMin) {
+            yMin = 0.7;
+            yMax = 1.3;
+        }
+        const double pad = 0.20 * (yMax - yMin);
+        hFrameRing->GetYaxis()->SetRangeUser(std::max(0.0, yMin - pad), yMax + pad);
+
+        TCanvas* cRing = new TCanvas(canvasName, canvasTitle, 1100, 700);
+        cRing->SetLeftMargin(0.11);
+        cRing->SetRightMargin(0.03);
+        cRing->SetTopMargin(0.06);
+        cRing->SetBottomMargin(0.12);
+        cRing->SetTicks(1, 1);
+
+        hFrameRing->Draw("AXIS");
+        TLine* unity = new TLine(-5.0, 1.0, 5.0, 1.0);
+        unity->SetLineStyle(2);
+        unity->SetLineColor(kGray + 2);
+        unity->Draw("same");
+        gFilled->Draw("PZ same");
+        if (gMirror) gMirror->Draw("PZ same");
+
+        TLegend* leg = new TLegend(0.67, 0.76, 0.91, 0.90);
+        leg->SetBorderSize(0);
+        leg->SetFillStyle(0);
+        leg->SetTextFont(42);
+        leg->SetTextSize(0.030);
+        leg->AddEntry(gFilled, Form("%s rings / %s full", systemLabel, systemLabel), "lep");
+        if (gMirror) leg->AddEntry(gMirror, "Mirrored points", "p");
+        leg->Draw();
+
+        TLatex latex;
+        latex.SetNDC();
+        latex.SetTextFont(42);
+        latex.SetTextColor(kBlack);
+        latex.SetTextSize(0.042);
+        latex.DrawLatex(0.13, 0.88, "ALICE Preliminary");
+        latex.SetTextSize(0.036);
+        latex.DrawLatex(0.13, 0.825, "3x2PC, 0-20%");
+        latex.DrawLatex(0.13, 0.775, Form("%s: v_{%d} ring/full FT0 check", systemLabel, harmonic));
+
+        cRing->SaveAs(Form("./3times2PC/%s.root", outStem));
+        cRing->SaveAs(Form("./3times2PC/%s.png", outStem));
+
+        if (gDeltaFilled) {
+            TH1D* hFrameDelta = BuildRingToFullDeltaPercentHistogram(Form("hFrameRingToFullDelta_%s_v%d", systemLabel, harmonic));
+            if (hFrameDelta) {
+                const double dMinRaw = std::min(GetGraphMin(gDeltaFilled), GetGraphMin(gDeltaMirror));
+                const double dMaxRaw = std::max(GetGraphMax(gDeltaFilled), GetGraphMax(gDeltaMirror));
+                double dMin = dMinRaw;
+                double dMax = dMaxRaw;
+                if (!std::isfinite(dMin) || !std::isfinite(dMax) || dMax <= dMin) {
+                    dMin = -10.0;
+                    dMax = 10.0;
+                }
+                const double dPad = 0.20 * (dMax - dMin);
+                hFrameDelta->GetYaxis()->SetRangeUser(dMin - dPad, dMax + dPad);
+
+                TCanvas* cDelta = new TCanvas(Form("%s_delta", canvasName),
+                                              Form("%s delta", canvasTitle),
+                                              1100,
+                                              700);
+                cDelta->SetLeftMargin(0.11);
+                cDelta->SetRightMargin(0.03);
+                cDelta->SetTopMargin(0.06);
+                cDelta->SetBottomMargin(0.12);
+                cDelta->SetTicks(1, 1);
+
+                hFrameDelta->Draw("AXIS");
+                TLine* zero = new TLine(-5.0, 0.0, 5.0, 0.0);
+                zero->SetLineStyle(2);
+                zero->SetLineColor(kGray + 2);
+                zero->Draw("same");
+                gDeltaFilled->Draw("PZ same");
+                if (gDeltaMirror) gDeltaMirror->Draw("PZ same");
+
+                TLatex latexDelta;
+                latexDelta.SetNDC();
+                latexDelta.SetTextFont(42);
+                latexDelta.SetTextColor(kBlack);
+                latexDelta.SetTextSize(0.042);
+                latexDelta.DrawLatex(0.13, 0.88, "ALICE Preliminary");
+                latexDelta.SetTextSize(0.036);
+                latexDelta.DrawLatex(0.13, 0.825, "3x2PC, 0-20%");
+                latexDelta.DrawLatex(0.13, 0.775, Form("%s: v_{%d} ring/full deviation", systemLabel, harmonic));
+
+                cDelta->SaveAs(Form("./3times2PC/%s_DeltaPercent.root", outStem));
+                cDelta->SaveAs(Form("./3times2PC/%s_DeltaPercent.png", outStem));
+            }
+        }
+    };
+
+    const int harmonics[] = {2, 3, 4};
+    bool anySaved = false;
+    for (const int harmonic : harmonics) {
+        TH1D* hOOFull    = LoadFullVn(fOOFull, harmonic);
+        TH1D* hOOInner   = BuildRingSidesFromSideFiles(fOOInnerC, fOOInnerA, harmonic, Form("hOOInnerSides_v%d", harmonic), Form("O-O inner sides;side;v_{%d}", harmonic));
+        TH1D* hOOOuter   = BuildRingSidesFromSideFiles(fOOOuterC, fOOOuterA, harmonic, Form("hOOOuterSides_v%d", harmonic), Form("O-O outer sides;side;v_{%d}", harmonic));
+        TH1D* hNeNeFull  = LoadFullVn(fNeNeFull, harmonic);
+        TH1D* hNeNeInner = BuildRingSidesFromSideFiles(fNeNeInnerC, fNeNeInnerA, harmonic, Form("hNeNeInnerSides_v%d", harmonic), Form("Ne-Ne inner sides;side;v_{%d}", harmonic));
+        TH1D* hNeNeOuter = BuildRingSidesFromSideFiles(fNeNeOuterC, fNeNeOuterA, harmonic, Form("hNeNeOuterSides_v%d", harmonic), Form("Ne-Ne outer sides;side;v_{%d}", harmonic));
+
+        if (!hOOInner || !hOOOuter || !hNeNeInner || !hNeNeOuter) {
+            std::cout << "[Compare rings] Falling back to legacy combined ring files for v" << harmonic << std::endl;
+            delete hOOInner;
+            delete hOOOuter;
+            delete hNeNeInner;
+            delete hNeNeOuter;
+            hOOInner = LoadRingVn(fOOInnerC, harmonic);
+            hOOOuter = LoadRingVn(fOOOuterC, harmonic);
+            hNeNeInner = LoadRingVn(fNeNeInnerC, harmonic);
+            hNeNeOuter = LoadRingVn(fNeNeOuterC, harmonic);
+        }
+
+        if (!hOOFull || !hNeNeFull) {
+            std::cout << "[Compare rings] Skip v" << harmonic
+                      << ": missing full-range histogram in O-O or Ne-Ne file." << std::endl;
+            continue;
+        }
+
+        const bool ooHasRings = (hOOInner && hOOOuter);
+        std::vector<EtaPoint> ooPoints = BuildEtaPoints(hOOFull, hOOInner, hOOOuter, ooHasRings);
+        std::vector<EtaPoint> nePoints = BuildEtaPoints(hNeNeFull, hNeNeInner, hNeNeOuter, true);
+        std::vector<EtaPoint> ratioPoints = BuildRatioPoints(nePoints, ooPoints);
+
+        TH1D* hFrame = BuildEtaScaleHistogram(Form("hFrame_v%d", harmonic), "", harmonic);
+        TH1D* hRatioFrame = BuildRatioHistogram(Form("hRatioFrame_v%d", harmonic));
+
+        TGraphAsymmErrors* gOOFilled = BuildGraphFromPoints(Form("gOOFilled_v%d", harmonic), ooPoints, false, false);
+        TGraphAsymmErrors* gOOMirror = BuildGraphFromPoints(Form("gOOMirror_v%d", harmonic), ooPoints, true, true);
+        TGraphAsymmErrors* gNeNeFilled = BuildGraphFromPoints(Form("gNeNeFilled_v%d", harmonic), nePoints, false, false);
+        TGraphAsymmErrors* gNeNeMirror = BuildGraphFromPoints(Form("gNeNeMirror_v%d", harmonic), nePoints, true, true);
+        TGraphAsymmErrors* gRatioFilled = BuildGraphFromPoints(Form("gRatioFilled_v%d", harmonic), ratioPoints, false, false);
+        TGraphAsymmErrors* gRatioMirror = BuildGraphFromPoints(Form("gRatioMirror_v%d", harmonic), ratioPoints, true, true);
+
+        if (!hFrame || !hRatioFrame || !gOOFilled || !gNeNeFilled || !gRatioFilled) {
+            std::cout << "[Compare rings] Skip v" << harmonic
+                      << ": failed to build frame/graphs for this harmonic." << std::endl;
+            continue;
+        }
+
+        Style(gOOFilled,    kRed + 1, 21);
+        Style(gOOMirror,    kRed + 1, 25);
+        Style(gNeNeFilled,  kGreen + 2, 20);
+        Style(gNeNeMirror,  kGreen + 2, 24);
+        Style(gRatioFilled, kBlack, 20);
+        Style(gRatioMirror, kBlack, 24);
+
+        double maxVal = 0.0;
+        maxVal = std::max(maxVal, GetGraphMax(gOOFilled));
+        maxVal = std::max(maxVal, GetGraphMax(gOOMirror));
+        maxVal = std::max(maxVal, GetGraphMax(gNeNeFilled));
+        maxVal = std::max(maxVal, GetGraphMax(gNeNeMirror));
+        if (maxVal <= 0.0) maxVal = 0.1;
+
+        TCanvas* c = new TCanvas(Form("cEtaDiff2SysRings_v%d", harmonic),
+                                 Form("3x2PC v%d with explicit FT0 eta scale and ratio", harmonic),
+                                 1150,
+                                 850);
+
+        TPad* padTop = new TPad(Form("padTop_v%d", harmonic), "padTop", 0.0, 0.30, 1.0, 1.0);
+        padTop->SetLeftMargin(0.11);
+        padTop->SetRightMargin(0.03);
+        padTop->SetTopMargin(0.07);
+        padTop->SetBottomMargin(0.02);
+        padTop->SetTicks(1, 1);
+        padTop->Draw();
+
+        TPad* padBottom = new TPad(Form("padBottom_v%d", harmonic), "padBottom", 0.0, 0.00, 1.0, 0.30);
+        padBottom->SetLeftMargin(0.11);
+        padBottom->SetRightMargin(0.03);
+        padBottom->SetTopMargin(0.02);
+        padBottom->SetBottomMargin(0.34);
+        padBottom->SetTicks(1, 1);
+        padBottom->Draw();
+
+        padTop->cd();
+        hFrame->GetXaxis()->SetLabelSize(0.0);
+        hFrame->GetYaxis()->SetRangeUser(0.0, maxVal * 1.25);
+        hFrame->Draw("AXIS");
+        gNeNeFilled->Draw("PZ same");
+        if (gNeNeMirror) gNeNeMirror->Draw("PZ same");
+        gOOFilled->Draw("PZ same");
+        if (gOOMirror) gOOMirror->Draw("PZ same");
+
+        TLegend* leg = new TLegend(0.74, 0.78, 0.91, 0.90);
+        leg->SetBorderSize(0);
+        leg->SetFillStyle(0);
+        leg->SetTextFont(42);
+        leg->SetTextSize(0.030);
+        leg->AddEntry(gOOFilled,    ooHasRings ? "O-O" : "O-O (full FT0 baseline)", "lep");
+        leg->AddEntry(gNeNeFilled,  "Ne-Ne", "lep");
+        if (gOOMirror) leg->AddEntry(gOOMirror, "Mirrored points", "p");
+        leg->Draw();
+
+        TLatex latex;
+        latex.SetNDC();
+        latex.SetTextFont(42);
+        latex.SetTextColor(kBlack);
+        latex.SetTextSize(0.042);
+        latex.DrawLatex(0.13, 0.88, "ALICE Preliminary");
+        latex.SetTextSize(0.036);
+        latex.DrawLatex(0.13, 0.825, "3x2PC, 0-20%");
+        latex.DrawLatex(0.13, 0.775, "FT0 rings + TPC acceptance (+ ratio)");
+
+        padBottom->cd();
+        hRatioFrame->GetYaxis()->SetRangeUser(1.0, 1.1);
+        hRatioFrame->Draw("AXIS");
+        TLine* unity = new TLine(-5.0, 1.0, 5.0, 1.0);
+        unity->SetLineStyle(2);
+        unity->SetLineColor(kGray + 2);
+        unity->Draw("same");
+        gRatioFilled->Draw("PZ same");
+        if (gRatioMirror) gRatioMirror->Draw("PZ same");
+
+        c->SaveAs(Form("./3times2PC/Compare_v%d_FT0Side_OO_vs_NeNe_inner_outer_full.root", harmonic));
+        c->SaveAs(Form("./3times2PC/Compare_v%d_FT0Side_OO_vs_NeNe_inner_outer_full.png", harmonic));
+
+        std::vector<EtaPoint> ooFullOnlyPoints = BuildFullOnlyPointsWithRingAverage(hOOFull, hOOInner, hOOOuter);
+        std::vector<EtaPoint> neFullOnlyPoints = BuildFullOnlyPointsWithRingAverage(hNeNeFull, hNeNeInner, hNeNeOuter);
+        std::vector<EtaPoint> fullOnlyRatioPoints = BuildRatioPoints(neFullOnlyPoints, ooFullOnlyPoints);
+
+        TGraphAsymmErrors* gOOFullOnlyFilled = BuildGraphFromPoints(Form("gOOFullOnlyFilled_v%d", harmonic), ooFullOnlyPoints, false, false);
+        TGraphAsymmErrors* gOOFullOnlyMirror = BuildGraphFromPoints(Form("gOOFullOnlyMirror_v%d", harmonic), ooFullOnlyPoints, true, true);
+        TGraphAsymmErrors* gNeNeFullOnlyFilled = BuildGraphFromPoints(Form("gNeNeFullOnlyFilled_v%d", harmonic), neFullOnlyPoints, false, false);
+        TGraphAsymmErrors* gNeNeFullOnlyMirror = BuildGraphFromPoints(Form("gNeNeFullOnlyMirror_v%d", harmonic), neFullOnlyPoints, true, true);
+        TGraphAsymmErrors* gFullOnlyRatioFilled = BuildGraphFromPoints(Form("gFullOnlyRatioFilled_v%d", harmonic), fullOnlyRatioPoints, false, false);
+        TGraphAsymmErrors* gFullOnlyRatioMirror = BuildGraphFromPoints(Form("gFullOnlyRatioMirror_v%d", harmonic), fullOnlyRatioPoints, true, true);
+
+        if (gOOFullOnlyFilled && gNeNeFullOnlyFilled && gFullOnlyRatioFilled) {
+            Style(gOOFullOnlyFilled, kRed + 1, 21);
+            Style(gOOFullOnlyMirror, kRed + 1, 25);
+            Style(gNeNeFullOnlyFilled, kGreen + 2, 20);
+            Style(gNeNeFullOnlyMirror, kGreen + 2, 24);
+            Style(gFullOnlyRatioFilled, kBlack, 20);
+            Style(gFullOnlyRatioMirror, kBlack, 24);
+
+            TH1D* hFullOnlyFrame = BuildEtaScaleHistogram(Form("hFullOnlyFrame_v%d", harmonic), "", harmonic);
+            TH1D* hFullOnlyRatioFrame = BuildRatioHistogram(Form("hFullOnlyRatioFrame_v%d", harmonic));
+            if (hFullOnlyFrame && hFullOnlyRatioFrame) {
+                double fullOnlyMax = 0.0;
+                fullOnlyMax = std::max(fullOnlyMax, GetGraphMax(gOOFullOnlyFilled));
+                fullOnlyMax = std::max(fullOnlyMax, GetGraphMax(gOOFullOnlyMirror));
+                fullOnlyMax = std::max(fullOnlyMax, GetGraphMax(gNeNeFullOnlyFilled));
+                fullOnlyMax = std::max(fullOnlyMax, GetGraphMax(gNeNeFullOnlyMirror));
+                if (fullOnlyMax <= 0.0) fullOnlyMax = 0.1;
+
+                TCanvas* cFullOnly = new TCanvas(Form("cEtaDiff2SysFullOnly_v%d", harmonic),
+                                                 Form("3x2PC v%d full FT0 comparison without rings", harmonic),
+                                                 1150,
+                                                 850);
+
+                TPad* padTopFullOnly = new TPad(Form("padTopFullOnly_v%d", harmonic), "padTopFullOnly", 0.0, 0.30, 1.0, 1.0);
+                padTopFullOnly->SetLeftMargin(0.11);
+                padTopFullOnly->SetRightMargin(0.03);
+                padTopFullOnly->SetTopMargin(0.07);
+                padTopFullOnly->SetBottomMargin(0.02);
+                padTopFullOnly->SetTicks(1, 1);
+                padTopFullOnly->Draw();
+
+                TPad* padBottomFullOnly = new TPad(Form("padBottomFullOnly_v%d", harmonic), "padBottomFullOnly", 0.0, 0.00, 1.0, 0.30);
+                padBottomFullOnly->SetLeftMargin(0.11);
+                padBottomFullOnly->SetRightMargin(0.03);
+                padBottomFullOnly->SetTopMargin(0.02);
+                padBottomFullOnly->SetBottomMargin(0.34);
+                padBottomFullOnly->SetTicks(1, 1);
+                padBottomFullOnly->Draw();
+
+                padTopFullOnly->cd();
+                hFullOnlyFrame->GetXaxis()->SetLabelSize(0.0);
+                hFullOnlyFrame->GetYaxis()->SetRangeUser(0.0, fullOnlyMax * 1.25);
+                hFullOnlyFrame->Draw("AXIS");
+                gNeNeFullOnlyFilled->Draw("PZ same");
+                if (gNeNeFullOnlyMirror) gNeNeFullOnlyMirror->Draw("PZ same");
+                gOOFullOnlyFilled->Draw("PZ same");
+                if (gOOFullOnlyMirror) gOOFullOnlyMirror->Draw("PZ same");
+
+                TLegend* legFullOnly = new TLegend(0.74, 0.78, 0.91, 0.90);
+                legFullOnly->SetBorderSize(0);
+                legFullOnly->SetFillStyle(0);
+                legFullOnly->SetTextFont(42);
+                legFullOnly->SetTextSize(0.030);
+                legFullOnly->AddEntry(gOOFullOnlyFilled, "O-O (full FT0)", "lep");
+                legFullOnly->AddEntry(gNeNeFullOnlyFilled, "Ne-Ne (full FT0)", "lep");
+                if (gOOFullOnlyMirror) legFullOnly->AddEntry(gOOFullOnlyMirror, "Mirrored points", "p");
+                legFullOnly->Draw();
+
+                TLatex latexFullOnly;
+                latexFullOnly.SetNDC();
+                latexFullOnly.SetTextFont(42);
+                latexFullOnly.SetTextColor(kBlack);
+                latexFullOnly.SetTextSize(0.042);
+                latexFullOnly.DrawLatex(0.13, 0.88, "ALICE Preliminary");
+                latexFullOnly.SetTextSize(0.036);
+                latexFullOnly.DrawLatex(0.13, 0.825, "3x2PC, 0-20%");
+                latexFullOnly.DrawLatex(0.13, 0.775, "Full FT0 ranges + TPC acceptance (+ratio)");
+
+                padBottomFullOnly->cd();
+                hFullOnlyRatioFrame->GetYaxis()->SetRangeUser(1.0, 1.1);
+                hFullOnlyRatioFrame->Draw("AXIS");
+                TLine* fullOnlyUnity = new TLine(-5.0, 1.0, 5.0, 1.0);
+                fullOnlyUnity->SetLineStyle(2);
+                fullOnlyUnity->SetLineColor(kGray + 2);
+                fullOnlyUnity->Draw("same");
+                gFullOnlyRatioFilled->Draw("PZ same");
+                if (gFullOnlyRatioMirror) gFullOnlyRatioMirror->Draw("PZ same");
+
+                cFullOnly->SaveAs(Form("./3times2PC/Compare_v%d_FT0Full_OO_vs_NeNe_ratio.root", harmonic));
+                cFullOnly->SaveAs(Form("./3times2PC/Compare_v%d_FT0Full_OO_vs_NeNe_ratio.png", harmonic));
+                std::cout << "[Compare rings] Saved full-FT0-only O-O vs Ne-Ne comparison for v"
+                          << harmonic << " as Compare_v" << harmonic
+                          << "_FT0Full_OO_vs_NeNe_ratio.png" << std::endl;
+            }
+        }
+
+        DrawSingleSystem(harmonic,
+                         Form("cEtaDiff_OOOnly_v%d", harmonic),
+                         Form("3x2PC O-O only v%d", harmonic),
+                         Form("Compare_v%d_FT0Side_OO_only_inner_outer_full", harmonic),
+                         gOOFilled,
+                         gOOMirror,
+                         ooHasRings ? "O-O" : "O-O (full FT0 baseline)",
+                         "O-O, FT0 rings + TPC acceptance",
+                         maxVal);
+
+        DrawSingleSystem(harmonic,
+                         Form("cEtaDiff_NeNeOnly_v%d", harmonic),
+                         Form("3x2PC Ne-Ne only v%d", harmonic),
+                         Form("Compare_v%d_FT0Side_NeNe_only_inner_outer_full", harmonic),
+                         gNeNeFilled,
+                         gNeNeMirror,
+                         "Ne-Ne",
+                         "Ne-Ne, FT0 rings + TPC acceptance",
+                         maxVal);
+
+        DrawRingToFullSystem(harmonic,
+                             Form("cRingToFull_OO_v%d", harmonic),
+                             Form("FT0 ring/full check O-O v%d", harmonic),
+                             Form("Compare_v%d_FT0RingToFull_OO", harmonic),
+                             "O-O",
+                             kRed + 1,
+                             hOOFull,
+                             hOOInner,
+                             hOOOuter);
+
+        DrawRingToFullSystem(harmonic,
+                             Form("cRingToFull_NeNe_v%d", harmonic),
+                             Form("FT0 ring/full check Ne-Ne v%d", harmonic),
+                             Form("Compare_v%d_FT0RingToFull_NeNe", harmonic),
+                             "Ne-Ne",
+                             kGreen + 2,
+                             hNeNeFull,
+                             hNeNeInner,
+                             hNeNeOuter);
+
+        anySaved = true;
+        if (!ooHasRings) {
+            std::cout << "Saved v" << harmonic
+                      << " comparison plot. Note: O-O ring files missing, so O-O uses full-range FT0 points." << std::endl;
+        } else {
+            std::cout << "Saved v" << harmonic
+                      << " comparison plot with FT0 ring points for both O-O and Ne-Ne." << std::endl;
+        }
+        std::cout << "Saved individual O-O and Ne-Ne v" << harmonic << " plots in the same style." << std::endl;
     }
-    std::cout << "Saved individual O-O and Ne-Ne plots in the same style." << std::endl;
+
+    if (!anySaved) {
+        std::cerr << "No harmonic plots were produced (v2/v3/v4 missing in inputs)." << std::endl;
+    }
 
     fOOFull->Close();
     fNeNeFull->Close();
-    if (fOOInner) fOOInner->Close();
-    if (fOOOuter) fOOOuter->Close();
-    if (fNeNeInner) fNeNeInner->Close();
-    if (fNeNeOuter) fNeNeOuter->Close();
+    if (fOOInnerC) fOOInnerC->Close();
+    if (fOOInnerA) fOOInnerA->Close();
+    if (fOOOuterC) fOOOuterC->Close();
+    if (fOOOuterA) fOOOuterA->Close();
+    if (fNeNeInnerC) fNeNeInnerC->Close();
+    if (fNeNeInnerA) fNeNeInnerA->Close();
+    if (fNeNeOuterC) fNeNeOuterC->Close();
+    if (fNeNeOuterA) fNeNeOuterA->Close();
     delete fOOFull;
     delete fNeNeFull;
-    if (fOOInner) delete fOOInner;
-    if (fOOOuter) delete fOOOuter;
-    if (fNeNeInner) delete fNeNeInner;
-    if (fNeNeOuter) delete fNeNeOuter;
+    if (fOOInnerC) delete fOOInnerC;
+    if (fOOInnerA) delete fOOInnerA;
+    if (fOOOuterC) delete fOOOuterC;
+    if (fOOOuterA) delete fOOOuterA;
+    if (fNeNeInnerC) delete fNeNeInnerC;
+    if (fNeNeInnerA) delete fNeNeInnerA;
+    if (fNeNeOuterC) delete fNeNeOuterC;
+    if (fNeNeOuterA) delete fNeNeOuterA;
 }

@@ -74,14 +74,14 @@ TGraphAsymmErrors* BuildEtaGraph(const char* name, TH1D* hFull, bool mirrorDetec
 
     if (mirrorDetectors) {
         // Symmetric systems: mirror FT0C and FT0A points around eta=0.
-        pushPoint(-2.4, ft0cY, 0.3, 0.3, ft0cErr, ft0cErr);
-        pushPoint(2.4, ft0cY, 0.3, 0.3, ft0cErr, ft0cErr);
-        pushPoint(-4.55, ft0aY, 0.35, 0.35, ft0aErr, ft0aErr);
-        pushPoint(4.55, ft0aY, 0.35, 0.35, ft0aErr, ft0aErr);
+        pushPoint(-2.7, ft0cY, 0.6, 0.6, ft0cErr, ft0cErr);
+        pushPoint(2.7, ft0cY, 0.6, 0.6, ft0cErr, ft0cErr);
+        pushPoint(-4.2, ft0aY, 0.7, 0.7, ft0aErr, ft0aErr);
+        pushPoint(4.2, ft0aY, 0.7, 0.7, ft0aErr, ft0aErr);
     } else {
         // Asymmetric p-O: keep only the physical detector-side points.
-        pushPoint(-2.4, ft0cY, 0.3, 0.3, ft0cErr, ft0cErr);
-        pushPoint(4.55, ft0aY, 0.35, 0.35, ft0aErr, ft0aErr);
+        pushPoint(-2.7, ft0cY, 0.6, 0.6, ft0cErr, ft0cErr);
+        pushPoint(4.2, ft0aY, 0.7, 0.7, ft0aErr, ft0aErr);
     }
 
     const int nTpcBins = nBins - 2;
@@ -118,7 +118,7 @@ void Compare3times2PC_EtaDiff_FourSystems() {
     gStyle->SetEndErrorSize(4);
 
     const char* fileNeNe = "./3times2PC/Vn_LHC25af_pass2_645746_Cent_0_20.root";
-    const char* fileOO   = "./3times2PC/Vn_LHC25ae_pass2_645657_Cent_0_20.root";
+    const char* fileOO   = "./3times2PC/Vn_LHC25ae_pass2_648798_Cent_0_20.root";
     const char* filePO   = "./3times2PC/Vn_LHC25ad_pass2_644389_Cent_0_20.root";
     const char* filePP   = "./3times2PC/Vn_LHC24af_pass1_644663_Cent_0_20.root";
 
@@ -201,10 +201,10 @@ void Compare3times2PC_EtaDiff_FourSystems() {
     latex.SetTextFont(42);
     latex.SetTextColor(kBlack);
     latex.SetTextSize(0.042);
-    latex.DrawLatex(0.13, 0.91, "ALICE Preliminary");
+    latex.DrawLatex(0.13, 0.88, "ALICE Preliminary");
     latex.SetTextSize(0.036);
-    latex.DrawLatex(0.13, 0.855, "3x2PC, 0-20%");
-    latex.DrawLatex(0.13, 0.805, "Full FT0 ranges + TPC acceptance");
+    latex.DrawLatex(0.13, 0.825, "3x2PC, 0-20%");
+    latex.DrawLatex(0.13, 0.775, "Full FT0 ranges + TPC acceptance (+ratio)");
 
     c->SaveAs("./3times2PC/Compare_v2_EtaDiff_NeNe_vs_OO_vs_pO_vs_pp.root");
     c->SaveAs("./3times2PC/Compare_v2_EtaDiff_NeNe_vs_OO_vs_pO_vs_pp.png");

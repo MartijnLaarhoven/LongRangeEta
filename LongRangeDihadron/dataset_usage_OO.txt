@@ -1,0 +1,167 @@
+Dataset Usage Audit (O-O)
+Date: 2026-04-10
+Scope: 0-20 centrality chain for dPhidEta -> bootstrap -> template fit -> 3times2PC
+
+============================================================
+A) O-O datasets (id-tagged variants counted separately)
+============================================================
+
+List of O-O dataset/id entries used in the analysis setup (11 total):
+1) LHC25ae_pass2_648788_id50663 (TPC_FT0A full)
+2) LHC25ae_pass2_648788_id50664 (TPC_FT0C full)
+3) LHC25ae_pass2_648798 (FT0A_FT0C full LR)
+4) LHC25ae_pass2_638221
+5) LHC25ae_pass2_634099
+6) LHC25ae_pass2_634103
+7) LHC25ae_pass2_637591
+8) LHC25ae_pass2_648799
+9) LHC25ae_pass2_648800
+10) LHC25ae_pass2_653257
+11) LHC25ae_pass2_648788
+
+O-O dataset-by-dataset purpose and usage:
+
+1) LHC25ae_pass2_648788_id50663
+- Type: TPC_FT0A eta-differential full-baseline entry
+- Why: LM input for O-O full baseline in 3times2PC
+- Where configured:
+  - Process_dPhidEta: ACTIVE via 648788 + id50663 mapping
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE for full baseline LM
+- Practical note: id50663 is resolved in Process_dPhidEta by corrType-dependent directory tag mapping.
+
+2) LHC25ae_pass2_648788_id50664
+- Type: TPC_FT0C eta-differential full-baseline entry
+- Why: MR input for O-O full baseline in 3times2PC
+- Where configured:
+  - Process_dPhidEta: ACTIVE via 648788 + id50664 mapping
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE for full baseline MR
+
+3) LHC25ae_pass2_648798
+- Type: FT0A_FT0C full-baseline LR
+- Why: LR baseline for O-O full 3times2PC
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE for full, and as default LR source for ring configs before side override
+
+4) LHC25ae_pass2_638221
+- Type: TPC_FT0A eta-differential
+- Why: LM for O-O inner ring
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (inner LM)
+
+5) LHC25ae_pass2_634099
+- Type: TPC_FT0C eta-differential
+- Why: MR for O-O inner ring
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (inner MR)
+
+6) LHC25ae_pass2_634103
+- Type: TPC_FT0A eta-differential
+- Why: LM for O-O outer ring
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (outer LM)
+
+7) LHC25ae_pass2_637591
+- Type: TPC_FT0C eta-differential
+- Why: MR for O-O outer ring
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (outer MR)
+
+8) LHC25ae_pass2_648799
+- Type: FT0A_FT0C tagged LR candidate
+- Why: O-O inner FT0A-side LR in current 3times2PC side override
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (inner FT0A-side LR)
+
+9) LHC25ae_pass2_648800
+- Type: FT0A_FT0C tagged LR candidate
+- Why: O-O inner FT0C-side LR in current 3times2PC side override
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (inner FT0C-side LR)
+
+10) LHC25ae_pass2_653257
+- Type: FT0A_FT0C tagged LR candidate
+- Why: O-O outer FT0A-side LR in current 3times2PC side override
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (outer FT0A-side LR)
+
+11) LHC25ae_pass2_648788
+- Type: FT0A_FT0C tagged LR candidate
+- Why: O-O outer FT0C-side LR in current 3times2PC side override
+- Where configured:
+  - Process_dPhidEta: ACTIVE
+  - Process_CreateBootstrapSample: ACTIVE
+  - Process_TemplateFit: ACTIVE
+  - Process_3times2PC: ACTIVE (outer FT0C-side LR)
+
+============================================================
+B) Active 3times2PC formulas and file mapping (O-O)
+============================================================
+
+1) O-O full output
+- Output file:
+  3times2PC/Vn_LHC25ae_pass2_648798_Cent_0_20.root
+- Inputs:
+  LM: TemplateFit/EtaDiff/VnDelta_LHC25ae_pass2_648788_Cent_0_20_TPC_FT0A.root
+  MR: TemplateFit/EtaDiff/VnDelta_LHC25ae_pass2_648788_Cent_0_20_TPC_FT0C.root
+  LR: TemplateFit/VnDelta_LHC25ae_pass2_648798_Cent_FT0A_FT0C.root
+
+2) O-O inner ring output
+- Output file:
+  3times2PC/Vn_LHC25ae_pass2_innerRing_Cent_0_20.root
+- Inputs:
+  LM: TemplateFit/EtaDiff/VnDelta_LHC25ae_pass2_638221_Cent_0_20_TPC_FT0A.root
+  MR: TemplateFit/EtaDiff/VnDelta_LHC25ae_pass2_634099_Cent_0_20_TPC_FT0C.root
+  LR FT0C-side: TemplateFit/VnDelta_LHC25ae_pass2_648800_Cent_FT0A_FT0C.root
+  LR FT0A-side: TemplateFit/VnDelta_LHC25ae_pass2_648799_Cent_FT0A_FT0C.root
+
+Mapping note to avoid ambiguity:
+- For O-O inner ring, MR is always 634099 (TPC_FT0C).
+- 648799/648800 are LR-only side inputs and are not MR datasets.
+- 648788 is used for O-O full TPC inputs (with id tags) and for O-O outer FT0C-side LR, not for O-O inner MR.
+
+3) O-O outer ring output
+- Output file:
+  3times2PC/Vn_LHC25ae_pass2_outerRing_Cent_0_20.root
+- Inputs:
+  LM: TemplateFit/EtaDiff/VnDelta_LHC25ae_pass2_634103_Cent_0_20_TPC_FT0A.root
+  MR: TemplateFit/EtaDiff/VnDelta_LHC25ae_pass2_637591_Cent_0_20_TPC_FT0C.root
+  LR FT0C-side: TemplateFit/VnDelta_LHC25ae_pass2_648788_Cent_FT0A_FT0C.root
+  LR FT0A-side: TemplateFit/VnDelta_LHC25ae_pass2_653257_Cent_FT0A_FT0C.root
+
+============================================================
+C) Consistency check note
+============================================================
+
+Current code is internally consistent with this O-O wiring.
+
+Important reproducibility caveat:
+- Ne-Ne entries are now commented for an O-O-only full pipeline run.
+- A fresh run should regenerate O-O full baseline products for 648788/648798 and ring-side LR products including 653257.

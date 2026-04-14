@@ -1,0 +1,173 @@
+Dataset Usage Audit (Ne-Ne and O-O)
+Date: 2026-04-10
+Scope: 0-20 centrality chain for dPhidEta -> bootstrap -> template fit -> 3times2PC
+
+============================================================
+A) Ne-Ne: 11 distinct datasets (id-tagged variants count separately)
+============================================================
+
+List of 11 Ne-Ne datasets declared in Process_dPhidEta:
+1) LHC25af_pass2_642734
+2) LHC25af_pass2_645173
+3) LHC25af_pass2_632504
+4) LHC25af_pass2_637597
+5) LHC25af_pass2_631290
+6) LHC25af_pass2_637594
+7) LHC25af_pass2_646139_id50585
+8) LHC25af_pass2_646139_id50559
+9) LHC25af_pass2_646139_id50560
+10) LHC25af_pass2_646139_id50561
+11) LHC25af_pass2_646139_id50562
+
+Ne-Ne dataset-by-dataset purpose and usage:
+
+1) LHC25af_pass2_642734
+- Type: FT0A_FT0C full-range (legacy full input)
+- Why: legacy full baseline source
+- Where declared: Process_dPhidEta.cxx (active entries)
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: NO
+  - Process_TemplateFit: NO
+  - Process_3times2PC final: NO
+- Note: Not consumed by current 3times2PC configs.
+
+2) LHC25af_pass2_645173
+- Type: TPC_FT0A/TPC_FT0C eta-differential full-statistics sample
+- Why: LM and MR for full Ne-Ne baseline (best-stat full bins)
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (outputs VnDelta ...645173...TPC_FT0A and ...645173...TPC_FT0C)
+  - Process_3times2PC final: YES (full LM+MR)
+
+3) LHC25af_pass2_632504
+- Type: TPC_FT0A eta-differential
+- Why: LM for inner ring
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (outputs VnDelta ...632504...TPC_FT0A)
+  - Process_3times2PC final: YES (inner only)
+
+4) LHC25af_pass2_637597
+- Type: TPC_FT0A eta-differential
+- Why: LM for outer ring
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (outputs VnDelta ...637597...TPC_FT0A)
+  - Process_3times2PC final: YES (outer)
+
+5) LHC25af_pass2_631290
+- Type: TPC_FT0C eta-differential
+- Why: MR for inner ring
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (outputs VnDelta ...631290...TPC_FT0C)
+  - Process_3times2PC final: YES (inner)
+
+6) LHC25af_pass2_637594
+- Type: TPC_FT0C eta-differential
+- Why: MR for outer ring
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (outputs VnDelta ...637594...TPC_FT0C)
+  - Process_3times2PC final: YES (outer)
+
+7) LHC25af_pass2_646139_id50585
+- Type: FT0A_FT0C tagged input (full tag)
+- Why: full-range LR source that gets output suffix 645746 in template fit
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (output suffix renamed to LHC25af_pass2_645746)
+  - Process_3times2PC final: YES, indirectly via VnDelta_LHC25af_pass2_645746_Cent_FT0A_FT0C.root
+
+8) LHC25af_pass2_646139_id50559
+- Type: FT0A_FT0C tagged input (inner FT0A-side tag)
+- Why: side-specific inner LR candidate
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (output VnDelta ...646139_id50559...FT0A_FT0C)
+  - Process_3times2PC final: YES (inner ring FT0A-side LR)
+
+9) LHC25af_pass2_646139_id50560
+- Type: FT0A_FT0C tagged input (inner FT0C-side tag)
+- Why: side-specific inner LR candidate
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (output VnDelta ...646139_id50560...FT0A_FT0C)
+  - Process_3times2PC final: YES (inner ring FT0C-side LR)
+
+10) LHC25af_pass2_646139_id50561
+- Type: FT0A_FT0C tagged input (outer FT0A-side tag)
+- Why: side-specific outer LR candidate
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (output VnDelta ...646139_id50561...FT0A_FT0C)
+  - Process_3times2PC final: YES (outer ring FT0A-side LR)
+
+11) LHC25af_pass2_646139_id50562
+- Type: FT0A_FT0C tagged input (outer FT0C-side tag)
+- Why: side-specific outer LR candidate
+- Where used now:
+  - Process_dPhidEta: YES
+  - Process_CreateBootstrapSample: YES
+  - Process_TemplateFit: YES (output VnDelta ...646139_id50562...FT0A_FT0C)
+  - Process_3times2PC final: YES (outer ring FT0C-side LR)
+
+Summary for Ne-Ne final 3times2PC usage:
+- Final Ne-Ne outputs currently use:
+  - LM/MR from {645173, 632504, 637597, 631290, 637594}
+  - LR from {645746, id50559, id50560, id50561, id50562}
+- Side-specific LR tags are now consumed in ring calculations.
+
+============================================================
+B) O-O reference (how it is currently wired)
+============================================================
+
+Datasets appearing in O-O chain:
+- Baseline full: 644429 (TPC_FT0A/TPC_FT0C), 645657 (FT0A_FT0C)
+- Ring TPC: 638221, 634099, 634103, 637591
+- Side-tagged FT0A_FT0C candidates: 648799, 648800, 644433, 648788
+
+Current final 3times2PC O-O usage:
+- Full output uses: LM=644429, MR=644429, LR=645657
+- Inner output uses: LM=638221, MR=634099, LR=645657
+- Outer output uses: LM=634103, MR=637591, LR=645657
+
+Interpretation:
+- In current code, O-O full uses LR baseline 645657.
+- O-O ring outputs use side-tagged LR datasets (inner: 648799/648800, outer: 644433/648788).
+
+============================================================
+C) Final-file formulas and concrete mapping
+============================================================
+
+Current Ne-Ne final files:
+- 3times2PC/Vn_LHC25af_pass2_645746_Cent_0_20.root
+  from TemplateFit/EtaDiff/VnDelta_LHC25af_pass2_645173_Cent_0_20_TPC_FT0A.root
+  and  TemplateFit/EtaDiff/VnDelta_LHC25af_pass2_645173_Cent_0_20_TPC_FT0C.root
+  and  TemplateFit/VnDelta_LHC25af_pass2_645746_Cent_FT0A_FT0C.root
+
+- 3times2PC/Vn_LHC25af_pass2_innerRing_Cent_0_20.root
+  from TemplateFit/EtaDiff/VnDelta_LHC25af_pass2_632504_Cent_0_20_TPC_FT0A.root
+  and  TemplateFit/EtaDiff/VnDelta_LHC25af_pass2_631290_Cent_0_20_TPC_FT0C.root
+  and  side LR: TemplateFit/VnDelta_LHC25af_pass2_646139_id50559_Cent_FT0A_FT0C.root (FT0A side)
+  and  side LR: TemplateFit/VnDelta_LHC25af_pass2_646139_id50560_Cent_FT0A_FT0C.root (FT0C side)
+
+- 3times2PC/Vn_LHC25af_pass2_outerRing_Cent_0_20.root
+  from TemplateFit/EtaDiff/VnDelta_LHC25af_pass2_637597_Cent_0_20_TPC_FT0A.root
+  and  TemplateFit/EtaDiff/VnDelta_LHC25af_pass2_637594_Cent_0_20_TPC_FT0C.root
+  and  side LR: TemplateFit/VnDelta_LHC25af_pass2_646139_id50561_Cent_FT0A_FT0C.root (FT0A side)
+  and  side LR: TemplateFit/VnDelta_LHC25af_pass2_646139_id50562_Cent_FT0A_FT0C.root (FT0C side)
+
+If the requirement is "all tagged LR datasets should be used" in final 3times2PC,
+then Process_3times2PC config must be updated to consume side-specific LR files
+instead of one common LR baseline.

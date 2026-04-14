@@ -157,22 +157,37 @@ std::vector<NamedConfigUnit> BuildTemplateFitConfigList(const std::string& syste
             NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 80, 100), {InputUnit("LHC24af_pass1_644663", kFT0AFT0C, 0, 20)}, "LHC24af_pass1_644663"))
         };
     }
+    if (systemName == "p-O-Nch") {
+        return {
+            NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_650295", kTPCFT0A, 0, 10), {InputUnit("LHC25ad_pass2_650295", kTPCFT0A, 10, 50)}, "LHC25ad_pass2_650295")),
+            NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_650297", kTPCFT0C, 0, 10), {InputUnit("LHC25ad_pass2_650297", kTPCFT0C, 10, 50)}, "LHC25ad_pass2_650297")),
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, 0, 10), {InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, 10, 50)}, "LHC25ad_pass2_650299"))
+        };
+    }
+    if (systemName == "pp-Nch") {
+        return {
+            NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_650589", kTPCFT0A, 0, 10), {InputUnit("LHC24af_pass1_650589", kTPCFT0A, 10, 50)}, "LHC24af_pass1_650589")),
+            NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_650589", kTPCFT0C, 0, 10), {InputUnit("LHC24af_pass1_650589", kTPCFT0C, 10, 50)}, "LHC24af_pass1_650589")),
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 0, 10), {InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 10, 50)}, "LHC24af_pass1_650588"))
+        };
+    }
     if (systemName == "Ne-Ne-Nch") {
         return {
             NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_650316", kTPCFT0A, 0, 10), {InputUnit("LHC25af_pass2_650316", kTPCFT0A, 10, 50)}, "LHC25af_pass2_650316_nch10_50")),
             NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_650317", kTPCFT0C, 0, 10), {InputUnit("LHC25af_pass2_650317", kTPCFT0C, 10, 50)}, "LHC25af_pass2_650317_nch10_50")),
-            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_650641", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_650641", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_650641_nch10_50"))
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_650315_nch10_50"))
         };
     }
     if (systemName == "O-O-Nch") {
         return {
-            NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_650313", kTPCFT0A, 0, 10), {InputUnit("LHC25ae_pass2_650313", kTPCFT0A, 10, 50)}, "LHC25ae_pass2_650313_nch10_50")),
-            NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_650312", kTPCFT0C, 0, 10), {InputUnit("LHC25ae_pass2_650312", kTPCFT0C, 10, 50)}, "LHC25ae_pass2_650312_nch10_50")),
-            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_650311", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_650311", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_650311_nch10_50"))
+            NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_653254", kTPCFT0A, 0, 10), {InputUnit("LHC25ae_pass2_653254", kTPCFT0A, 10, 50)}, "LHC25ae_pass2_653254")),
+            NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_653254", kTPCFT0C, 0, 10), {InputUnit("LHC25ae_pass2_653254", kTPCFT0C, 10, 50)}, "LHC25ae_pass2_653254")),
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_653254"))
         };
     }
     return {};
 }
+
 //==============================================================
 void Process_TemplateFit() {
     // 不显示窗口
@@ -185,7 +200,7 @@ void Process_TemplateFit() {
     gSystem->Exec("mkdir -p ./TemplateFit/PDFs");
     gSystem->Exec("mkdir -p ./TemplateFit/EtaDiff/PDFs");
     
-    // Options: "O-O", "Ne-Ne", "p-O", "pp", "Ne-Ne-Nch", "O-O-Nch"
+    // Options: "O-O", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
     const std::string activeSystem = "O-O";
     std::vector<NamedConfigUnit> namedConfigList = BuildTemplateFitConfigList(activeSystem);
     std::vector<ConfigUnit> configList;
@@ -1476,7 +1491,8 @@ void PlotFitting(TH1 *lm, TH1 *hm, Bool_t isNch, std::string fileSuffix, Int_t m
     }
     ymin_pull = 1 - (1-ymin_pull) * 2;
     ymax_pull = 1 + (ymax_pull-1) * 2;
-    hResidual->GetYaxis()->SetRangeUser(ymin_pull,ymax_pull);
+    const double dataFitHalfRange = 0.001;
+    hResidual->GetYaxis()->SetRangeUser(1.0 - dataFitHalfRange, 1.0 + dataFitHalfRange);
 
     // 配置残差图
     hResidual->SetMarkerStyle(20);

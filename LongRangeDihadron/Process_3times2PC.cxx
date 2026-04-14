@@ -98,18 +98,38 @@ VnUnit* Get3times2PC(VnUnit* LMvalues, VnUnit* MRvalues, VnUnit* LRvalues);
 
 std::string collisionSystemName = "Unknown";
 
+bool IsSideSpecificRingOutput(const std::string& outputFileName) {
+    return outputFileName.find("_FT0A") != std::string::npos || outputFileName.find("_FT0C") != std::string::npos;
+}
+
+bool IsFT0CSideOutput(const std::string& outputFileName) {
+    return outputFileName.find("_FT0C") != std::string::npos;
+}
+
 std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
+    auto makeRingConfig = [](const std::string& roleName,
+                             const std::vector<InputUnit>& dataList,
+                             const std::string& outputFileName) {
+        return NamedConfigUnit(roleName, ConfigUnit(kCent, dataList, outputFileName));
+    };
+
     if (systemName == "O-O") {
         return {
             NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
                 {InputUnit("LHC25ae_pass2_648788", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648798", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_648798")),
-            NamedConfigUnit("INNER_RING_3x2", ConfigUnit(kCent,
-                {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648798", kFT0AFT0C, kTemplateFit, 0, 20)},
-                "LHC25ae_pass2_innerRing")),
-            NamedConfigUnit("OUTER_RING_3x2", ConfigUnit(kCent,
-                {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648798", kFT0AFT0C, kTemplateFit, 0, 20)},
-                "LHC25ae_pass2_outerRing"))
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0C"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0A"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0C"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_653257", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0A")
         };
     }
     if (systemName == "Ne-Ne") {
@@ -117,12 +137,18 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
             NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
                 {InputUnit("LHC25af_pass2_645173", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645173", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25af_pass2_645746")),
-            NamedConfigUnit("INNER_RING_3x2", ConfigUnit(kCent,
-                {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
-                "LHC25af_pass2_innerRing")),
-            NamedConfigUnit("OUTER_RING_3x2", ConfigUnit(kCent,
-                {InputUnit("LHC25af_pass2_637597", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637594", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
-                "LHC25af_pass2_outerRing"))
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25af_pass2_innerRing_FT0C"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25af_pass2_innerRing_FT0A"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25af_pass2_637597", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637594", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25af_pass2_outerRing_FT0C"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25af_pass2_637597", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637594", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25af_pass2_outerRing_FT0A")
         };
     }
     if (systemName == "Ne-Ne-Legacy") {
@@ -142,6 +168,13 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
                 "LHC25ad_pass2_644389"))
         };
     }
+    if (systemName == "p-O-Nch") {
+        return {
+            NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
+                {InputUnit("LHC25ad_pass2_650295", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_650297", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ad_pass2_650299"))
+        };
+    }
     if (systemName == "pp") {
         return {
             NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
@@ -149,18 +182,25 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
                 "LHC24af_pass1_644663"))
         };
     }
+    if (systemName == "pp-Nch") {
+        return {
+            NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
+                {InputUnit("LHC24af_pass1_650589", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_650589", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_650588", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC24af_pass1_650588"))
+        };
+    }
     if (systemName == "Ne-Ne-Nch") {
         return {
             NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
-                {InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650641_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
-                "LHC25af_pass2_650641_nch10_50"))
+                {InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650315_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25af_pass2_650315_nch10_50"))
         };
     }
     if (systemName == "O-O-Nch") {
         return {
             NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
-                {InputUnit("LHC25ae_pass2_650313_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_650312_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_650311_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
-                "LHC25ae_pass2_650311_nch10_50"))
+                {InputUnit("LHC25ae_pass2_653254", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_653254", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ae_pass2_653254"))
         };
     }
     return {};
@@ -173,8 +213,8 @@ void Process_3times2PC() {
     // Create output directory
     gSystem->Exec("mkdir -p ./3times2PC");
     
-    // Options: "O-O", "Ne-Ne", "Ne-Ne-Legacy", "p-O", "pp", "Ne-Ne-Nch", "O-O-Nch"
-    const std::string activeSystem = "O-O";
+    // Options: "O-O", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "Ne-Ne-Legacy", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    const std::string activeSystem = "pp-Nch";
     std::vector<NamedConfigUnit> namedConfigList = Build3x2ConfigList(activeSystem);
     std::vector<ConfigUnit> configList;
     configList.reserve(namedConfigList.size());
@@ -184,6 +224,7 @@ void Process_3times2PC() {
                   << " | LM=" << named.config.dataList[0].fileNameSuffix
                   << " | MR=" << named.config.dataList[1].fileNameSuffix
                   << " | LR=" << named.config.dataList[2].fileNameSuffix
+                  << " | range=" << named.config.dataList[0].minRange << "-" << named.config.dataList[0].maxRange
                   << " | output=" << named.config.outputFileName
                   << std::endl;
         configList.push_back(named.config);
@@ -205,6 +246,8 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     }
     std::string splitName = "Mult";
     if (!isNch) splitName = "Cent";
+    std::string outputSplitName = "Nch";
+    if (!isNch) outputSplitName = "Cent";
 
     auto dataLM = dataList[0];
     auto dataMR = dataList[1];
@@ -278,60 +321,10 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     double lr_v4 = hLR_v4->GetBinContent(1);
     double lr_v4_err = hLR_v4->GetBinError(1);
 
-    // Default: use the same LR for both FT0 sides. Ring outputs can override per side.
-    double lrC_v2 = lr_v2, lrC_v2_err = lr_v2_err;
-    double lrA_v2 = lr_v2, lrA_v2_err = lr_v2_err;
-    double lrC_v3 = lr_v3, lrC_v3_err = lr_v3_err;
-    double lrA_v3 = lr_v3, lrA_v3_err = lr_v3_err;
-    double lrC_v4 = lr_v4, lrC_v4_err = lr_v4_err;
-    double lrA_v4 = lr_v4, lrA_v4_err = lr_v4_err;
+    bool sideSpecificOutput = IsSideSpecificRingOutput(outputFileName);
+    bool ft0CSideOnly = IsFT0CSideOutput(outputFileName);
 
-    auto LoadLRFromFile = [&](const std::string& lrSuffix,
-                              double& outV2, double& outV2Err,
-                              double& outV3, double& outV3Err,
-                              double& outV4, double& outV4Err) {
-        TFile lrFile(Form("./%s/VnDelta_%s_%s_%s.root",
-            DihadronMethodName[dataLR.method].c_str(), lrSuffix.c_str(), splitName.c_str(), DihadronCorrTypeName[dataLR.corrType].c_str()), "READ");
-        if (!lrFile.IsOpen()) {
-            Printf("Warning: cannot open side-specific LR file for %s", lrSuffix.c_str());
-            return false;
-        }
-        TH1D* h2 = (TH1D*)lrFile.Get("hV2");
-        TH1D* h3 = (TH1D*)lrFile.Get("hV3");
-        TH1D* h4 = (TH1D*)lrFile.Get("hV4");
-        if (!h2 || !h3 || !h4) {
-            Printf("Warning: missing hV2/hV3/hV4 in side-specific LR file for %s", lrSuffix.c_str());
-            return false;
-        }
-        outV2 = h2->GetBinContent(1);
-        outV2Err = h2->GetBinError(1);
-        outV3 = h3->GetBinContent(1);
-        outV3Err = h3->GetBinError(1);
-        outV4 = h4->GetBinContent(1);
-        outV4Err = h4->GetBinError(1);
-        return true;
-    };
-
-    // Use side-specific LR for ring outputs when those inputs are available.
-    if (outputFileName == "LHC25af_pass2_innerRing") {
-        // Ne-Ne inner: FT0A side -> id50559, FT0C side -> id50560
-        LoadLRFromFile("LHC25af_pass2_646139_id50560", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-        LoadLRFromFile("LHC25af_pass2_646139_id50559", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-    } else if (outputFileName == "LHC25af_pass2_outerRing") {
-        // Ne-Ne outer: FT0A side -> id50561, FT0C side -> id50562
-        LoadLRFromFile("LHC25af_pass2_646139_id50562", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-        LoadLRFromFile("LHC25af_pass2_646139_id50561", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-    } else if (outputFileName == "LHC25ae_pass2_innerRing") {
-        // O-O inner: FT0A side -> 648799, FT0C side -> 648800
-        LoadLRFromFile("LHC25ae_pass2_648800", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-        LoadLRFromFile("LHC25ae_pass2_648799", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-    } else if (outputFileName == "LHC25ae_pass2_outerRing") {
-        // O-O outer: FT0A side -> 653257, FT0C side -> 648788
-        LoadLRFromFile("LHC25ae_pass2_648788", lrC_v2, lrC_v2_err, lrC_v3, lrC_v3_err, lrC_v4, lrC_v4_err);
-        LoadLRFromFile("LHC25ae_pass2_653257", lrA_v2, lrA_v2_err, lrA_v3, lrA_v3_err, lrA_v4, lrA_v4_err);
-    }
-
-    TFile outputFile(Form("./3times2PC/Vn_%s_%s_%i_%i.root", outputFileName.c_str(), splitName.c_str(), dataLR.minRange, dataLR.maxRange), "RECREATE");
+    TFile outputFile(Form("./3times2PC/Vn_%s_%s_%i_%i.root", outputFileName.c_str(), outputSplitName.c_str(), dataLR.minRange, dataLR.maxRange), "RECREATE");
     TH1D* hV2 = dynamic_cast<TH1D*>(hLM_v2->Clone("hV2"));
     TH1D* hV3 = dynamic_cast<TH1D*>(hLM_v3->Clone("hV3"));
     TH1D* hV4 = dynamic_cast<TH1D*>(hLM_v4->Clone("hV4"));
@@ -430,53 +423,98 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
         return sideHist;
     };
 
-    TH1D* hV2_Sides = BuildSideSummaryFromLMRLR(hLM_v2, hMR_v2, lrC_v2, lrC_v2_err, lrA_v2, lrA_v2_err, "hV2_Sides", "v_{2};side;v_{2}");
-    TH1D* hV3_Sides = BuildSideSummaryFromLMRLR(hLM_v3, hMR_v3, lrC_v3, lrC_v3_err, lrA_v3, lrA_v3_err, "hV3_Sides", "v_{3};side;v_{3}");
-    TH1D* hV4_Sides = BuildSideSummaryFromLMRLR(hLM_v4, hMR_v4, lrC_v4, lrC_v4_err, lrA_v4, lrA_v4_err, "hV4_Sides", "v_{4};side;v_{4}");
+    auto BuildSingleSideSummaryFromLMRLR = [&](TH1D* hLM, TH1D* hMR,
+                                               double lrValue, double lrErr,
+                                               bool useFT0C,
+                                               const char* name, const char* title) {
+        TH1D* sideHist = new TH1D(name, title, 1, 0.5, 1.5);
+        sideHist->GetXaxis()->SetBinLabel(1, useFT0C ? "FT0C [-3.3,-2.1]" : "FT0A [3.5,4.9]");
 
-    // Combined histogram-style output: FT0C + 16 eta bins + FT0A in one object
-    int nCombinedBins = nEtaBins + 2;
-    TH1D* hV2_Combined = new TH1D("hV2_Combined", "v_{2};bin;v_{2}", nCombinedBins, 0.5, nCombinedBins + 0.5);
-    TH1D* hV3_Combined = new TH1D("hV3_Combined", "v_{3};bin;v_{3}", nCombinedBins, 0.5, nCombinedBins + 0.5);
-    TH1D* hV4_Combined = new TH1D("hV4_Combined", "v_{4};bin;v_{4}", nCombinedBins, 0.5, nCombinedBins + 0.5);
+        double lmAvg = -1.0, lmAvgErr = 10.0;
+        double mrAvg = -1.0, mrAvgErr = 10.0;
+        int lmValidBins = 0;
+        int mrValidBins = 0;
+        std::tie(lmAvg, lmAvgErr, lmValidBins) = ComputeHistogramAverage(hLM);
+        std::tie(mrAvg, mrAvgErr, mrValidBins) = ComputeHistogramAverage(hMR);
 
-    hV2_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
-    hV3_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
-    hV4_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
-    hV2_Combined->SetBinContent(1, hV2_Sides->GetBinContent(1));
-    hV2_Combined->SetBinError(1, hV2_Sides->GetBinError(1));
-    hV3_Combined->SetBinContent(1, hV3_Sides->GetBinContent(1));
-    hV3_Combined->SetBinError(1, hV3_Sides->GetBinError(1));
-    hV4_Combined->SetBinContent(1, hV4_Sides->GetBinContent(1));
-    hV4_Combined->SetBinError(1, hV4_Sides->GetBinError(1));
+        double value = -1.0;
+        double valueErr = 10.0;
+        if (lmValidBins > 0 && mrValidBins > 0) {
+            if (useFT0C) {
+                value = Get3times2PC(mrAvg, lrValue, lmAvg);
+                valueErr = Get3times2PC_Error(mrAvg, mrAvgErr, lrValue, lrErr, lmAvg, lmAvgErr);
+            } else {
+                value = Get3times2PC(lmAvg, lrValue, mrAvg);
+                valueErr = Get3times2PC_Error(lmAvg, lmAvgErr, lrValue, lrErr, mrAvg, mrAvgErr);
+            }
+        }
 
-    for (int ibin = 1; ibin <= nEtaBins; ++ibin) {
-        int combinedBin = ibin + 1;
-        double etaLow = hV2->GetXaxis()->GetBinLowEdge(ibin);
-        double etaUp = hV2->GetXaxis()->GetBinUpEdge(ibin);
-        TString etaLabel = Form("[%.1f,%.1f]", etaLow, etaUp);
-        hV2_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
-        hV3_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
-        hV4_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
+        sideHist->SetBinContent(1, value);
+        sideHist->SetBinError(1, valueErr);
+        return sideHist;
+    };
 
-        hV2_Combined->SetBinContent(combinedBin, hV2->GetBinContent(ibin));
-        hV2_Combined->SetBinError(combinedBin, hV2->GetBinError(ibin));
-        hV3_Combined->SetBinContent(combinedBin, hV3->GetBinContent(ibin));
-        hV3_Combined->SetBinError(combinedBin, hV3->GetBinError(ibin));
-        hV4_Combined->SetBinContent(combinedBin, hV4->GetBinContent(ibin));
-        hV4_Combined->SetBinError(combinedBin, hV4->GetBinError(ibin));
+    TH1D* hV2_Sides = nullptr;
+    TH1D* hV3_Sides = nullptr;
+    TH1D* hV4_Sides = nullptr;
+    if (sideSpecificOutput) {
+        hV2_Sides = BuildSingleSideSummaryFromLMRLR(hLM_v2, hMR_v2, lr_v2, lr_v2_err, ft0CSideOnly, "hV2_Side", "v_{2};side;v_{2}");
+        hV3_Sides = BuildSingleSideSummaryFromLMRLR(hLM_v3, hMR_v3, lr_v3, lr_v3_err, ft0CSideOnly, "hV3_Side", "v_{3};side;v_{3}");
+        hV4_Sides = BuildSingleSideSummaryFromLMRLR(hLM_v4, hMR_v4, lr_v4, lr_v4_err, ft0CSideOnly, "hV4_Side", "v_{4};side;v_{4}");
+    } else {
+        hV2_Sides = BuildSideSummaryFromLMRLR(hLM_v2, hMR_v2, lr_v2, lr_v2_err, lr_v2, lr_v2_err, "hV2_Sides", "v_{2};side;v_{2}");
+        hV3_Sides = BuildSideSummaryFromLMRLR(hLM_v3, hMR_v3, lr_v3, lr_v3_err, lr_v3, lr_v3_err, "hV3_Sides", "v_{3};side;v_{3}");
+        hV4_Sides = BuildSideSummaryFromLMRLR(hLM_v4, hMR_v4, lr_v4, lr_v4_err, lr_v4, lr_v4_err, "hV4_Sides", "v_{4};side;v_{4}");
     }
 
-    int lastCombinedBin = nCombinedBins;
-    hV2_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
-    hV3_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
-    hV4_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
-    hV2_Combined->SetBinContent(lastCombinedBin, hV2_Sides->GetBinContent(2));
-    hV2_Combined->SetBinError(lastCombinedBin, hV2_Sides->GetBinError(2));
-    hV3_Combined->SetBinContent(lastCombinedBin, hV3_Sides->GetBinContent(2));
-    hV3_Combined->SetBinError(lastCombinedBin, hV3_Sides->GetBinError(2));
-    hV4_Combined->SetBinContent(lastCombinedBin, hV4_Sides->GetBinContent(2));
-    hV4_Combined->SetBinError(lastCombinedBin, hV4_Sides->GetBinError(2));
+    TH1D* hV2_Combined = nullptr;
+    TH1D* hV3_Combined = nullptr;
+    TH1D* hV4_Combined = nullptr;
+    if (!sideSpecificOutput) {
+        // Combined histogram-style output: FT0C + 16 eta bins + FT0A in one object
+        int nCombinedBins = nEtaBins + 2;
+        hV2_Combined = new TH1D("hV2_Combined", "v_{2};bin;v_{2}", nCombinedBins, 0.5, nCombinedBins + 0.5);
+        hV3_Combined = new TH1D("hV3_Combined", "v_{3};bin;v_{3}", nCombinedBins, 0.5, nCombinedBins + 0.5);
+        hV4_Combined = new TH1D("hV4_Combined", "v_{4};bin;v_{4}", nCombinedBins, 0.5, nCombinedBins + 0.5);
+
+        hV2_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
+        hV3_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
+        hV4_Combined->GetXaxis()->SetBinLabel(1, "FT0C[-3.3,-2.1]");
+        hV2_Combined->SetBinContent(1, hV2_Sides->GetBinContent(1));
+        hV2_Combined->SetBinError(1, hV2_Sides->GetBinError(1));
+        hV3_Combined->SetBinContent(1, hV3_Sides->GetBinContent(1));
+        hV3_Combined->SetBinError(1, hV3_Sides->GetBinError(1));
+        hV4_Combined->SetBinContent(1, hV4_Sides->GetBinContent(1));
+        hV4_Combined->SetBinError(1, hV4_Sides->GetBinError(1));
+
+        for (int ibin = 1; ibin <= nEtaBins; ++ibin) {
+            int combinedBin = ibin + 1;
+            double etaLow = hV2->GetXaxis()->GetBinLowEdge(ibin);
+            double etaUp = hV2->GetXaxis()->GetBinUpEdge(ibin);
+            TString etaLabel = Form("[%.1f,%.1f]", etaLow, etaUp);
+            hV2_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
+            hV3_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
+            hV4_Combined->GetXaxis()->SetBinLabel(combinedBin, etaLabel);
+
+            hV2_Combined->SetBinContent(combinedBin, hV2->GetBinContent(ibin));
+            hV2_Combined->SetBinError(combinedBin, hV2->GetBinError(ibin));
+            hV3_Combined->SetBinContent(combinedBin, hV3->GetBinContent(ibin));
+            hV3_Combined->SetBinError(combinedBin, hV3->GetBinError(ibin));
+            hV4_Combined->SetBinContent(combinedBin, hV4->GetBinContent(ibin));
+            hV4_Combined->SetBinError(combinedBin, hV4->GetBinError(ibin));
+        }
+
+        int lastCombinedBin = nCombinedBins;
+        hV2_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
+        hV3_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
+        hV4_Combined->GetXaxis()->SetBinLabel(lastCombinedBin, "FT0A[3.5,4.9]");
+        hV2_Combined->SetBinContent(lastCombinedBin, hV2_Sides->GetBinContent(2));
+        hV2_Combined->SetBinError(lastCombinedBin, hV2_Sides->GetBinError(2));
+        hV3_Combined->SetBinContent(lastCombinedBin, hV3_Sides->GetBinContent(2));
+        hV3_Combined->SetBinError(lastCombinedBin, hV3_Sides->GetBinError(2));
+        hV4_Combined->SetBinContent(lastCombinedBin, hV4_Sides->GetBinContent(2));
+        hV4_Combined->SetBinError(lastCombinedBin, hV4_Sides->GetBinError(2));
+    }
 
     hV2->Write();
     hV3->Write();
@@ -484,15 +522,23 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     hV2_Sides->Write();
     hV3_Sides->Write();
     hV4_Sides->Write();
-    hV2_Combined->Write();
-    hV3_Combined->Write();
-    hV4_Combined->Write();
+    if (!sideSpecificOutput) {
+        hV2_Combined->Write();
+        hV3_Combined->Write();
+        hV4_Combined->Write();
+    }
 
-    std::cout << "[3times2PC] Side summary v2: FT0C_left=" << hV2_Sides->GetBinContent(1)
-              << " +/- " << hV2_Sides->GetBinError(1)
-              << ", FT0A_right=" << hV2_Sides->GetBinContent(2)
-              << " +/- " << hV2_Sides->GetBinError(2) << std::endl;
-    std::cout << "[3times2PC] Wrote combined histogram with FT0C + 16 TPC bins + FT0A" << std::endl;
+    if (sideSpecificOutput) {
+        std::cout << "[3times2PC] Side summary v2: " << (ft0CSideOnly ? "FT0C" : "FT0A")
+                  << "=" << hV2_Sides->GetBinContent(1)
+                  << " +/- " << hV2_Sides->GetBinError(1) << std::endl;
+    } else {
+        std::cout << "[3times2PC] Side summary v2: FT0C_left=" << hV2_Sides->GetBinContent(1)
+                  << " +/- " << hV2_Sides->GetBinError(1)
+                  << ", FT0A_right=" << hV2_Sides->GetBinContent(2)
+                  << " +/- " << hV2_Sides->GetBinError(2) << std::endl;
+        std::cout << "[3times2PC] Wrote combined histogram with FT0C + 16 TPC bins + FT0A" << std::endl;
+    }
 
     outputFile.Close();
 
@@ -504,7 +550,7 @@ void ProcessConfig(Bool_t isNch, std::vector<InputUnit> dataList, std::string ou
     delete vnDeltaFile_LR;
 
     std::cout << "ALICE " << collisionSystemName << " 3times2PC (eta differential)" << std::endl;
-    std::cout << "Output file: " << Form("./3times2PC/Vn_%s_%s_%i_%i.root", outputFileName.c_str(), splitName.c_str(), dataLR.minRange, dataLR.maxRange) << std::endl;
+    std::cout << "Output file: " << Form("./3times2PC/Vn_%s_%s_%i_%i.root", outputFileName.c_str(), outputSplitName.c_str(), dataLR.minRange, dataLR.maxRange) << std::endl;
 }
 
 VnUnit* Vn3times2PC(Bool_t isNch, Bool_t isPtDiff, std::vector<InputUnit> dataList, std::vector<TFile*>& vnDeltaFiles, Double_t pTMin=0, Double_t pTMax=0) {
