@@ -872,8 +872,8 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         fout->cd();
         c1->Write();
         // write canvas to file
-        // c1->SaveAs(Form("./ProcessOutput/Mixed_%s_%s_%i_%i.png", fileNameSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange)));
-        // delete c1;
+        c1->SaveAs(Form("./ProcessOutput/Mixed_%s_%s_%i_%i.png", fileNameSuffix.c_str(), splitName.c_str(), int(minRange), int(maxRange)));
+        delete c1;
 
         // Write histograms
         hPhiEtaSMsum->Write();
