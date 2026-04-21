@@ -1,0 +1,3 @@
+[submodule "dihadronanalysis"]
+path = dihadronanalysis
+url = https://gitlab.cern.ch/zhlu/dihadronanalysis.git
