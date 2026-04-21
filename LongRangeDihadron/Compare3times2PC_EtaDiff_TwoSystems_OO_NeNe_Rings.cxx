@@ -141,7 +141,11 @@ TH1D* BuildRingToFullDeltaPercentHistogram(const char* name) {
     return h;
 }
 
-std::vector<EtaPoint> BuildEtaPoints(TH1D* hFull, TH1D* hInnerSides, TH1D* hOuterSides, bool useRings) {
+std::vector<EtaPoint> BuildEtaPoints(TH1D* hFull,
+                                     TH1D* hInnerSides,
+                                     TH1D* hOuterSides,
+                                     bool useRings,
+                                     bool ft0aInnerAtLargeAbsEta) {
     std::vector<EtaPoint> points;
     if (!hFull) return points;
 
@@ -181,10 +185,17 @@ std::vector<EtaPoint> BuildEtaPoints(TH1D* hFull, TH1D* hInnerSides, TH1D* hOute
         pushPoint(-2.4, ft0cOuter.first, 0.3, 0.3, ft0cOuter.second, ft0cOuter.second, false);
         pushPoint(2.4, ft0cOuter.first, 0.3, 0.3, ft0cOuter.second, ft0cOuter.second, true);
         pushPoint(3.0, ft0cInner.first, 0.3, 0.3, ft0cInner.second, ft0cInner.second, true);
-        pushPoint(3.85, ft0aInner.first, 0.35, 0.35, ft0aInner.second, ft0aInner.second, false);
-        pushPoint(4.55, ft0aOuter.first, 0.35, 0.35, ft0aOuter.second, ft0aOuter.second, false);
-        pushPoint(-4.55, ft0aOuter.first, 0.35, 0.35, ft0aOuter.second, ft0aOuter.second, true);
-        pushPoint(-3.85, ft0aInner.first, 0.35, 0.35, ft0aInner.second, ft0aInner.second, true);
+        if (ft0aInnerAtLargeAbsEta) {
+            pushPoint(4.55, ft0aInner.first, 0.35, 0.35, ft0aInner.second, ft0aInner.second, false);
+            pushPoint(3.85, ft0aOuter.first, 0.35, 0.35, ft0aOuter.second, ft0aOuter.second, false);
+            pushPoint(-3.85, ft0aOuter.first, 0.35, 0.35, ft0aOuter.second, ft0aOuter.second, true);
+            pushPoint(-4.55, ft0aInner.first, 0.35, 0.35, ft0aInner.second, ft0aInner.second, true);
+        } else {
+            pushPoint(3.85, ft0aInner.first, 0.35, 0.35, ft0aInner.second, ft0aInner.second, false);
+            pushPoint(4.55, ft0aOuter.first, 0.35, 0.35, ft0aOuter.second, ft0aOuter.second, false);
+            pushPoint(-4.55, ft0aOuter.first, 0.35, 0.35, ft0aOuter.second, ft0aOuter.second, true);
+            pushPoint(-3.85, ft0aInner.first, 0.35, 0.35, ft0aInner.second, ft0aInner.second, true);
+        }
     } else {
         const double ft0cY = hFull->GetBinContent(1);
         const double ft0cErr = hFull->GetBinError(1);
@@ -277,7 +288,10 @@ std::vector<EtaPoint> BuildRatioPoints(const std::vector<EtaPoint>& numPoints, c
     return ratioPoints;
 }
 
-std::vector<EtaPoint> BuildRingToFullPoints(TH1D* hFull, TH1D* hInnerSides, TH1D* hOuterSides) {
+std::vector<EtaPoint> BuildRingToFullPoints(TH1D* hFull,
+                                            TH1D* hInnerSides,
+                                            TH1D* hOuterSides,
+                                            bool ft0aInnerAtLargeAbsEta) {
     std::vector<EtaPoint> points;
     if (!hFull || !hInnerSides || !hOuterSides) return points;
 
@@ -316,10 +330,17 @@ std::vector<EtaPoint> BuildRingToFullPoints(TH1D* hFull, TH1D* hInnerSides, TH1D
     pushRatioPoint(2.4, ft0cOuterY, ft0cOuterErr, fullFt0cY, fullFt0cErr, true, 0.3);
     pushRatioPoint(3.0, ft0cInnerY, ft0cInnerErr, fullFt0cY, fullFt0cErr, true, 0.3);
 
-    pushRatioPoint(3.85, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, false, 0.35);
-    pushRatioPoint(4.55, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, false, 0.35);
-    pushRatioPoint(-4.55, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, true, 0.35);
-    pushRatioPoint(-3.85, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, true, 0.35);
+    if (ft0aInnerAtLargeAbsEta) {
+        pushRatioPoint(4.55, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, false, 0.35);
+        pushRatioPoint(3.85, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, false, 0.35);
+        pushRatioPoint(-3.85, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, true, 0.35);
+        pushRatioPoint(-4.55, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, true, 0.35);
+    } else {
+        pushRatioPoint(3.85, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, false, 0.35);
+        pushRatioPoint(4.55, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, false, 0.35);
+        pushRatioPoint(-4.55, ft0aOuterY, ft0aOuterErr, fullFt0aY, fullFt0aErr, true, 0.35);
+        pushRatioPoint(-3.85, ft0aInnerY, ft0aInnerErr, fullFt0aY, fullFt0aErr, true, 0.35);
+    }
 
     return points;
 }
@@ -539,14 +560,15 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
                                     int color,
                                     TH1D* hFull,
                                     TH1D* hInner,
-                                    TH1D* hOuter) {
+                                    TH1D* hOuter,
+                                    bool ft0aInnerAtLargeAbsEta) {
         if (!hFull || !hInner || !hOuter) {
             std::cout << "[Compare rings] Skip ring/full for " << systemLabel
                       << " v" << harmonic << ": missing full or ring histogram." << std::endl;
             return;
         }
 
-        std::vector<EtaPoint> ringToFullPoints = BuildRingToFullPoints(hFull, hInner, hOuter);
+        std::vector<EtaPoint> ringToFullPoints = BuildRingToFullPoints(hFull, hInner, hOuter, ft0aInnerAtLargeAbsEta);
         if (ringToFullPoints.empty()) {
             std::cout << "[Compare rings] Skip ring/full for " << systemLabel
                       << " v" << harmonic << ": no valid ratio points." << std::endl;
@@ -727,8 +749,8 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
         }
 
         const bool ooHasRings = (hOOInner && hOOOuter);
-        std::vector<EtaPoint> ooPoints = BuildEtaPoints(hOOFull, hOOInner, hOOOuter, ooHasRings);
-        std::vector<EtaPoint> nePoints = BuildEtaPoints(hNeNeFull, hNeNeInner, hNeNeOuter, true);
+        std::vector<EtaPoint> ooPoints = BuildEtaPoints(hOOFull, hOOInner, hOOOuter, ooHasRings, false);
+        std::vector<EtaPoint> nePoints = BuildEtaPoints(hNeNeFull, hNeNeInner, hNeNeOuter, true, false);
         std::vector<EtaPoint> ratioPoints = BuildRatioPoints(nePoints, ooPoints);
 
         TH1D* hFrame = BuildEtaScaleHistogram(Form("hFrame_v%d", harmonic), "", harmonic);
@@ -949,7 +971,8 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
                              kRed + 1,
                              hOOFull,
                              hOOInner,
-                             hOOOuter);
+                             hOOOuter,
+                             true);
 
         DrawRingToFullSystem(harmonic,
                              Form("cRingToFull_NeNe_v%d", harmonic),
@@ -959,7 +982,8 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
                              kGreen + 2,
                              hNeNeFull,
                              hNeNeInner,
-                             hNeNeOuter);
+                             hNeNeOuter,
+                             false);
 
         anySaved = true;
         if (!ooHasRings) {
