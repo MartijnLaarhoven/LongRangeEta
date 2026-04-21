@@ -109,8 +109,9 @@ bool IsFT0CSideOutput(const std::string& outputFileName) {
 std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
     auto makeRingConfig = [](const std::string& roleName,
                              const std::vector<InputUnit>& dataList,
-                             const std::string& outputFileName) {
-        return NamedConfigUnit(roleName, ConfigUnit(kCent, dataList, outputFileName));
+                             const std::string& outputFileName,
+                             Bool_t isNch = kCent) {
+        return NamedConfigUnit(roleName, ConfigUnit(isNch, dataList, outputFileName));
     };
 
     if (systemName == "O-O") {
@@ -119,17 +120,36 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
                 {InputUnit("LHC25ae_pass2_648788", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648798", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_648798")),
             makeRingConfig("INNER_RING_FT0C_3x2",
-                {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, kTemplateFit, 0, 20)},
+                {InputUnit("LHC25ae_pass2_648788", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648800", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_innerRing_FT0C"),
             makeRingConfig("INNER_RING_FT0A_3x2",
                 {InputUnit("LHC25ae_pass2_638221", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648799", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_innerRing_FT0A"),
             makeRingConfig("OUTER_RING_FT0C_3x2",
-                {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, kTemplateFit, 0, 20)},
+                {InputUnit("LHC25ae_pass2_648788", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_outerRing_FT0C"),
             makeRingConfig("OUTER_RING_FT0A_3x2",
                 {InputUnit("LHC25ae_pass2_634103", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_653257", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_outerRing_FT0A")
+        };
+    }
+    if (systemName == "O-O-DCAz05") {
+        return {
+            NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
+                {InputUnit("LHC25ae_pass2_659116", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659116", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659116", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_659116_DCAz05")),
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659117", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659117", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0C_DCAz05"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659117", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659117", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659117", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0A_DCAz05"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659118", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659118", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659119", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0C_DCAz05"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659118", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659118", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659118", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0A_DCAz05")
         };
     }
     if (systemName == "Ne-Ne") {
@@ -138,13 +158,13 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
                 {InputUnit("LHC25af_pass2_645173", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645173", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_645746", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25af_pass2_645746")),
             makeRingConfig("INNER_RING_FT0C_3x2",
-                {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, kTemplateFit, 0, 20)},
+                {InputUnit("LHC25af_pass2_645173", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50560", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25af_pass2_innerRing_FT0C"),
             makeRingConfig("INNER_RING_FT0A_3x2",
                 {InputUnit("LHC25af_pass2_632504", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_631290", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50559", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25af_pass2_innerRing_FT0A"),
             makeRingConfig("OUTER_RING_FT0C_3x2",
-                {InputUnit("LHC25af_pass2_637597", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637594", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, kTemplateFit, 0, 20)},
+                {InputUnit("LHC25af_pass2_645173", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637594", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50562", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25af_pass2_outerRing_FT0C"),
             makeRingConfig("OUTER_RING_FT0A_3x2",
                 {InputUnit("LHC25af_pass2_637597", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_637594", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25af_pass2_646139_id50561", kFT0AFT0C, kTemplateFit, 0, 20)},
@@ -172,7 +192,19 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
         return {
             NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
                 {InputUnit("LHC25ad_pass2_650295", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_650297", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, kTemplateFit, 10, 50)},
-                "LHC25ad_pass2_650299"))
+                "LHC25ad_pass2_650299")),
+            makeRingConfig("NCH_INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ad_pass2_658082", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658090", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658085", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ad_pass2_innerRing_nch10_50_FT0A", kNch),
+            makeRingConfig("NCH_INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ad_pass2_658082", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658090", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658086", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ad_pass2_innerRing_nch10_50_FT0C", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ad_pass2_658084", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658089", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658087", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ad_pass2_outerRing_nch10_50_FT0A", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ad_pass2_658084", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658089", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ad_pass2_658088", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ad_pass2_outerRing_nch10_50_FT0C", kNch)
         };
     }
     if (systemName == "pp") {
@@ -186,35 +218,72 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
         return {
             NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
                 {InputUnit("LHC24af_pass1_650589", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_650589", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_650588", kFT0AFT0C, kTemplateFit, 10, 50)},
-                "LHC24af_pass1_650588"))
+                "LHC24af_pass1_650588")),
+            makeRingConfig("NCH_INNER_RING_FT0C_3x2",
+                {InputUnit("LHC24af_pass1_658242", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_658244", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_658239", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC24af_pass1_innerRing_nch10_50_FT0C", kNch),
+            makeRingConfig("NCH_INNER_RING_FT0A_3x2",
+                {InputUnit("LHC24af_pass1_658242", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_658244", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_658238", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC24af_pass1_innerRing_nch10_50_FT0A", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0C_3x2",
+                // Temporary fallback: 658317 is the wrong pp outer-FT0C ring file; use the standard FT0A×FT0C case for now.
+                {InputUnit("LHC24af_pass1_658243", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_658245", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_650588", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC24af_pass1_outerRing_nch10_50_FT0C", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC24af_pass1_658243", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_658245", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC24af_pass1_658240", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC24af_pass1_outerRing_nch10_50_FT0A", kNch)
         };
     }
     if (systemName == "Ne-Ne-Nch") {
         return {
             NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
                 {InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650315_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
-                "LHC25af_pass2_650315_nch10_50"))
+                "LHC25af_pass2_650315_nch10_50")),
+            makeRingConfig("NCH_INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25af_pass2_660449", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_660449", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25af_pass2_innerRing_nch10_50_FT0A", kNch),
+            makeRingConfig("NCH_INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25af_pass2_650316_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_658367", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_658367", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25af_pass2_innerRing_nch10_50_FT0C", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25af_pass2_658370", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_650317_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_658370", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25af_pass2_outerRing_nch10_50_FT0A", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25af_pass2_658370", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_658371", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25af_pass2_658371", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25af_pass2_outerRing_nch10_50_FT0C", kNch)
         };
     }
     if (systemName == "O-O-Nch") {
         return {
             NamedConfigUnit("NCH_FULL_3x2", ConfigUnit(kNch,
-                {InputUnit("LHC25ae_pass2_653254", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_653254", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, kTemplateFit, 10, 50)},
-                "LHC25ae_pass2_653254"))
+                {InputUnit("LHC25ae_pass2_650313_nch10_50", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_650312_nch10_50", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_650311_nch10_50", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ae_pass2_650311_nch10_50")),
+            makeRingConfig("NCH_INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_658351", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658353", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658353", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ae_pass2_innerRing_nch10_50_FT0C", kNch),
+            makeRingConfig("NCH_INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_658351", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658353", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658351", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ae_pass2_innerRing_nch10_50_FT0A", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_658356", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658357", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658357", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ae_pass2_outerRing_nch10_50_FT0C", kNch),
+            makeRingConfig("NCH_OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_658356", kTPCFT0A, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658357", kTPCFT0C, kTemplateFit, 10, 50), InputUnit("LHC25ae_pass2_658356", kFT0AFT0C, kTemplateFit, 10, 50)},
+                "LHC25ae_pass2_outerRing_nch10_50_FT0A", kNch)
         };
     }
     return {};
 }
 
-void Process_3times2PC() {
+void Process_3times2PC(const std::string& systemOverride = "") {
     // 不显示窗口
     gROOT->SetBatch(kTRUE);
     
     // Create output directory
     gSystem->Exec("mkdir -p ./3times2PC");
     
-    // Options: "O-O", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "Ne-Ne-Legacy", "p-O", "p-O-Nch", "pp", "pp-Nch"
-    const std::string activeSystem = "pp-Nch";
+    // Options: "O-O", "O-O-DCAz05", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "Ne-Ne-Legacy", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    const std::string activeSystem = systemOverride.empty() ? "pp-Nch" : systemOverride;
     std::vector<NamedConfigUnit> namedConfigList = Build3x2ConfigList(activeSystem);
     std::vector<ConfigUnit> configList;
     configList.reserve(namedConfigList.size());

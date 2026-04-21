@@ -129,6 +129,21 @@ std::vector<NamedConfigUnit> BuildTemplateFitConfigList(const std::string& syste
             NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648788"))
         };
     }
+    if (systemName == "O-O-DCAz05") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659116", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659116", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659116")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659116", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659116", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659116")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659116", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659116", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659116")),
+            NamedConfigUnit("INNER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659117", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659117", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659117")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659117", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659117", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659117")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659118", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659118", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659118")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659118", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659118", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659118")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659117", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659117", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659117")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659120")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659118", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659118", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659118")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659119", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659119", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659119"))
+        };
+    }
     if (systemName == "Ne-Ne") {
         return {
             NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25af_pass2_645173", kTPCFT0A, 80, 100), {InputUnit("LHC25af_pass2_645173", kTPCFT0A, 0, 20)}, "LHC25af_pass2_645173")),
@@ -161,35 +176,75 @@ std::vector<NamedConfigUnit> BuildTemplateFitConfigList(const std::string& syste
         return {
             NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_650295", kTPCFT0A, 0, 10), {InputUnit("LHC25ad_pass2_650295", kTPCFT0A, 10, 50)}, "LHC25ad_pass2_650295")),
             NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_650297", kTPCFT0C, 0, 10), {InputUnit("LHC25ad_pass2_650297", kTPCFT0C, 10, 50)}, "LHC25ad_pass2_650297")),
-            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, 0, 10), {InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, 10, 50)}, "LHC25ad_pass2_650299"))
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, 0, 10), {InputUnit("LHC25ad_pass2_650299", kFT0AFT0C, 10, 50)}, "LHC25ad_pass2_650299")),
+
+            NamedConfigUnit("NCH_INNER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_658082", kTPCFT0A, 0, 10), {InputUnit("LHC25ad_pass2_658082", kTPCFT0A, 10, 50)}, "LHC25ad_pass2_658082")),
+            NamedConfigUnit("NCH_OUTER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_658084", kTPCFT0A, 0, 10), {InputUnit("LHC25ad_pass2_658084", kTPCFT0A, 10, 50)}, "LHC25ad_pass2_658084")),
+            NamedConfigUnit("NCH_INNER_LR_FT0A",     ConfigUnit(kNch, false, false, InputUnit("LHC25ad_pass2_658085", kFT0AFT0C, 0, 10), {InputUnit("LHC25ad_pass2_658085", kFT0AFT0C, 10, 50)}, "LHC25ad_pass2_658085")),
+            NamedConfigUnit("NCH_INNER_LR_FT0C",     ConfigUnit(kNch, false, false, InputUnit("LHC25ad_pass2_658086", kFT0AFT0C, 0, 10), {InputUnit("LHC25ad_pass2_658086", kFT0AFT0C, 10, 50)}, "LHC25ad_pass2_658086")),
+            NamedConfigUnit("NCH_OUTER_LR_FT0A",     ConfigUnit(kNch, false, false, InputUnit("LHC25ad_pass2_658087", kFT0AFT0C, 0, 10), {InputUnit("LHC25ad_pass2_658087", kFT0AFT0C, 10, 50)}, "LHC25ad_pass2_658087")),
+            NamedConfigUnit("NCH_OUTER_LR_FT0C",     ConfigUnit(kNch, false, false, InputUnit("LHC25ad_pass2_658088", kFT0AFT0C, 0, 10), {InputUnit("LHC25ad_pass2_658088", kFT0AFT0C, 10, 50)}, "LHC25ad_pass2_658088")),
+            NamedConfigUnit("NCH_OUTER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_658089", kTPCFT0C, 0, 10), {InputUnit("LHC25ad_pass2_658089", kTPCFT0C, 10, 50)}, "LHC25ad_pass2_658089")),
+            NamedConfigUnit("NCH_INNER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ad_pass2_658090", kTPCFT0C, 0, 10), {InputUnit("LHC25ad_pass2_658090", kTPCFT0C, 10, 50)}, "LHC25ad_pass2_658090"))
         };
     }
     if (systemName == "pp-Nch") {
         return {
             NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_650589", kTPCFT0A, 0, 10), {InputUnit("LHC24af_pass1_650589", kTPCFT0A, 10, 50)}, "LHC24af_pass1_650589")),
             NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_650589", kTPCFT0C, 0, 10), {InputUnit("LHC24af_pass1_650589", kTPCFT0C, 10, 50)}, "LHC24af_pass1_650589")),
-            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 0, 10), {InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 10, 50)}, "LHC24af_pass1_650588"))
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 0, 10), {InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 10, 50)}, "LHC24af_pass1_650588")),
+
+            NamedConfigUnit("NCH_INNER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_658242", kTPCFT0A, 0, 10), {InputUnit("LHC24af_pass1_658242", kTPCFT0A, 10, 50)}, "LHC24af_pass1_658242")),
+            NamedConfigUnit("NCH_INNER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_658244", kTPCFT0C, 0, 10), {InputUnit("LHC24af_pass1_658244", kTPCFT0C, 10, 50)}, "LHC24af_pass1_658244")),
+            NamedConfigUnit("NCH_OUTER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_658243", kTPCFT0A, 0, 10), {InputUnit("LHC24af_pass1_658243", kTPCFT0A, 10, 50)}, "LHC24af_pass1_658243")),
+            NamedConfigUnit("NCH_OUTER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC24af_pass1_658245", kTPCFT0C, 0, 10), {InputUnit("LHC24af_pass1_658245", kTPCFT0C, 10, 50)}, "LHC24af_pass1_658245")),
+
+            NamedConfigUnit("NCH_INNER_LR_FT0A", ConfigUnit(kNch, false, false, InputUnit("LHC24af_pass1_658238", kFT0AFT0C, 0, 10), {InputUnit("LHC24af_pass1_658238", kFT0AFT0C, 10, 50)}, "LHC24af_pass1_658238")),
+            NamedConfigUnit("NCH_INNER_LR_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC24af_pass1_658239", kFT0AFT0C, 0, 10), {InputUnit("LHC24af_pass1_658239", kFT0AFT0C, 10, 50)}, "LHC24af_pass1_658239")),
+            NamedConfigUnit("NCH_OUTER_LR_FT0A", ConfigUnit(kNch, false, false, InputUnit("LHC24af_pass1_658240", kFT0AFT0C, 0, 10), {InputUnit("LHC24af_pass1_658240", kFT0AFT0C, 10, 50)}, "LHC24af_pass1_658240")),
+            // Temporary fallback: 658317 is the wrong pp outer-FT0C ring file; use the standard FT0A×FT0C case for now.
+            NamedConfigUnit("NCH_OUTER_LR_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 0, 10), {InputUnit("LHC24af_pass1_650588", kFT0AFT0C, 10, 50)}, "LHC24af_pass1_650588"))
         };
     }
     if (systemName == "Ne-Ne-Nch") {
         return {
             NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_650316", kTPCFT0A, 0, 10), {InputUnit("LHC25af_pass2_650316", kTPCFT0A, 10, 50)}, "LHC25af_pass2_650316_nch10_50")),
             NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_650317", kTPCFT0C, 0, 10), {InputUnit("LHC25af_pass2_650317", kTPCFT0C, 10, 50)}, "LHC25af_pass2_650317_nch10_50")),
-            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_650315_nch10_50"))
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_650315", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_650315_nch10_50")),
+
+            NamedConfigUnit("NCH_INNER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_660449", kTPCFT0A, 0, 10), {InputUnit("LHC25af_pass2_660449", kTPCFT0A, 10, 50)}, "LHC25af_pass2_660449")),
+            NamedConfigUnit("NCH_INNER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_658367", kTPCFT0C, 0, 10), {InputUnit("LHC25af_pass2_658367", kTPCFT0C, 10, 50)}, "LHC25af_pass2_658367")),
+            NamedConfigUnit("NCH_INNER_LR_FT0A",     ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_660449", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_660449", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_660449")),
+            NamedConfigUnit("NCH_INNER_LR_FT0C",     ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_658367", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_658367", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_658367")),
+
+            NamedConfigUnit("NCH_OUTER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_658370", kTPCFT0A, 0, 10), {InputUnit("LHC25af_pass2_658370", kTPCFT0A, 10, 50)}, "LHC25af_pass2_658370")),
+            NamedConfigUnit("NCH_OUTER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25af_pass2_658371", kTPCFT0C, 0, 10), {InputUnit("LHC25af_pass2_658371", kTPCFT0C, 10, 50)}, "LHC25af_pass2_658371")),
+            NamedConfigUnit("NCH_OUTER_LR_FT0A",     ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_658370", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_658370", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_658370")),
+            NamedConfigUnit("NCH_OUTER_LR_FT0C",     ConfigUnit(kNch, false, false, InputUnit("LHC25af_pass2_658371", kFT0AFT0C, 0, 10), {InputUnit("LHC25af_pass2_658371", kFT0AFT0C, 10, 50)}, "LHC25af_pass2_658371"))
         };
     }
     if (systemName == "O-O-Nch") {
         return {
             NamedConfigUnit("NCH_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_653254", kTPCFT0A, 0, 10), {InputUnit("LHC25ae_pass2_653254", kTPCFT0A, 10, 50)}, "LHC25ae_pass2_653254")),
             NamedConfigUnit("NCH_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_653254", kTPCFT0C, 0, 10), {InputUnit("LHC25ae_pass2_653254", kTPCFT0C, 10, 50)}, "LHC25ae_pass2_653254")),
-            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_653254"))
+            NamedConfigUnit("NCH_LR_FT0A_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_653254", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_653254")),
+
+            NamedConfigUnit("NCH_INNER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_658351", kTPCFT0A, 0, 10), {InputUnit("LHC25ae_pass2_658351", kTPCFT0A, 10, 50)}, "LHC25ae_pass2_658351")),
+            NamedConfigUnit("NCH_INNER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_658353", kTPCFT0C, 0, 10), {InputUnit("LHC25ae_pass2_658353", kTPCFT0C, 10, 50)}, "LHC25ae_pass2_658353")),
+            NamedConfigUnit("NCH_OUTER_LM_TPC_FT0A", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_658356", kTPCFT0A, 0, 10), {InputUnit("LHC25ae_pass2_658356", kTPCFT0A, 10, 50)}, "LHC25ae_pass2_658356")),
+            NamedConfigUnit("NCH_OUTER_MR_TPC_FT0C", ConfigUnit(kNch, false, true,  InputUnit("LHC25ae_pass2_658357", kTPCFT0C, 0, 10), {InputUnit("LHC25ae_pass2_658357", kTPCFT0C, 10, 50)}, "LHC25ae_pass2_658357")),
+
+            NamedConfigUnit("NCH_INNER_LR_FT0A", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_658351", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_658351", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_658351")),
+            NamedConfigUnit("NCH_INNER_LR_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_658353", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_658353", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_658353")),
+            NamedConfigUnit("NCH_OUTER_LR_FT0A", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_658356", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_658356", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_658356")),
+            NamedConfigUnit("NCH_OUTER_LR_FT0C", ConfigUnit(kNch, false, false, InputUnit("LHC25ae_pass2_658357", kFT0AFT0C, 0, 10), {InputUnit("LHC25ae_pass2_658357", kFT0AFT0C, 10, 50)}, "LHC25ae_pass2_658357"))
         };
     }
     return {};
 }
 
 //==============================================================
-void Process_TemplateFit() {
+void Process_TemplateFit(const std::string& systemOverride = "") {
     // 不显示窗口
     // gROOT->SetBatch(kTRUE);
     TH1::AddDirectory(kFALSE);
@@ -200,8 +255,8 @@ void Process_TemplateFit() {
     gSystem->Exec("mkdir -p ./TemplateFit/PDFs");
     gSystem->Exec("mkdir -p ./TemplateFit/EtaDiff/PDFs");
     
-    // Options: "O-O", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
-    const std::string activeSystem = "O-O";
+    // Options: "O-O", "O-O-DCAz05", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    const std::string activeSystem = systemOverride.empty() ? "pp-Nch" : systemOverride;
     std::vector<NamedConfigUnit> namedConfigList = BuildTemplateFitConfigList(activeSystem);
     std::vector<ConfigUnit> configList;
     configList.reserve(namedConfigList.size());
@@ -743,6 +798,31 @@ VnUnit* TemplateFit(Bool_t isNch, InputUnit templ, InputUnit data, Bool_t cn2Tov
             std::cerr << "Cannot fit sample: " << data.fileNameSuffix << " sample: " << sample << std::endl;
             exit(1);
         }
+        auto isFinitePositive = [](double x) {
+            return std::isfinite(x) && x > 0.0;
+        };
+        bool badSample = false;
+        if (!isFinitePositive(vnTemp->v2) || !std::isfinite(vnTemp->v2_err) || vnTemp->v2_err <= 0.0) {
+            badSample = true;
+        }
+        if (!badSample && isFinitePositive(vnResult->v2)) {
+            const double ratio = vnTemp->v2 / vnResult->v2;
+            if (!std::isfinite(ratio) || ratio > 20.0 || ratio < 0.05) {
+                badSample = true;
+            }
+        }
+        if (badSample) {
+            std::cerr << "[TemplateFit] Outlier bootstrap sample " << sample
+                      << " for " << data.fileNameSuffix
+                      << " (v2=" << vnTemp->v2 << " +/- " << vnTemp->v2_err
+                      << "), excluding from bootstrap error estimate." << std::endl;
+            vnTemp->v2 = -1.0;
+            vnTemp->v2_err = 10.0;
+            vnTemp->v3 = -1.0;
+            vnTemp->v3_err = 10.0;
+            vnTemp->v4 = -1.0;
+            vnTemp->v4_err = 10.0;
+        }
         // Count valid samples (not sentinel values v=-1, err=10)
         if (!(vnTemp->v2 == -1.0 && vnTemp->v2_err == 10.0)) {
             validSampleCount++;
@@ -909,6 +989,32 @@ VnUnit* TemplateFit_EtaDiff(Bool_t isNch, InputUnit templ, InputUnit data, Bool_
             if (!vnTemp_EtaDiff) {
                 std::cerr << "Cannot fit eta-diff sample: " << data.fileNameSuffix << " sample: " << sample << std::endl;
                 exit(1);
+            }
+            auto isFinitePositive = [](double x) {
+                return std::isfinite(x) && x > 0.0;
+            };
+            bool badSample = false;
+            if (!isFinitePositive(vnTemp_EtaDiff->v2) || !std::isfinite(vnTemp_EtaDiff->v2_err) || vnTemp_EtaDiff->v2_err <= 0.0) {
+                badSample = true;
+            }
+            if (!badSample && isFinitePositive(vnResult_EtaDiff->v2)) {
+                const double ratio = vnTemp_EtaDiff->v2 / vnResult_EtaDiff->v2;
+                if (!std::isfinite(ratio) || ratio > 20.0 || ratio < 0.05) {
+                    badSample = true;
+                }
+            }
+            if (badSample) {
+                std::cerr << "[TemplateFit_EtaDiff] Outlier bootstrap sample " << sample
+                          << " for " << data.fileNameSuffix
+                          << " eta [" << etaMin << ", " << etaMax << "]"
+                          << " (v2=" << vnTemp_EtaDiff->v2 << " +/- " << vnTemp_EtaDiff->v2_err
+                          << "), excluding from bootstrap error estimate." << std::endl;
+                vnTemp_EtaDiff->v2 = -1.0;
+                vnTemp_EtaDiff->v2_err = 10.0;
+                vnTemp_EtaDiff->v3 = -1.0;
+                vnTemp_EtaDiff->v3_err = 10.0;
+                vnTemp_EtaDiff->v4 = -1.0;
+                vnTemp_EtaDiff->v4_err = 10.0;
             }
             // Count valid samples (not sentinel values v=-1, err=10)
             if (!(vnTemp_EtaDiff->v2 == -1.0 && vnTemp_EtaDiff->v2_err == 10.0)) {
