@@ -133,25 +133,125 @@ std::vector<NamedConfigUnit> Build3x2ConfigList(const std::string& systemName) {
                 "LHC25ae_pass2_outerRing_FT0A")
         };
     }
+
+    if (systemName == "O-O-Vz7cm") {
+        return {
+            NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
+                {InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648798_Vz7cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_648798_Vz7cm")),
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099_Vz7cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648800_Vz7cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0C_Vz7cm"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_638221_Vz7cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099_Vz7cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648799_Vz7cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0A_Vz7cm"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591_Vz7cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788_Vz7cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0C_Vz7cm"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_634103_Vz7cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591_Vz7cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_653257_Vz7cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0A_Vz7cm")
+        };
+    }
+
+    if (systemName == "O-O-Vz9cm") {
+        return {
+            NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
+                {InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648798_Vz9cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_648798_Vz9cm")),
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099_Vz9cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648800_Vz9cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0C_Vz9cm"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_638221_Vz9cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_634099_Vz9cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648799_Vz9cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0A_Vz9cm"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591_Vz9cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_648788_Vz9cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0C_Vz9cm"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_634103_Vz9cm", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_637591_Vz9cm", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_653257_Vz9cm", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0A_Vz9cm")
+        };
+    }
     if (systemName == "O-O-DCAz05") {
         return {
             NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
                 {InputUnit("LHC25ae_pass2_659116", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659116", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659116", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_659116_DCAz05")),
             makeRingConfig("INNER_RING_FT0C_3x2",
-                {InputUnit("LHC25ae_pass2_659117", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659117", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, kTemplateFit, 0, 20)},
+                    {InputUnit("LHC25ae_pass2_659117", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659117", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_innerRing_FT0C_DCAz05"),
             makeRingConfig("INNER_RING_FT0A_3x2",
                 {InputUnit("LHC25ae_pass2_659117", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659117", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659117", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_innerRing_FT0A_DCAz05"),
             makeRingConfig("OUTER_RING_FT0C_3x2",
-                {InputUnit("LHC25ae_pass2_659118", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659118", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659119", kFT0AFT0C, kTemplateFit, 0, 20)},
+                    {InputUnit("LHC25ae_pass2_659118", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659118", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659119", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_outerRing_FT0C_DCAz05"),
             makeRingConfig("OUTER_RING_FT0A_3x2",
                 {InputUnit("LHC25ae_pass2_659118", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659118", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659118", kFT0AFT0C, kTemplateFit, 0, 20)},
                 "LHC25ae_pass2_outerRing_FT0A_DCAz05")
         };
     }
+    if (systemName == "O-O-TPCCrossedRows90") {
+        return {
+            NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
+                {InputUnit("LHC25ae_pass2_659120", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659120", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_659120_TPCCrossedRows90")),
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659121", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659121", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659123", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0C_TPCCrossedRows90"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659121", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659121", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659121", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0A_TPCCrossedRows90"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659122", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659122", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659124", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0C_TPCCrossedRows90"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659122", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659122", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659122", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0A_TPCCrossedRows90")
+        };
+    }
+
+    if (systemName == "O-O-TPCClusters70") {
+        return {
+            NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
+                {InputUnit("LHC25ae_pass2_659588_TPCClusters70", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659588_TPCClusters70", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659588_TPCClusters70", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_659588_TPCClusters70")),
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659592_TPCClusters70", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659592_TPCClusters70", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659594_TPCClusters70", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0C_TPCClusters70"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659592_TPCClusters70", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659592_TPCClusters70", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659592_TPCClusters70", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0A_TPCClusters70"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659593_TPCClusters70", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659593_TPCClusters70", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659595_TPCClusters70", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0C_TPCClusters70"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659593_TPCClusters70", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659593_TPCClusters70", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659593_TPCClusters70", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0A_TPCClusters70")
+        };
+    }
+
+    if (systemName == "O-O-Chi^2_TPCClusters4") {
+        return {
+            NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
+                {InputUnit("LHC25ae_pass2_659596_Chi2_TPCClusters4", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659596_Chi2_TPCClusters4", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659596_Chi2_TPCClusters4", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_659596_Chi2_TPCClusters4")),
+            makeRingConfig("INNER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659597_Chi2_TPCClusters4", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659597_Chi2_TPCClusters4", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_663826_Chi2_TPCClusters4", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0C_Chi2_TPCClusters4"),
+            makeRingConfig("INNER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659597_Chi2_TPCClusters4", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659597_Chi2_TPCClusters4", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659597_Chi2_TPCClusters4", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_innerRing_FT0A_Chi2_TPCClusters4"),
+            makeRingConfig("OUTER_RING_FT0C_3x2",
+                {InputUnit("LHC25ae_pass2_659598_Chi2_TPCClusters4", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659598_Chi2_TPCClusters4", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_664675_Chi2_TPCClusters4", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0C_Chi2_TPCClusters4"),
+            makeRingConfig("OUTER_RING_FT0A_3x2",
+                {InputUnit("LHC25ae_pass2_659598_Chi2_TPCClusters4", kTPCFT0A, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659598_Chi2_TPCClusters4", kTPCFT0C, kTemplateFit, 0, 20), InputUnit("LHC25ae_pass2_659598_Chi2_TPCClusters4", kFT0AFT0C, kTemplateFit, 0, 20)},
+                "LHC25ae_pass2_outerRing_FT0A_Chi2_TPCClusters4")
+        };
+    }
+
     if (systemName == "Ne-Ne") {
         return {
             NamedConfigUnit("FULL_3x2", ConfigUnit(kCent,
@@ -282,7 +382,7 @@ void Process_3times2PC(const std::string& systemOverride = "") {
     // Create output directory
     gSystem->Exec("mkdir -p ./3times2PC");
     
-    // Options: "O-O", "O-O-DCAz05", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "Ne-Ne-Legacy", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    // Options: "O-O", "O-O-Vz7cm", "O-O-Vz9cm", "O-O-DCAz05", "O-O-TPCCrossedRows90", "O-O-TPCClusters70", "O-O-Chi^2_TPCClusters4", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "Ne-Ne-Legacy", "p-O", "p-O-Nch", "pp", "pp-Nch"
     const std::string activeSystem = systemOverride.empty() ? "pp-Nch" : systemOverride;
     std::vector<NamedConfigUnit> namedConfigList = Build3x2ConfigList(activeSystem);
     std::vector<ConfigUnit> configList;

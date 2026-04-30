@@ -1,0 +1,7 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "./run.sh": true,
+        "root": true,
+        "rootls": true
+    }
+}

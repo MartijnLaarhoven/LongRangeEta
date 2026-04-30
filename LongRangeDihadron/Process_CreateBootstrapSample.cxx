@@ -58,6 +58,38 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
             CorrelationInputSpec("OUTER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_648788", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
         };
     }
+
+    if (systemName == "O-O-Vz7cm") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_648788_Vz7cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_648788_Vz7cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C", kFT0AFT0C, "LHC25ae_pass2_648798_Vz7cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LM_TPC_FT0A", kTPCFT0A,  "LHC25ae_pass2_638221_Vz7cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C", kTPCFT0C,  "LHC25ae_pass2_634099_Vz7cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A", kTPCFT0A,  "LHC25ae_pass2_634103_Vz7cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C", kTPCFT0C,  "LHC25ae_pass2_637591_Vz7cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0A",     kFT0AFT0C, "LHC25ae_pass2_648799_Vz7cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_648800_Vz7cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",     kFT0AFT0C, "LHC25ae_pass2_653257_Vz7cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_648788_Vz7cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "O-O-Vz9cm") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_648788_Vz9cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_648788_Vz9cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C", kFT0AFT0C, "LHC25ae_pass2_648798_Vz9cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LM_TPC_FT0A", kTPCFT0A,  "LHC25ae_pass2_638221_Vz9cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C", kTPCFT0C,  "LHC25ae_pass2_634099_Vz9cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A", kTPCFT0A,  "LHC25ae_pass2_634103_Vz9cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C", kTPCFT0C,  "LHC25ae_pass2_637591_Vz9cm", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0A",     kFT0AFT0C, "LHC25ae_pass2_648799_Vz9cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_648800_Vz9cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",     kFT0AFT0C, "LHC25ae_pass2_653257_Vz9cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_648788_Vz9cm", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
     if (systemName == "O-O-DCAz05") {
         return {
             CorrelationInputSpec("FULL_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659116", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
@@ -73,6 +105,57 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
             CorrelationInputSpec("OUTER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_659119", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
         };
     }
+    if (systemName == "O-O-TPCCrossedRows90") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659120", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659120", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C", kFT0AFT0C, "LHC25ae_pass2_659120", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LM_TPC_FT0A", kTPCFT0A,  "LHC25ae_pass2_659121", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C", kTPCFT0C,  "LHC25ae_pass2_659121", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A", kTPCFT0A,  "LHC25ae_pass2_659122", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C", kTPCFT0C,  "LHC25ae_pass2_659122", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0A",     kFT0AFT0C, "LHC25ae_pass2_659121", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_659123", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",     kFT0AFT0C, "LHC25ae_pass2_659122", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",     kFT0AFT0C, "LHC25ae_pass2_659124", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+    if (systemName == "O-O-TPCClusters70") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_659588", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_659588", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_659588", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659592", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659592", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659593", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659593", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659592", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659594", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659593", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659595", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "O-O-Chi^2_TPCClusters4") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_659596", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_659596", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_659596", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659597", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659597", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659598", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659598", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659597", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_663826", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659598", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_664675", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
     if (systemName == "Ne-Ne") {
         return {
             CorrelationInputSpec("FULL_LM_TPC_FT0A",  kTPCFT0A,  "LHC25af_pass2_645173",       kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
@@ -178,7 +261,7 @@ void CreateAggregateBootstrapSample(std::string fileNameSuffix, Int_t corrType, 
 
 void Process_CreateBootstrapSample(const std::string& systemOverride = "") {
     std::vector<InputUnit> inputList;
-    // Options: "O-O", "O-O-DCAz05", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    // Options: "O-O", "O-O-Vz7cm", "O-O-Vz9cm", "O-O-DCAz05", "O-O-TPCCrossedRows90", "O-O-TPCClusters70", "O-O-Chi^2_TPCClusters4", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
     const std::string activeSystem = systemOverride.empty() ? "pp-Nch" : systemOverride;
     const auto specs = BuildSystemInputSpecs(activeSystem);
 

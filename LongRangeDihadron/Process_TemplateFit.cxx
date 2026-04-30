@@ -129,6 +129,38 @@ std::vector<NamedConfigUnit> BuildTemplateFitConfigList(const std::string& syste
             NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648788"))
         };
     }
+
+    if (systemName == "O-O-Vz7cm") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_648788_Vz7cm")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788_Vz7cm", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_648788_Vz7cm")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648798_Vz7cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648798_Vz7cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648798_Vz7cm")),
+            NamedConfigUnit("INNER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_638221_Vz7cm", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_638221_Vz7cm", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_638221_Vz7cm")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_634099_Vz7cm", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_634099_Vz7cm", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_634099_Vz7cm")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_634103_Vz7cm", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_634103_Vz7cm", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_634103_Vz7cm")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_637591_Vz7cm", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_637591_Vz7cm", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_637591_Vz7cm")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648799_Vz7cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648799_Vz7cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648799_Vz7cm")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648800_Vz7cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648800_Vz7cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648800_Vz7cm")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_653257_Vz7cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_653257_Vz7cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_653257_Vz7cm")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648788_Vz7cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788_Vz7cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648788_Vz7cm"))
+        };
+    }
+
+    if (systemName == "O-O-Vz9cm") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_648788_Vz9cm")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788_Vz9cm", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_648788_Vz9cm")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648798_Vz9cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648798_Vz9cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648798_Vz9cm")),
+            NamedConfigUnit("INNER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_638221_Vz9cm", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_638221_Vz9cm", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_638221_Vz9cm")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_634099_Vz9cm", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_634099_Vz9cm", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_634099_Vz9cm")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_634103_Vz9cm", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_634103_Vz9cm", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_634103_Vz9cm")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_637591_Vz9cm", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_637591_Vz9cm", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_637591_Vz9cm")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648799_Vz9cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648799_Vz9cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648799_Vz9cm")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648800_Vz9cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648800_Vz9cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648800_Vz9cm")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_653257_Vz9cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_653257_Vz9cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_653257_Vz9cm")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_648788_Vz9cm", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_648788_Vz9cm", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_648788_Vz9cm"))
+        };
+    }
     if (systemName == "O-O-DCAz05") {
         return {
             NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659116", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659116", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659116")),
@@ -142,6 +174,51 @@ std::vector<NamedConfigUnit> BuildTemplateFitConfigList(const std::string& syste
             NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659120")),
             NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659118", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659118", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659118")),
             NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659119", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659119", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659119"))
+        };
+    }
+    if (systemName == "O-O-TPCCrossedRows90") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659120", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659120", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659120")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659120", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659120", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659120")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659120", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659120")),
+            NamedConfigUnit("INNER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659121", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659121", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659121")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659121", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659121", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659121")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659122", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659122", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659122")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659122", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659122", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659122")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659121", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659121", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659121")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659123", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659123", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659123")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659122", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659122", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659122")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659124", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659124", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659124"))
+        };
+    }
+    if (systemName == "O-O-TPCClusters70") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659588", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659588", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659588_TPCClusters70")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659588", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659588", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659588_TPCClusters70")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659588", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659588", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659588_TPCClusters70")),
+            NamedConfigUnit("INNER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659592", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659592", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659592_TPCClusters70")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659592", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659592", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659592_TPCClusters70")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659593", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659593", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659593_TPCClusters70")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659593", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659593", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659593_TPCClusters70")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659592", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659592", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659592_TPCClusters70")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659594", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659594", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659594_TPCClusters70")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659593", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659593", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659593_TPCClusters70")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659595", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659595", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659595_TPCClusters70"))
+        };
+    }
+    if (systemName == "O-O-Chi^2_TPCClusters4") {
+        return {
+            NamedConfigUnit("FULL_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659596", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659596", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659596_Chi2_TPCClusters4")),
+            NamedConfigUnit("FULL_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659596", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659596", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659596_Chi2_TPCClusters4")),
+            NamedConfigUnit("FULL_LR_FT0A_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659596", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659596", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659596_Chi2_TPCClusters4")),
+            NamedConfigUnit("INNER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659597", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659597", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659597_Chi2_TPCClusters4")),
+            NamedConfigUnit("INNER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659597", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659597", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659597_Chi2_TPCClusters4")),
+            NamedConfigUnit("OUTER_LM_TPC_FT0A", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659598", kTPCFT0A, 80, 100), {InputUnit("LHC25ae_pass2_659598", kTPCFT0A, 0, 20)}, "LHC25ae_pass2_659598_Chi2_TPCClusters4")),
+            NamedConfigUnit("OUTER_MR_TPC_FT0C", ConfigUnit(kCent, false, true,  InputUnit("LHC25ae_pass2_659598", kTPCFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659598", kTPCFT0C, 0, 20)}, "LHC25ae_pass2_659598_Chi2_TPCClusters4")),
+            NamedConfigUnit("INNER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659597", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659597", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659597_Chi2_TPCClusters4")),
+            NamedConfigUnit("INNER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_663826", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_663826", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_663826_Chi2_TPCClusters4")),
+            NamedConfigUnit("OUTER_LR_FT0A", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_659598", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_659598", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_659598_Chi2_TPCClusters4")),
+            NamedConfigUnit("OUTER_LR_FT0C", ConfigUnit(kCent, false, false, InputUnit("LHC25ae_pass2_664675", kFT0AFT0C, 80, 100), {InputUnit("LHC25ae_pass2_664675", kFT0AFT0C, 0, 20)}, "LHC25ae_pass2_664675_Chi2_TPCClusters4"))
         };
     }
     if (systemName == "Ne-Ne") {
@@ -255,7 +332,7 @@ void Process_TemplateFit(const std::string& systemOverride = "") {
     gSystem->Exec("mkdir -p ./TemplateFit/PDFs");
     gSystem->Exec("mkdir -p ./TemplateFit/EtaDiff/PDFs");
     
-    // Options: "O-O", "O-O-DCAz05", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    // Options: "O-O", "O-O-Vz7cm", "O-O-Vz9cm", "O-O-DCAz05", "O-O-TPCCrossedRows90", "O-O-TPCClusters70", "O-O-Chi^2_TPCClusters4", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
     const std::string activeSystem = systemOverride.empty() ? "pp-Nch" : systemOverride;
     std::vector<NamedConfigUnit> namedConfigList = BuildTemplateFitConfigList(activeSystem);
     std::vector<ConfigUnit> configList;

@@ -65,6 +65,7 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
 std::string collisionSystemName = "peripheral PbPb";
 std::string additionalSuffix = "";
 std::vector<CorrelationInputSpec> gActiveInputSpecs;
+double gVzAbsMaxCm = -1.0; // <=0 means use all Vz bins
 
 std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& systemName, Bool_t useNchMode) {
     if (systemName == "O-O") {
@@ -87,23 +88,113 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
         };
     }
 
-    if (systemName == "O-O-DCAz05") {
+    if (systemName == "O-O-Vz7cm") {
         return {
-            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_659116", "", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_659116", "", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_659116", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_648788_Vz7cm", "id50663", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_648788_Vz7cm", "id50664", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_648798_Vz7cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
 
-            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659117", "", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659117", "", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659118", "", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659118", "", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_638221_Vz7cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_634099_Vz7cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_634103_Vz7cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_637591_Vz7cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
 
-            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659117", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659120", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659118", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
-            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659119", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_648799_Vz7cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_648800_Vz7cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_653257_Vz7cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_648788_Vz7cm", "id50565", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
         };
     }
+
+    if (systemName == "O-O-Vz9cm") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_648788_Vz9cm", "id50663", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_648788_Vz9cm", "id50664", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_648798_Vz9cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_638221_Vz9cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_634099_Vz9cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_634103_Vz9cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_637591_Vz9cm", "",        kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_648799_Vz9cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_648800_Vz9cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_653257_Vz9cm", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_648788_Vz9cm", "id50565", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "O-O-DCAz05") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_659116", "id52576", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_659116", "id52577", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_659116", "id52583", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659117", "id52579", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659117", "id52580", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659118", "id52581", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659118", "id52582", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659117", "id52584", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659120", "id52585", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659118", "id52586", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659119", "",        kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "O-O-TPCCrossedRows90") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_659120", "id52588", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_659120", "id52589", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_659120", "id52594", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659121", "id52590", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659121", "id52591", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659122", "id52592", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659122", "id52593", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659121", "id52595", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659123", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659122", "id52597", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659124", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+    if (systemName == "O-O-TPCClusters70") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_659588", "id52634", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_659588", "id52635", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_659588", "id52641", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659592", "id52636", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659592", "id52638", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659593", "id52639", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659593", "id52640", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659592", "id52642", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659594", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659593", "id52644", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_659595", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
+    if (systemName == "O-O-Chi^2_TPCClusters4") {
+        return {
+            CorrelationInputSpec("FULL_LM_TPC_FT0A",   kTPCFT0A,  "LHC25ae_pass2_659596", "id52646", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_MR_TPC_FT0C",   kTPCFT0C,  "LHC25ae_pass2_659596", "id52647", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("FULL_LR_FT0A_FT0C",  kFT0AFT0C, "LHC25ae_pass2_659596", "id52652", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659597", "id52648", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659597", "id52649", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LM_TPC_FT0A",  kTPCFT0A,  "LHC25ae_pass2_659598", "id52650", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_MR_TPC_FT0C",  kTPCFT0C,  "LHC25ae_pass2_659598", "id52651", kCent, kEtaDiffOn,  {{0, 20}, {80, 100}}),
+
+            CorrelationInputSpec("INNER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659597", "id52653", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("INNER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_663826", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0A",      kFT0AFT0C, "LHC25ae_pass2_659598", "id52655", kCent, kEtaDiffOff, {{0, 20}, {80, 100}}),
+            CorrelationInputSpec("OUTER_LR_FT0C",      kFT0AFT0C, "LHC25ae_pass2_664675", "", kCent, kEtaDiffOff, {{0, 20}, {80, 100}})
+        };
+    }
+
 
     if (systemName == "O-O-Nch") {
         return {
@@ -205,7 +296,7 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
             CorrelationInputSpec("NCH_LM_TPC_FT0A",       kTPCFT0A,  "LHC24af_pass1_650589", "id51553", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
             CorrelationInputSpec("NCH_MR_TPC_FT0C",       kTPCFT0C,  "LHC24af_pass1_650589", "id51554", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
             CorrelationInputSpec("NCH_LR_FT0A_FT0C",      kFT0AFT0C, "LHC24af_pass1_650588", "", kNch, kEtaDiffOff, {{0, 10}, {10, 50}}),
-                CorrelationInputSpec("NCH_INNER_MR_TPC_FT0C", kTPCFT0C,  "LHC25af_pass2_658367", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
+            CorrelationInputSpec("NCH_INNER_MR_TPC_FT0C", kTPCFT0C,  "LHC25af_pass2_658367", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
             CorrelationInputSpec("NCH_INNER_LM_TPC_FT0A", kTPCFT0A,  "LHC24af_pass1_658242", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
             CorrelationInputSpec("NCH_INNER_MR_TPC_FT0C", kTPCFT0C,  "LHC24af_pass1_658244", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
             CorrelationInputSpec("NCH_OUTER_LM_TPC_FT0A", kTPCFT0A,  "LHC24af_pass1_658243", "", kNch, kEtaDiffOn,  {{0, 10}, {10, 50}}),
@@ -223,11 +314,23 @@ std::vector<CorrelationInputSpec> BuildSystemInputSpecs(const std::string& syste
 }
 
 std::string GetInputFileNameSuffix(const std::string &fileNameSuffix) {
+    auto stripVirtualSuffix = [](const std::string& s) {
+        std::string out = s;
+        const std::vector<std::string> tags = {"_Vz7cm", "_Vz9cm"};
+        for (const auto& tag : tags) {
+            if (out.size() >= tag.size() && out.compare(out.size() - tag.size(), tag.size(), tag) == 0) {
+                out.erase(out.size() - tag.size());
+            }
+        }
+        return out;
+    };
+
+    const std::string cleaned = stripVirtualSuffix(fileNameSuffix);
     const std::string taggedPrefix = "LHC25af_pass2_646139_id";
-    if (fileNameSuffix.rfind(taggedPrefix, 0) == 0) {
+    if (cleaned.rfind(taggedPrefix, 0) == 0) {
         return "LHC25af_pass2_646139";
     }
-    return fileNameSuffix;
+    return cleaned;
 }
 
 std::string GetDatasetDirectoryTag(const std::string &fileNameSuffix, Int_t corrType) {
@@ -400,9 +503,13 @@ void Process_dPhidEta(const std::string& systemOverride = "") {
     std::vector<InputUnit> inputList;
     additionalSuffix = "";
 
-    // Options: "O-O", "O-O-DCAz05", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
+    // Options: "O-O", "O-O-Vz7cm", "O-O-Vz9cm", "O-O-DCAz05", "O-O-TPCCrossedRows90", "O-O-TPCClusters70", "O-O-Chi^2_TPCClusters4", "O-O-Nch", "Ne-Ne", "Ne-Ne-Nch", "p-O", "p-O-Nch", "pp", "pp-Nch"
     const std::string activeSystem = systemOverride.empty() ? "pp-Nch" : systemOverride;
     const Bool_t useNchMode = (activeSystem.find("Nch") != std::string::npos) ? kTRUE : kFALSE;
+
+    gVzAbsMaxCm = -1.0;
+    if (activeSystem == "O-O-Vz7cm") gVzAbsMaxCm = 7.0;
+    if (activeSystem == "O-O-Vz9cm") gVzAbsMaxCm = 9.0;
 
     gActiveInputSpecs = BuildSystemInputSpecs(activeSystem, useNchMode);
     collisionSystemName = activeSystem;
@@ -412,7 +519,11 @@ void Process_dPhidEta(const std::string& systemOverride = "") {
         return;
     }
 
-    Printf("[Config][dPhidEta] Active system: %s, split=%s, entries=%zu", activeSystem.c_str(), useNchMode ? "Nch" : "Cent", gActiveInputSpecs.size());
+    if (gVzAbsMaxCm > 0) {
+        Printf("[Config][dPhidEta] Active system: %s, split=%s, entries=%zu, VzCut=|Vz|<%.1f cm", activeSystem.c_str(), useNchMode ? "Nch" : "Cent", gActiveInputSpecs.size(), gVzAbsMaxCm);
+    } else {
+        Printf("[Config][dPhidEta] Active system: %s, split=%s, entries=%zu", activeSystem.c_str(), useNchMode ? "Nch" : "Cent", gActiveInputSpecs.size());
+    }
 
     for (const auto& spec : gActiveInputSpecs) {
         const char* splitLabel = (spec.isNch ? "Nch" : "Cent");
@@ -804,15 +915,29 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
         TH2D* hPhiEtaMsum = nullptr;
         Double_t nTriggersS = 0.;
         Int_t nz = sparSig->GetAxis(corrAxis_kVz)->GetNbins();
+        Int_t izFirst = 1;
+        Int_t izLast = nz;
+        if (gVzAbsMaxCm > 0.0) {
+            TAxis* vzAxis = sparSig->GetAxis(corrAxis_kVz);
+            if (vzAxis) {
+                const double eps = 1e-6;
+                izFirst = vzAxis->FindBin(-gVzAbsMaxCm + eps);
+                izLast = vzAxis->FindBin(gVzAbsMaxCm - eps);
+                izFirst = TMath::Max(1, TMath::Min(izFirst, nz));
+                izLast = TMath::Max(1, TMath::Min(izLast, nz));
+                if (izLast < izFirst) std::swap(izFirst, izLast);
+            }
+        }
         // Set names with sample suffix
         TString suffix = (sample == -1) ? "" : Form("_%d", sample);
 
         // Vertex loop
-        for (Int_t iz = 1; iz <= nz; ++iz) {
-             // project the vertex axis into a 1D histogram of the trigger sparse
-            TH1D* hTriggersS = (TH1D*)trig->Projection(trigAxis_Vz);
+        TH1D* hTriggersS = (TH1D*)trig->Projection(trigAxis_Vz);
+        if (hTriggersS) hTriggersS->SetDirectory(nullptr);
+
+        for (Int_t iz = izFirst; iz <= izLast; ++iz) {
             // get the number of triggers in this vertex bin
-            nTriggersS += hTriggersS->Integral(iz, iz);
+            if (hTriggersS) nTriggersS += hTriggersS->Integral(iz, iz);
 
             // and set the vertex range for the same and mixed event sparses
             sparSig->GetAxis(corrAxis_kVz)->SetRange(iz, iz);
@@ -888,6 +1013,11 @@ void Read_dPhidEta_givenRange(std::string fileNameSuffix, Int_t corrType, Bool_t
             } else {
                 hPhiEtaSsum->Add(hPhiEtaS);
             }
+        }
+
+        if (hTriggersS) {
+            delete hTriggersS;
+            hTriggersS = nullptr;
         }
 
         // Normalization and final processing
@@ -1243,15 +1373,29 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
         TH2D* hPhiEtaMsum = nullptr;
         Double_t nTriggersS = 0.;
         Int_t nz = sparSig->GetAxis(corrAxis_kVz)->GetNbins();
+        Int_t izFirst = 1;
+        Int_t izLast = nz;
+        if (gVzAbsMaxCm > 0.0) {
+            TAxis* vzAxis = sparSig->GetAxis(corrAxis_kVz);
+            if (vzAxis) {
+                const double eps = 1e-6;
+                izFirst = vzAxis->FindBin(-gVzAbsMaxCm + eps);
+                izLast = vzAxis->FindBin(gVzAbsMaxCm - eps);
+                izFirst = TMath::Max(1, TMath::Min(izFirst, nz));
+                izLast = TMath::Max(1, TMath::Min(izLast, nz));
+                if (izLast < izFirst) std::swap(izFirst, izLast);
+            }
+        }
         // Set names with sample suffix
         TString suffix = (sample == -1) ? "" : Form("_%d", sample);
 
         // Vertex loop
-        for (Int_t iz = 1; iz <= nz; ++iz) {
-             // project the vertex axis into a 1D histogram of the trigger sparse
-            TH1D* hTriggersS = (TH1D*)trig->Projection(trigAxis_Vz);
+        TH1D* hTriggersS = (TH1D*)trig->Projection(trigAxis_Vz);
+        if (hTriggersS) hTriggersS->SetDirectory(nullptr);
+
+        for (Int_t iz = izFirst; iz <= izLast; ++iz) {
             // get the number of triggers in this vertex bin
-            nTriggersS += hTriggersS->Integral(iz, iz);
+            if (hTriggersS) nTriggersS += hTriggersS->Integral(iz, iz);
 
             // and set the vertex range for the same and mixed event sparses
             sparSig->GetAxis(corrAxis_kVz)->SetRange(iz, iz);
@@ -1403,6 +1547,11 @@ void Read_dPhidEta_givenRange_EtaDiff(std::string fileNameSuffix, Int_t corrType
                 hPhiSameOverMixed_pos->SetBinContent(ibin, 0.0);
                 hPhiSameOverMixed_pos->SetBinError(ibin, 0.0);
             }
+        }
+
+        if (hTriggersS) {
+            delete hTriggersS;
+            hTriggersS = nullptr;
         }
         hPhiSameOverMixed_pos->SetName(Form("hPhiSameOverMixed_%d_%d%s", minRange, maxRange, suffix.Data()));
         hPhiSameOverMixed_pos->SetTitle(Form("hPhiSameOverMixed_%d_%d%s", minRange, maxRange, suffix.Data()));

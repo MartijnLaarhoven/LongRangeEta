@@ -834,7 +834,7 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
         latex.DrawLatex(0.13, 0.775, "FT0 rings + TPC acceptance (+ ratio)");
 
         padBottom->cd();
-        hRatioFrame->GetYaxis()->SetRangeUser(1.0, 1.1);
+        hRatioFrame->GetYaxis()->SetRangeUser(1.00, 1.10);
         hRatioFrame->Draw("AXIS");
         TLine* unity = new TLine(-5.0, 1.0, 5.0, 1.0);
         unity->SetLineStyle(2);
@@ -926,7 +926,7 @@ void Compare3times2PC_EtaDiff_TwoSystems_OO_NeNe_Rings() {
                 latexFullOnly.DrawLatex(0.13, 0.775, "Full FT0 ranges + TPC acceptance (+ratio)");
 
                 padBottomFullOnly->cd();
-                hFullOnlyRatioFrame->GetYaxis()->SetRangeUser(1.0, 1.1);
+                hFullOnlyRatioFrame->GetYaxis()->SetRangeUser(1.00, 1.10);
                 hFullOnlyRatioFrame->Draw("AXIS");
                 TLine* fullOnlyUnity = new TLine(-5.0, 1.0, 5.0, 1.0);
                 fullOnlyUnity->SetLineStyle(2);
